@@ -1,11 +1,11 @@
 channels:
-  - plotly
+  # - plotly
   - conda-forge
   - defaults
   # - https://repo.anaconda.com/pkgs/free
 dependencies:
   - pip
-  - python=3.9
+  - python=3.12
   - pip:
     - "-r requirements-dev.txt"
 
