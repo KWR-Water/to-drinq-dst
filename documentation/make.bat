@@ -25,7 +25,7 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-sphinx-apidoc -f -o source/api ../package_name --separate --force -d 2
+sphinx-apidoc -f -o source/api ../todrinq_dst --separate --force -d 2
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end

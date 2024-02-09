@@ -20,7 +20,7 @@ install:
     - pip install ".[test]"
 
 script:
-   - pytest --cov=package_name tests/
+   - pytest --cov=todrinq_dst tests/
 
 after_success:
    - codecov

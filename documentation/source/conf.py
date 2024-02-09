@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'package_name'
+project = 'todrinq_dst'
 copyright = '2019, KWR Water Research Institute'
 author = 'Martin Korevaar, Martin van der Schans, Erwin Vonk'
 

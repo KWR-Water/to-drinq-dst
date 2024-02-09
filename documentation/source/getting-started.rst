@@ -4,8 +4,8 @@ Getting Started
 
 Install
 -------
-package_name requires Python 3.6 or later.
+todrinq_dst requires Python 3.6 or later.
 
-To get package_name, use the following command::
+To get todrinq_dst, use the following command::
 
-    pip install package_name
+    pip install todrinq_dst

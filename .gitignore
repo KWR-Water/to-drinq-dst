@@ -1,7 +1,7 @@
 .vscode
 .pytest_cache
 __pycache__
-*.cpython-36.pyc
+*.cpython-*
 .cache
 *.png
 *.code-workspace
@@ -9,3 +9,5 @@ docs/build/*
 figures
 */.ipynb_checkpoints
 .ipynb_checkpoints
+*.sqlite
+*.db

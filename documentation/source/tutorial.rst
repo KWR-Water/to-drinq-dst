@@ -4,11 +4,11 @@ Tutorial
 Practical examples
 
 
-We always start by importing package_name:
+We always start by importing todrinq_dst:
 
 .. ipython:: python
 
-    import package_name
+    import todrinq_dst
 
 First header
 --------------------------------

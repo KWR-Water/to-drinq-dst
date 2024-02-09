@@ -5,9 +5,9 @@ def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
         return f.read()
 
-package_name = 'package_name'
+todrinq_dst = 'todrinq_dst'
 setup(
-    name=package_name,
+    name=todrinq_dst,
     version='0.1',
     packages=find_packages(exclude=['tests*']),
     license='All rights reserved',
@@ -23,17 +23,17 @@ setup(
     ],
     python_requires='>=3.9',
     project_urls={
-    'Source': f'https://github.com/KWR-Water/{package_name}',
-    'Documentation': f'http://{package_name}.readthedocs.io/en/latest/',
-    'Tracker': f'https://github.com/KWR-Water/{package_name}/issues',
-    'Help': f'https://github.com/KWR-Water/{package_name}/issues',
+    'Source': f'https://github.com/KWR-Water/{todrinq_dst}',
+    'Documentation': f'http://{todrinq_dst}.readthedocs.io/en/latest/',
+    'Tracker': f'https://github.com/KWR-Water/{todrinq_dst}/issues',
+    'Help': f'https://github.com/KWR-Water/{todrinq_dst}/issues',
     },
     install_requires=[
         'pandas',
         'openpyxl',
         'pytest',
         ],
-    url=f'https://github.com/KWR-Water/{package_name}',
+    url=f'https://github.com/KWR-Water/{todrinq_dst}',
     author='KWR Water Research Institute',
     author_email='martin.korevaar@kwrwater.nl, bas.wols@kwrwater.nl'
 )

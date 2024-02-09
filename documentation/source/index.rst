@@ -1,6 +1,6 @@
 Introduction
 ===============================
-package_name - A python package for
+todrinq_dst - A python package for
 
 .. toctree::
     :maxdepth: 2
