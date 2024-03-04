@@ -6,6 +6,7 @@ channels:
 dependencies:
   - pip
   - python=3.12
+  - black
   - pip:
     - "-r requirements-dev.txt"
 

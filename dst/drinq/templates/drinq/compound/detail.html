@@ -1,0 +1,37 @@
+<!-- pages/templates/drinq/compound/detail.html -->
+{% extends "base.html" %}
+
+{% block page_content %}
+    <h1>Compound details</h1>
+
+    <p>{{ svg_compound }}</p>
+    <table>
+        <tr>
+            <th>Common name</th>
+            <td>{{ common_name }}</td>
+        </tr>
+        <tr>
+            <th>Isomeric SMILES</th>
+            <td>{{ isomeric_smiles }}</td>
+        </tr>
+        <tr>
+            <th>CAS registry numbers</th>
+            {% if cas_list %}
+            <td>
+                </ul>
+                    {% for cas in cas_list %}
+                    <li>{{ cas.cas }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            {% else %}
+            <td>There are no CAS registry numbers known for this compound.</td>
+            {% endif %}
+        </tr>
+    </table>
+    <h2>PubChem</h2>
+    <div style="border: solid 1px #ccc; padding: 2px; width: 600px; max-width: 100%">
+        <iframe class="pubchem-widget" src="https://pubchem.ncbi.nlm.nih.gov/compound/{{ cid }}#section=2D-Structure&embed=true" style="border: 0; width: 100%; height: 400px;"></iframe>
+    </div>
+    
+{% endblock page_content %}
