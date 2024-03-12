@@ -1,7 +1,7 @@
 import unittest
 from urllib.error import URLError
 
-from src.fetchtry import retry_multiple_attempts
+from drinq.timeout_handler_external_urls import retry_multiple_attempts
 
 
 class TestRetryFetchingCase(unittest.TestCase):

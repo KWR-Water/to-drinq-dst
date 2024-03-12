@@ -4,7 +4,7 @@ import pubchempy as pcp
 import cirpy
 from warnings import warn
 
-from src.fetchtry import retry_multiple_attempts
+from drinq.timeout_handler_external_urls import retry_multiple_attempts
 
 COMPOUND_IDENTIFIERS: Dict[str, Dict[str, Optional[str]]] = {
     'inchi': {

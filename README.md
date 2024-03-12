@@ -17,9 +17,8 @@ The folders have the following purpose:
 - tests: contains unit tests.
 - documentation: contains documentation which can be created (and updated) by 
 running make.bat; the result is in `documentation/build/html`
-- dst_site: django application
-- src: contains code and files and should function independent of django.
-- research: contains files that run the code in src to:
-  * do data analysis
-  * model analysis
-  * test new functionalities
+- drinq: django application
+- research: contains files:
+  * which do data analysis
+  * which do model analyses
+  * which test new functionalities

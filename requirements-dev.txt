@@ -1,4 +1,0 @@
-autopep8
-pylint
-unittest
--r requirements.txt

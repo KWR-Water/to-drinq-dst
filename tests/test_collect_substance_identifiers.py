@@ -15,9 +15,8 @@ class Testget_synonyms_and_cid(unittest.TestCase):
         result = get_synonyms_and_cid(compound_name)
 
         self.assertEqual(result['cid'][0], expected_cid)
-        self.assertEqual(
-            result['compound_synonyms'][0]['Synonym'][0],
-            compound_name)
+        self.assertTrue(set([compound_name]).issubset(
+            result['compound_synonyms'][0]))
 
     def test_returned_dataframe_pcp_properties(self):
         cid = '12345'
@@ -50,7 +49,7 @@ class Testget_synonyms_and_cid(unittest.TestCase):
         # cids = [962, 702, 887]
         target_identifier = 'cas'
         expected_result = pd.DataFrame(
-            {'iupac_name': compound_list,
+            {'common_name': compound_list,
              'cas': [
                  ['14314-42-2', '558440-22-5', '13670-17-2', '7732-18-5',
                   '17778-80-2'],
@@ -58,7 +57,7 @@ class Testget_synonyms_and_cid(unittest.TestCase):
                   '68475-56-9', '71076-86-3', '71329-38-9'],
                  ['54841-71-3', '67-56-1'],
                  ]}
-             ).set_index('iupac_name', drop=True)
+             ).set_index('common_name', drop=True)
 
         result = resolve_by_cirpy(
             compound_list, target_identifier=target_identifier)
