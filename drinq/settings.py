@@ -8,6 +8,9 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
+
+When using CustomUser authentication and are having issues with migrations, see:
+https://stackoverflow.com/questions/44651760/django-db-migrations-exceptions-inconsistentmigrationhistory?page=1&tab=scoredesc#tab-top
 """
 
 import os
@@ -33,16 +36,19 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'drinq.apps.DrinqConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'django_extensions',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,6 +57,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
 
 ROOT_URLCONF = 'drinq.urls'
 
@@ -88,7 +97,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
+AUTH_USER_MODEL = 'users.CustomUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

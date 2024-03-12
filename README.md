@@ -1,16 +1,20 @@
 # Setup of the package
 ## For developers: configuration
-Make a list of all the packages required to run your code in requirements.txt. 
-If this repository depends on any package that should be installed by conda 
-instead of pip, add that package in requirements_conda.yml; also specify your
-python version in that file.
+Follow the steps as below:
+- Install the conda environment:
+`conda env create -f environment.yml`
+and activate the (conda) python environment with:
+`conda activate todrinq_dst`
+- Migrate the database with `python manage.py makemigrations` and complete the migration with `python manage.py migrate`
+- Finally, run the Django server with
+`python manage.py runserver`
+
+
+### 
 
 ## For users
 ### Create a conda environment before first use
-After that, create a conda environment by navigating your command prompt to 
-the folder containing `requirements_conda.yml`, that is, the same folder as 
-this file. Then type the command 
-`conda env create -n todrinq_dst --file requirements_conda.yml`.
+See the first step in the developers section.
 
 # Project folder structure
 The folders have the following purpose:

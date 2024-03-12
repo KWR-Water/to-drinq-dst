@@ -6,7 +6,6 @@ __pycache__
 *.png
 *.code-workspace
 docs/build/*
-figures
 */.ipynb_checkpoints
 .ipynb_checkpoints
 *.sqlite

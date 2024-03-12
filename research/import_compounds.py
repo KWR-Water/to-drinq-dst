@@ -5,7 +5,6 @@ from pathlib import Path
 import django
 import numpy as np
 from django.db.utils import IntegrityError
-# from django.contrib.auth.models import User
 
 import os
 # NB: run this script from the project root directory!!

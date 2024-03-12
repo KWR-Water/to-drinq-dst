@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from autoslug import AutoSlugField
+from users.models import CustomUser
 
 
 class Citation(models.Model):
@@ -21,6 +22,9 @@ class Compound(models.Model):
     cid = models.IntegerField(primary_key=True, unique=True, null=False)
     common_name = models.TextField(blank=True, null=True)
     isomeric_smiles = models.TextField(unique=True, blank=True, null=True)
+    # user = models.ForeignKey(
+    #     CustomUser, related_name='users', on_delete=models.SET_NULL,
+    #     blank=True, null=True, db_index=True)
     slug = AutoSlugField(populate_from='cid')
 
     class Meta:

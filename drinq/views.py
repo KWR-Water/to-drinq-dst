@@ -1,7 +1,21 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
+from django.views import generic
 from drinq.models import Compound, CompoundCas
 from drinq.chemistry_tools import smiles_to_svg
+
+
+class Register(generic.TemplateView):
+    template_name = "drinq/register.html"
+
+
+class Welcome(generic.TemplateView):
+    template_name = "drinq/welcome.html"
+
+
+class PasswordChangeOk(generic.TemplateView):
+    template_name = "drinq/password_change_ok.html"
+
 
 def index(request):
     return HttpResponse("Hello, world. You're at the drinq index.")
