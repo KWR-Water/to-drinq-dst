@@ -18,6 +18,19 @@ class Citation(models.Model):
         db_table = 'citation'
 
 
+class Configuration(models.Model):
+    id = models.AutoField(primary_key=True, null=False, unique=True)
+    name = models.TextField(unique=True, null=False)
+    date_created = models.DateTimeField()
+
+    class Meta:
+        # managed = False
+        db_table = 'configuration'
+
+    def __str__(self):
+        return f"Configuration: {self.name}"
+
+
 class Compound(models.Model):
     cid = models.IntegerField(primary_key=True, unique=True, null=False)
     common_name = models.TextField(blank=True, null=True)
@@ -183,3 +196,18 @@ class Technology(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class ConfiguredTechnologies(models.Model):
+    id = models.AutoField(primary_key=True, null=False, unique=True)
+    configuration = models.ForeignKey(
+        Configuration, models.CASCADE, db_column='id')
+    technology = models.ForeignKey(Technology, models.CASCADE, db_column='id')
+    order = models.IntegerField(null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'configured_technologies'
+
+    def __str__(self):
+        return f"Configuration {self.configuration}, technology: {self.technology}"

@@ -1,7 +1,8 @@
+from drinq.models import Compound, CompoundCas, CompoundSynonym
 import pandas as pd
 
-from typing import List, Dict
 from pathlib import Path
+from typing import List
 import django
 import numpy as np
 from django.db.utils import IntegrityError
@@ -10,10 +11,8 @@ import os
 # NB: run this script from the project root directory!!
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
-import project_path
-from drinq.models import Compound, CompoundCas, CompoundSynonym
 
-# workaround to find the research directory path instead of importing it from 
+# workaround to find the research directory path instead of importing it from
 # the research module
 DPATH_RESEARCH = Path(__file__).parent
 
@@ -34,7 +33,7 @@ def run(fpath_compound: str, fpath_cas: str, fpath_syn: str):
         dfs[key_] = pd.read_csv(fpath, sep=';')
         unnamed_columns = [
             col for col in dfs[key_].columns if 'unnamed' in col.lower()
-            ]
+        ]
         dfs[key_].drop(unnamed_columns, axis=1, inplace=True)
 
     # Save all the new compounds
@@ -44,7 +43,7 @@ def run(fpath_compound: str, fpath_cas: str, fpath_syn: str):
         Compound(
             cid=row['cid'], common_name=row['common_name'],
             isomeric_smiles=row['IsomericSMILES'],
-                )
+        )
         for _, row in df_compound.iterrows()
     ]
 
@@ -61,7 +60,7 @@ def run(fpath_compound: str, fpath_cas: str, fpath_syn: str):
                 CompoundCas(
                     cid=matched_compound[0], cas=cas,
                     slug=f'{row["cid"]}__{cas_str}',
-                    )
+                )
             )
     # Create table of synonyms
     for _, row in df_syn.iterrows():
@@ -71,12 +70,14 @@ def run(fpath_compound: str, fpath_cas: str, fpath_syn: str):
             synonyms.append(
                 CompoundSynonym(
                     cid=matched_compound[0], synonym=row['synonym']
-                    )
+                )
             )
 
     # Bulk create the table entries
     table_instances = [compounds, cas_rns, synonyms]
-    table_objects = [Compound, CompoundCas, CompoundSynonym]
+    table_objects: List[
+        type[Compound] | type[CompoundCas] | type[CompoundSynonym]] = [
+        Compound, CompoundCas, CompoundSynonym]
 
     for table, instances in zip(table_objects, table_instances):
         try:
@@ -86,12 +87,12 @@ def run(fpath_compound: str, fpath_cas: str, fpath_syn: str):
             raise integrity_exception
         if created is not None:
             print(
-                f'{len(created)} entries in Table {table._meta.db_table} added.'
-                )
+                f'{len(created)} entries in Table {
+                    table._meta.db_table} added.'
+            )
 
 
 if __name__ == '__main__':
     run(
         fpath_compound=FPATH_COMPOUND, fpath_cas=FPATH_CAS, fpath_syn=FPATH_SYN
-        )
-
+    )
