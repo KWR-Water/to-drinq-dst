@@ -18,6 +18,20 @@ class Citation(models.Model):
         db_table = 'citation'
 
 
+class CategoricalVariable(models.Model):
+    type = models.AutoField(primary_key=True, null=False, unique=True)
+    name = models.TextField(unique=True, null=False)
+    n_levels = models.IntegerField(null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'categorical_variable'
+        verbose_name_plural = 'categorical variables'
+
+    def __str__(self) -> str:
+        return f"Categorical variable: {self.name}"
+
+
 class Configuration(models.Model):
     id = models.AutoField(primary_key=True, null=False, unique=True)
     name = models.TextField(unique=True, null=False)
@@ -85,6 +99,13 @@ class DesignParameter(models.Model):
     class Meta:
         # managed = False
         db_table = 'design_parameter'
+
+
+class DecidingFactor(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(null=False, unique=True)
+    description = models.TextField(blank=True, null=True)
+    ordinal_type = models.ForeignKey(CategoricalVariable, models.CASCADE)
 
 
 class Goal(models.Model):
@@ -198,11 +219,28 @@ class Technology(models.Model):
         return f"{self.name}"
 
 
+class TechnologyDecidingFactors(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    deciding_factor_true = models.ForeignKey(DecidingFactor, models.CASCADE)
+    effective_technology = models.ForeignKey(Technology, models.CASCADE)
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_deciding_factors'
+        verbose_name_plural = "technology deciding factors"
+
+    def __str__(self):
+        d_f = DecidingFactor.objects.get(pk=self.deciding_factor_true)
+        d_f_name = d_f.name.replace('_', ' ')
+        eff_tech = Technology.objects.get(pk=self.effective_technology)
+
+        return f"Condition: {d_f_name} is True, eff. technology: {eff_tech.name}"
+
+
 class ConfiguredTechnologies(models.Model):
     id = models.AutoField(primary_key=True, null=False, unique=True)
-    configuration = models.ForeignKey(
-        Configuration, models.CASCADE, db_column='id')
-    technology = models.ForeignKey(Technology, models.CASCADE, db_column='id')
+    configuration = models.ForeignKey(Configuration, models.CASCADE)
+    technology = models.ForeignKey(Technology, models.CASCADE)
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -210,4 +248,6 @@ class ConfiguredTechnologies(models.Model):
         db_table = 'configured_technologies'
 
     def __str__(self):
-        return f"Configuration {self.configuration}, technology: {self.technology}"
+        configuration = DecidingFactor.objects.get(pk=self.configuration)
+        tech = DecidingFactor.objects.get(pk=self.technology)
+        return f"Configuration: {configuration.name}, technology: {tech.name}"

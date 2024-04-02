@@ -12,16 +12,19 @@
 #     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 import debug_toolbar
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from django.contrib import admin
 import django.contrib.auth.views as auth_views
-from . import views
-
 from drinq import views
 
 
 urlpatterns = [
     path("", views.index, name='drinq'),
+    path('db_stats/', views.db_stats, name='db_stats'),
+    path('dst_form/', views.dst_form, name='dst_form'),
+    # path('dst_redirect/', views.dst_redirect, name='dst_redirect'),
     path('compound/<cid>/', views.compound_detail, name='drinq'),
     path('admin/', admin.site.urls),
     path('', views.Welcome.as_view(), name='index'),
@@ -45,4 +48,4 @@ urlpatterns = [
     ),
     path('__debug__/', include(debug_toolbar.urls)),
     # path('compound/<int:cid>/', views.compound_detail, name='drinq'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

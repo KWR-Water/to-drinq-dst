@@ -8,72 +8,103 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>
-        {% block title %}
-            ToDrinQ DST
-        {% endblock title %}
+        {% block title %}ToDrinQ DST{% endblock title %}
     </title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans&subset=latin,latin-ext">
-
 
     {% block style %}
     {% block bootstrap_theme %}
-        <!-- <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css" type="text/css"> -->
-        <link rel="stylesheet" type="text/css" href="{% static "drinq/css/flatly_bootstrap.min.css" %}"/>
-        <!-- <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/bootstrap-tweaks.css" %}"/> -->
-        <link rel="stylesheet" type="text/css" href="{% static "drinq/css/navbar.css" %}"/>
-        <link rel="stylesheet" type="text/css" href="{% static "drinq/css/style.css" %}"/>
-        {% comment %} <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> {% endcomment %}
+        {% comment %} <link rel="stylesheet" type="text/css" href="{% static "css/flatly_bootstrap.min.css" %}"/> {% endcomment %}
+        <link rel="stylesheet" href="{%static "css/bootstrap.min.css" %}">
+        {% comment %} <link rel="stylesheet" type="text/css" href="{% static "css/navbar.css" %}"/> {% endcomment %}
+        <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/drinq.css" %}"/>
     {% endblock %}
     {% endblock %}
 
 </head>
 
-{% block navbar %}
-<div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}">
-    <div class="container">
-    <span>
-        {% block branding %}
-            <a class='navbar-brand' rel="nofollow" href="{% url 'index' %}">Homepage<br> </a>
-        {% endblock branding %}
-        </span>
-
-        <ul class="nav navbar-nav pull-right">
-            {% block userlinks %}
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'index' %}">Home</a></li>
-                {% endif %}
-                    {% comment %} <li><a href="{% url 'drinq:compound:detail' %}">
-                        Compound details</a>
-                    </li> {% endcomment %}
-                    {% comment %} <li><a href="{% url 'compound:search' %}">Compound search</a></li> {% endcomment %}
-                {% if user.is_staff  %}
-                    <li><a href="{% url 'admin:index' %}">Admin</a></li>
-                {% endif %}
-            {% comment %} <ul class="nav navbar-nav pull-right">
-                {% if user.is_authenticated %}
-                {% my_logout request user %}
-                {% else %}
-                {% optional_login request %}
-                {% endif %}
-            </ul> {% endcomment %}
-
-            {% endblock %}
-        </ul>
-    </div>
-</div>
-{% endblock %}
-
 <body class="container">
-{% block page_content %}{% endblock page_content %}
+    {% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="{% static 'logo-todrinq.png' %}" height="38">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="container-fluid">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        {% block userlinks %}
+                        {% if user.is_authenticated %}
+                            <a class="nav-link" rel="nofollow" href="{% url 'index' %}">Home</a>
+                        {% endif %}
+                        {% comment %} <li><a href="{% url 'drinq:compound:detail' %}">
+                            Compound details</a>
+                        </li> {% endcomment %}
+                        {% comment %} <li><a href="{% url 'compound:search' %}">Compound search</a></li> {% endcomment %}
+                        {% if user.is_staff  %}
+                            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                        {% endif %}
+                        <a class="nav-link" rel="nofollow" href="{% url 'index' %}">Homepage
+                            <span class="sr-only">(current)</span>
+                        </a>
+                        {% comment %} <ul class="nav navbar-nav pull-right">
+                        {% if user.is_authenticated %}
+                            {% my_logout request user %}
+                        {% else %}
+                            {% optional_login request %}
+                        {% endif %}
+                        </ul> {% endcomment %}
+                        {% endblock %}
+                    </li>
+                    <li class="nav-item dropdown">
+                        {% comment %} <button class="dropbtn"> {% endcomment %}
+                            {% comment %} Menu-d {% endcomment %}
+                        {% comment %} </button> {% endcomment %}
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Menu
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        {% comment %} <div class="dropdown-content"> {% endcomment %}
+                            <li><a class="dropdown-item" href="{% url 'db_stats' %}">Database statistics</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dst_form' %}">Questionnaire for design</a></li>
+                            {% comment %} <a class='dropdown-item' href="{% url 'drinq:compound:detail' %}">Compound details</a> {% endcomment %}
+                            {% comment %} <a class='dropdown-item' href="{% url 'about' %}">About</a> {% endcomment %}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled item</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+    <div class="container">
+        <div class="card-body">
+            {% block page_content %}{% endblock page_content %}
+        </div>
+    </div>
+    {% comment %} <script src="{% static 'js/hello.js' %}"></script> {% endcomment %}
 </body>
 
 {% block script %}
-{{ block.super }}
-{% comment %}javascript specific for each page should be loaded after all JS
+    {{ block.super }}
+    {% comment %}javascript specific for each page should be loaded after all JS
         libraries in the lines above{% endcomment %}
-{% block extra_javascript %}
-{% endblock %}
+    {% block extra_javascript %}
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        {% comment %} <script src="{% static 'js/hello.js' %}"></script> {% endcomment %}
+    {% endblock %}
 {% endblock %}
 
 </html>
