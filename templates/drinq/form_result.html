@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block page_content %}
+  <h1>Results</h1>
+  <h2>First stage</h2>
+  <h3>Form summary</h3>
+  <ul>
+    {% if source_is_surfacewater %}
+    <li>Source is surface water.</li>
+    {% endif %}
+    {% if algae_high %}
+    <li>Source water contains a high level of algae.</li>
+    {% endif %}
+  </ul>
+  {% if selected_technologies %}
+    <h3>Suggested technologies</h3>
+    <table class="table">
+      {% for tech in selected_technologies|slice:":1" %}
+      <thead>
+      <tr>
+        {% for key in tech.keys %}
+          <th scope="col"><b> {{ key|capfirst }} </b></td>
+        {% endfor %}
+      </tr>
+      </thead>
+      {% endfor %}
+      <tbody>
+      {% for tech in selected_technologies %}
+        <tr>
+        {% for value in tech.values %}
+          <td> {{ value }} </td>
+        {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

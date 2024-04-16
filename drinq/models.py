@@ -19,7 +19,7 @@ class Citation(models.Model):
 
 
 class CategoricalVariable(models.Model):
-    type = models.AutoField(primary_key=True, null=False, unique=True)
+    id = models.AutoField(primary_key=True, null=False, unique=True)
     name = models.TextField(unique=True, null=False)
     n_levels = models.IntegerField(null=False)
 
@@ -29,7 +29,7 @@ class CategoricalVariable(models.Model):
         verbose_name_plural = 'categorical variables'
 
     def __str__(self) -> str:
-        return f"Categorical variable: {self.name}"
+        return f"Categorical variable (pk={self.id}): {self.name}"
 
 
 class Configuration(models.Model):
@@ -105,7 +105,19 @@ class DecidingFactor(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(null=False, unique=True)
     description = models.TextField(blank=True, null=True)
-    ordinal_type = models.ForeignKey(CategoricalVariable, models.CASCADE)
+    # NB: when specifying a foreign key where the column name has an
+    # underscore, we have to specify db_column (otherwise, it searches for the
+    # wrong table).
+    categorical_variable = models.ForeignKey(
+        CategoricalVariable, on_delete=models.CASCADE,
+        db_column='categorical_variable')
+
+    class Meta:
+        # managed = False
+        db_table = 'deciding_factor'
+
+    def __str__(self) -> str:
+        return f'{self.name}'
 
 
 class Goal(models.Model):
@@ -221,8 +233,11 @@ class Technology(models.Model):
 
 class TechnologyDecidingFactors(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    deciding_factor_true = models.ForeignKey(DecidingFactor, models.CASCADE)
-    effective_technology = models.ForeignKey(Technology, models.CASCADE)
+    deciding_factor_true = models.ForeignKey(
+        DecidingFactor, on_delete=models.CASCADE,
+        db_column='deciding_factor_true')
+    effective_technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, db_column='effective_technology')
 
     class Meta:
         # managed = False
@@ -230,11 +245,11 @@ class TechnologyDecidingFactors(models.Model):
         verbose_name_plural = "technology deciding factors"
 
     def __str__(self):
-        d_f = DecidingFactor.objects.get(pk=self.deciding_factor_true)
+        d_f = DecidingFactor.objects.get(pk=self.deciding_factor_true.pk)
         d_f_name = d_f.name.replace('_', ' ')
-        eff_tech = Technology.objects.get(pk=self.effective_technology)
+        eff_tech = Technology.objects.get(pk=self.effective_technology.pk)
 
-        return f"Condition: {d_f_name} is True, eff. technology: {eff_tech.name}"
+        return f"Condition: '{d_f_name}' is True, eff. technology: {eff_tech.name}"
 
 
 class ConfiguredTechnologies(models.Model):

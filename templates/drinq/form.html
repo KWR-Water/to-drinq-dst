@@ -3,7 +3,7 @@
 {% block page_content %}
   <h1>Questionnaire</h1>
   <p>
-    <form action="{% url 'dst_form' %}" method="post">
+    <form action="{% url 'drinq_form' %}" method="post">
       {% csrf_token %}
       {{ form }}
       <input type="submit" value="Submit">

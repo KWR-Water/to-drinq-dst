@@ -55,7 +55,7 @@ def db_stats(request: HttpResponse):
     return render(request, 'drinq/db_stats.html', context=context)
 
 
-def dst_form(request):
+def dst_form(request: HttpResponse):
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
@@ -65,19 +65,22 @@ def dst_form(request):
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            selected = dst.decision_stage_screening(form_data=form.cleaned_data)
-            form.save()
-            
-            return HttpResponseRedirect("/")
+            selected = dst.decision_stage_screening(
+                form_data=form.cleaned_data)
+            # form.save()
+            return render(
+                request, 'drinq/form_result.html', context=selected)
+        else:
+            return HttpResponseRedirect(redirect('drinq_redirect'))
 
     # if a GET (or any other method) we'll create a blank form
     else:
         form = TechnologyForm()
 
-    return render(request, "drinq/dst_form.html", {"form": form})
+    return render(request, "drinq/form.html", {"form": form})
 
 
-def compound_search(request):
+def compound_search(request: HttpResponse):
     pass
 
 

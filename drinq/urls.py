@@ -23,7 +23,9 @@ from drinq import views
 urlpatterns = [
     path("", views.index, name='drinq'),
     path('db_stats/', views.db_stats, name='db_stats'),
-    path('dst_form/', views.dst_form, name='dst_form'),
+    path('form/', views.dst_form, name='drinq_form'),
+    path('form_result/', RedirectView.as_view(), name='drinq_result'),
+    path('form_redirect/', RedirectView.as_view(), name='drinq_redirect'),
     # path('dst_redirect/', views.dst_redirect, name='dst_redirect'),
     path('compound/<cid>/', views.compound_detail, name='drinq'),
     path('admin/', admin.site.urls),

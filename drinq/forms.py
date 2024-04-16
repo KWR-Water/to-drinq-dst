@@ -1,4 +1,5 @@
 from django import forms
+from drinq.models import (CustomUser, Configuration)
 
 """
 Note - When to use ModelForm (and when not)
@@ -25,3 +26,49 @@ class TechnologyForm(forms.Form):
         label="Has high levels of NOM (> 5 ppm, or > 10 mg/l)",
         required=False,
     )
+
+
+class UserForm(forms.ModelForm):
+    CHOICES = [
+        (choice.pk, choice.email) for choice in CustomUser.objects.all()]
+    username = forms.ChoiceField(
+        label='Your email (is username)', choices=CHOICES, required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['username']
+
+
+class ConfigurationForm(forms.ModelForm):
+
+    def __init__(self,  *args, **kwargs):
+        choice = kwargs.pop('choice', None)
+        super(Configuration, self).__init__(*args, **kwargs)
+
+        if choice is not None:
+            self.fields['name'] = forms.ChoiceField(
+                choices=choice)
+
+    class Meta:
+        model = Configuration
+        # fields = ['name']
+        exclude = ['id']
+
+
+# class TechnologyStepsForm(forms.ModelForm):
+#     """Form which guides user in the different technology design choices
+#     TODO: this will replace the TechnologyForm above.
+#     """
+
+#     def __init__(self, *args, **kwargs):
+#         choice = kwargs.pop('choice', None)
+#         super(TechnologyStepsForm, self).__init__(*args, **kwargs)
+
+#         if choice is not None:
+#             self.fields['decisionchoices'] = forms.ChoiceField(
+#                 choices=choice, label="Existing decisions")
+
+#     class Meta:
+#         model = Technology
+        
+#         # exclude = ['dataset']
