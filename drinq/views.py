@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.views import generic
 from drinq.models import (
-    Compound, CompoundCas, Configuration, Technology, Process,
+    Compound, CompoundCas, Configuration, Technology, Process, 
 )
 from drinq.forms import TechnologyForm
 from drinq.chemistry_tools import smiles_to_svg

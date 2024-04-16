@@ -27,16 +27,15 @@ class TechnologyForm(forms.Form):
         required=False,
     )
 
+# class UserForm(forms.ModelForm):
+#     CHOICES = [
+#         (choice.pk, choice.email) for choice in CustomUser.objects.all()]
+#     username = forms.ChoiceField(
+#         label='Your email (is username)', choices=CHOICES, required=True)
 
-class UserForm(forms.ModelForm):
-    CHOICES = [
-        (choice.pk, choice.email) for choice in CustomUser.objects.all()]
-    username = forms.ChoiceField(
-        label='Your email (is username)', choices=CHOICES, required=True)
-
-    class Meta:
-        model = CustomUser
-        fields = ['username']
+#     class Meta:
+#         model = CustomUser
+#         fields = ['username']
 
 
 class ConfigurationForm(forms.ModelForm):
@@ -55,6 +54,13 @@ class ConfigurationForm(forms.ModelForm):
         exclude = ['id']
 
 
+# class DecidingFactorsForm(forms.ModelForm):
+#     """_summary_
+
+#     Args:
+#         forms (_type_): _description_
+#     """
+#     pass
 # class TechnologyStepsForm(forms.ModelForm):
 #     """Form which guides user in the different technology design choices
 #     TODO: this will replace the TechnologyForm above.
