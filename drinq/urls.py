@@ -10,7 +10,7 @@
 # Including another URLconf
 #     1. Import the include() function: from django.urls import include, path
 #     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-import debug_toolbar
+# import debug_toolbar
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,7 +23,7 @@ from drinq import views
 urlpatterns = [
     path("", views.index, name='drinq'),
     path('db_stats/', views.db_stats, name='db_stats'),
-    path('form/', views.dst_form, name='drinq_form'),
+    path('form/', views.dst_form_surfacewater, name='drinq_form'),
     path('form_result/', RedirectView.as_view(), name='drinq_result'),
     path('form_redirect/', RedirectView.as_view(), name='drinq_redirect'),
     # path('dst_redirect/', views.dst_redirect, name='dst_redirect'),
@@ -48,6 +48,6 @@ urlpatterns = [
         'api-auth/',
         include('rest_framework.urls', namespace='rest_framework'),
     ),
-    path('__debug__/', include(debug_toolbar.urls)),
+    # path('__debug__/', include(debug_toolbar.urls)),
     # path('compound/<int:cid>/', views.compound_detail, name='drinq'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

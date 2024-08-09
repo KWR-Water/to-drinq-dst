@@ -1,14 +1,13 @@
 from django.contrib import admin
 from .models import (
     Compound, CompoundCas, CompoundSynonym, Technology, Process,
-    Stage, Goal, RemovalEfficiency, ProcessPerTechnology,
-    GoalPerTechnology, DesignParameter
+    Stage, Goal, RemovalEfficiency, GoalPerTechnology, DecidingFactor
     )
 
 # Register your models here.
 model_classes = [
     Compound, CompoundCas, CompoundSynonym, Technology, Process, Stage, Goal,
-    RemovalEfficiency, ProcessPerTechnology, GoalPerTechnology,
+    RemovalEfficiency, GoalPerTechnology,
 ]
 
 slug_field_mapping = {
@@ -20,9 +19,8 @@ slug_field_mapping = {
     Stage.__name__: '(name)',
     Goal.__name__: '(goal)',
     RemovalEfficiency.__name__: None,
-    ProcessPerTechnology.__name__: None,
     GoalPerTechnology.__name__: None,
-    DesignParameter.__name__: None,
+    DecidingFactor.__name__: None,
 }
 
 for model_class in model_classes:

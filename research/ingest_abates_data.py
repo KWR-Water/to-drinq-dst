@@ -4,8 +4,8 @@ import numpy as np
 from typing import Union, List, Optional, Any, Dict
 from warnings import warn
 
-import collect_substance_identifiers as collect_substances
-from validators import cas_validation
+import research.collect_substance_identifiers as collect_substances
+from research.validators import cas_validation
 from research import DPATH_RESEARCH
 
 GREEK_CHARACTERS = {

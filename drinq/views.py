@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.views import generic
 from drinq.models import (
-    Compound, CompoundCas, Configuration, Technology, Process, 
+    Compound, CompoundCas, Configuration, Technology, Process, DesignTree,
 )
-from drinq.forms import TechnologyForm
+from drinq.forms import TechnologyForm, DesignTreeDecidingFactors
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
 
@@ -55,19 +55,23 @@ def db_stats(request: HttpResponse):
     return render(request, 'drinq/db_stats.html', context=context)
 
 
-def dst_form(request: HttpResponse):
+def dst_form_surfacewater(request: HttpResponse):
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
-        form = TechnologyForm(request.POST)
+        # old code --> manual checkboxes:
+        surface_water_id = DesignTree.objects.get(name='surface_water').id
+        dst.decision_stage_screening(design_tree=surface_water_id)
+        # form = TechnologyForm(request.POST)
+        form = DesignTreeDecidingFactors(
+            request.POST, design_tree='surface_water')
         # check whether it's valid:
         if form.is_valid():
             # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
             selected = dst.decision_stage_screening(
                 form_data=form.cleaned_data)
             # form.save()
+            # render the result in a new URL:
             return render(
                 request, 'drinq/form_result.html', context=selected)
         else:

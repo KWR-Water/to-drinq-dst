@@ -1,6 +1,15 @@
 import unittest
 import pandas as pd
 
+import os
+import sys
+
+try:
+    import research
+except ModuleNotFoundError:
+    myPath = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, myPath + '/../')
+
 from research.collect_substance_identifiers import (
     get_synonyms_and_cid, get_pcp_properties_from_cid, resolve_by_cirpy
     )

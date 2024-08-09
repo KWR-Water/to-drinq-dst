@@ -1,5 +1,7 @@
 from django import forms
-from drinq.models import (CustomUser, Configuration)
+from drinq.models import (
+    Configuration, DesignTreeDecidingFactors, DecidingFactor
+    )
 
 """
 Note - When to use ModelForm (and when not)
@@ -27,6 +29,36 @@ class TechnologyForm(forms.Form):
         required=False,
     )
 
+
+# class TechnologyQuestionnaireDecidingFactors(forms.ModelForm):
+
+#     def __init__(self,  *args, **kwargs):
+#         # choice = kwargs.pop('choice', None)
+#         # deciding_factors = None
+#         form_flavour = kwargs.pop('form_flavour', 'simple')
+#         selected = TechnologyQuestionnaireDecidingFactors.objects.filter(
+#             form_flavour=form_flavour).only()
+#         flavour_id = [f.id for f in selected]
+#         self.select_by_form_flavour(form_flavour_id=flavour_id)
+
+#         super(TechnologyQuestionnaireDecidingFactors, self).__init__(
+#             *args, **kwargs)
+
+#     def select_by_form_flavour(self, form_flavour_id: int):
+#         entries_of_form_flavour = DesignTreeDecidingFactors.objects.filter(
+#             form_flavour=form_flavour_id).all()
+
+#         for entry in entries_of_form_flavour:
+#             pk_deciding_factor = entry.deciding_factor
+#             deciding_factor = DecidingFactor.objects.get(id=pk_deciding_factor)
+#             forms.BooleanField(
+#                 label=deciding_factor.description, required=False
+#             )
+
+#     class Meta:
+#         model = DesignTreeDecidingFactors
+
+
 # class UserForm(forms.ModelForm):
 #     CHOICES = [
 #         (choice.pk, choice.email) for choice in CustomUser.objects.all()]
@@ -37,6 +69,36 @@ class TechnologyForm(forms.Form):
 #         model = CustomUser
 #         fields = ['username']
 
+
+# Example from co-pilot:
+#
+# # forms.py
+# from django import forms
+
+# class EnqueteForm(forms.Form):
+#     vraag1 = forms.ChoiceField(choices=[('ja', 'Ja'), ('nee', 'Nee')])
+#     vraag2 = forms.CharField(required=False)
+#     # Voeg andere velden toe zoals nodig
+
+# # views.py
+# from django.shortcuts import render
+# from .forms import EnqueteForm
+
+# def enquete_view(request):
+#     if request.method == 'POST':
+#         form = EnqueteForm(request.POST)
+#         if form.is_valid():
+#             antwoord_vraag1 = form.cleaned_data['vraag1']
+#             # Voeg logica toe om de volgende vraag te bepalen op basis van antwoord_vraag1
+#             # Bijvoorbeeld:
+#             if antwoord_vraag1 == 'ja':
+#                 volgende_vraag = 'Wat is je favoriete kleur?'
+#             else:
+#                 volgende_vraag = 'Wat is je leeftijd?'
+#     else:
+#         form = EnqueteForm()
+
+#     return render(request, 'enquete.html', {'form': form, 'volgende_vraag': volgende_vraag})
 
 class ConfigurationForm(forms.ModelForm):
 
@@ -76,5 +138,5 @@ class ConfigurationForm(forms.ModelForm):
 
 #     class Meta:
 #         model = Technology
-        
+
 #         # exclude = ['dataset']

@@ -1,6 +1,13 @@
 import unittest
 import pandas as pd
 import os
+import sys
+
+try:
+    import research
+except ModuleNotFoundError:
+    myPath = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, myPath + '/../')
 
 from research.ingest_abates_data import (
     convert_columns_to_float, abates_alldata_in_dataframe,
@@ -33,12 +40,13 @@ class Testabates_studies_in_dataframe(unittest.TestCase):
         fpath = FPATH_STUDIES
         only_drinking_water = True
         return_citation_keys = False
+        replace_greek_characters = True
         expected_dict = {
             'index': 0,
             'Reference/partner': (
                 'Removal of EDCs and Pharmaceuticals in Drinking and Reuse '
                 'Treatment Processes'),
-            'Emerging substance': '17 β-estradiol',
+            'Emerging substance': '17 beta-estradiol',
             'treatmentId': 332,
             'Drinking water or wastewater': 'Drinking water',
             'Comments': 'pH=5,5',
@@ -52,7 +60,8 @@ class Testabates_studies_in_dataframe(unittest.TestCase):
         }
 
         result = abates_studies_in_dataframe(
-            fpath, only_drinking_water, return_citation_keys)
+            fpath, only_drinking_water, return_citation_keys,
+            replace_greek_characters)
 
         # Assert
         self.assertIsInstance(result, pd.DataFrame)
@@ -61,7 +70,8 @@ class Testabates_studies_in_dataframe(unittest.TestCase):
     def test_return_whole_studies_sheet(self):
         fpath = FPATH_STUDIES
         expected_output = pd.read_csv(fpath, sep=';')
-        result = abates_studies_in_dataframe(fpath, return_citation_keys=False)
+        result = abates_studies_in_dataframe(
+            fpath, return_citation_keys=False, replace_greek_characters=False)
         pd.testing.assert_frame_equal(result, expected_output)
 
     def test_load_master_sheet(self):

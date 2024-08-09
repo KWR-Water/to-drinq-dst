@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'drinq.apps.DrinqConfig',
+    'closuretree.apps.ClosuretreeConfig',
     'users.apps.UsersConfig',
     # 'users',
     'django.contrib.admin',
@@ -46,10 +47,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_extensions',
+    'django_pandas',
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,8 +61,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
+# if DEBUG:
+    # INSTALLED_APPS += ['debug_toolbar']
 
 ROOT_URLCONF = 'drinq.urls'
 
