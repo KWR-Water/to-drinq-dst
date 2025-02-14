@@ -1,4 +1,5 @@
 from typing import List
+import numpy as np
 
 #!/usr/bin/env python
 # coding: utf-8
@@ -10,24 +11,28 @@ from typing import List
 
 # In[ ]:
 
+### https://nicoco007.github.io/Propagation-of-Uncertainty-Calculator/
+
 
 def calculate_flow_per_lane(
     lanes: int,
-    daily_flow: List[float],
-) -> List[float]:
-    return [flow / lanes for flow in daily_flow]
+    daily_flow_list: List[float],
+) -> list[float]:
+    return [flow / lanes for flow in daily_flow_list]
 
 
 def lppd_to_m3phr(flow_in_liter_per_day: float):
     return flow_in_liter_per_day / 1000 / 24
 
+
 def calculate_flow_per_unit(
     units: int,
-    flow_per_lane: List[float]
-) -> List[float]:
-    return [flow / units for flow in flow_per_lane]
+    flow_per_lane_list: list[float]
+) -> list[float]:
+    return [flow / units for flow in flow_per_lane_list]
 
-def calculate_demand_population_from_statistics(
+
+def calculate_water_demand_phr_for_population(
     population_persons: int,
     consumption_lppd: float,  # consumption as in liter per person per day
 ):
@@ -44,60 +49,159 @@ def calculate_demand_population_from_statistics(
     return population_persons * lppd_to_m3phr(consumption_lppd)
 
 
-def calculate_all_water_demand(
+def calculate_total_water_demand_phr(
     population_persons: int,
-    consumption_lppd: float | None,
-    demand_industry: float,
-    demand_agriculture: float,
+    consumption_lppd: float,
+    demand_industry_m3pd: float,
+    demand_agriculture_m3pd: float,
     leakage_factor: float,
 ):
-    demand_population = calculate_demand_population_from_statistics(
-            population_persons=population_persons, 
+    demand_population = calculate_water_demand_phr_for_population(
+            population_persons=population_persons,
             consumption_lppd=consumption_lppd)
-    demand_total = demand_population + demand_industry + demand_agriculture
+    demand_total = (
+        demand_population + demand_industry_m3pd/24 +
+        demand_agriculture_m3pd/24
+    )
     return demand_total * (1 + leakage_factor)
 
-def calculate_daily_flow(
+
+def var_population(
+    delta_population: float,
+    consumption_lppd: float,
+    leakage_factor: float
+) -> float:
+    var_p = (
+        (consumption_lppd/24000 * (leakage_factor + 1)) * delta_population)**2
+    return var_p
+
+
+def var_leakage_factor(
+    delta_leakage_factor: float,
+    population_persons: float,
+    consumption_lppd: float,
+    demand_industry: float = 0.,
+    demand_agriculture: float = 0.,
+):
+    var_L = (
+        (population_persons/24000 * consumption_lppd + demand_agriculture
+         + demand_industry) * delta_leakage_factor
+        )**2
+    return var_L
+
+
+def var_demand_agriculture(
+    delta_demand_agriculture: float,
     leakage_factor: float,
-    population_growth: List[int],
+):
+    var_demand_agri = ((leakage_factor + 1) * delta_demand_agriculture)**2
+    return var_demand_agri
+
+
+def var_demand_industry(
+    delta_demand_industry: float,
+    leakage_factor: float,
+):
+    var_demand_industry = ((leakage_factor + 1) * delta_demand_industry)**2
+    return var_demand_industry
+
+
+def var_consumption_lppd(
+    delta_consumption_lppd: float,    
+    population_persons: float,
+    leakage_factor: float,
+    demand_industry: float = 0.,
+    demand_agriculture: float = 0.,
+):
+    var_cons = (
+        (population_persons/24000 * (1 + leakage_factor)
+         ) * delta_consumption_lppd)**2
+    return var_cons
+
+
+def var_total_water_demand(
+    delta_population: float,
+    delta_leakage_factor: float,
+    delta_consumption_lppd: float,
+    delta_demand_industry: float,
+    delta_demand_agriculture: float,
+    leakage_factor: float,
+    population_persons: int | float,
+    consumption_lppd: float,
+    demand_industry: float | None = None,
+    demand_agriculture: float | None = None,
+) -> float:
+    if demand_agriculture is None:
+        demand_agriculture = 0.
+    if demand_industry is None:
+        demand_industry = 0.
+    var_persons = var_population(
+        delta_population, consumption_lppd, leakage_factor)
+    var_leakage = var_leakage_factor(
+        delta_leakage_factor,
+        population_persons,
+        consumption_lppd,
+        demand_industry,
+        demand_agriculture)   
+    var_demand_agr = var_demand_agriculture(
+        delta_demand_agriculture,
+        leakage_factor)
+    var_demand_ind = var_demand_industry(delta_demand_industry, leakage_factor)
+    var_cons_lppd = var_consumption_lppd(
+        delta_consumption_lppd, population_persons, leakage_factor,
+        demand_industry, demand_agriculture)
+    return (
+        var_persons + var_leakage + var_demand_agr + var_demand_ind +
+        var_cons_lppd
+        )
+
+
+def stdev(variance: float):
+    return float(np.sqrt(variance))
+
+
+def calculate_flow_phr(
+    leakage_factor: float,
+    population_growth: list[int] | list[float],
     min_consumption_lppd: float,
     max_consumption_lppd: float,
     med_consumption_lppd: float | None = None,
-    demand_industry: float | None = None,
-    demand_agriculture: float | None = None,
-    daily_flow: List[float] | None = None,
+    demand_industry_m3pd: float | None = None,
+    demand_agriculture_m3pd: float | None = None,
+    flow_phr: List[float] | None = None,
 ) -> List[float]:
-    
-    if daily_flow is None:
-        daily_flow = []
-    
+
+    if demand_industry_m3pd is None:
+        demand_industry_m3pd = 0.
+    if demand_agriculture_m3pd is None:
+        demand_agriculture_m3pd = 0.
+    if flow_phr is None:
+        flow_phr = []
     if med_consumption_lppd is None:
         med_consumption_lppd = 0.
     for no_persons in population_growth:
         demand_kwargs = dict(
             leakage_factor=leakage_factor,
-            population_persons=no_persons, 
-            demand_industry=demand_industry,
-            demand_agriculture=demand_agriculture,
+            population_persons=no_persons,
+            demand_industry=demand_industry_m3pd,
+            demand_agriculture=demand_agriculture_m3pd,
             )
         (
             demand_min,
             demand_max,
             ) = (
-                calculate_all_water_demand(
+                calculate_total_water_demand_phr(
                     consumption_lppd=min_consumption_lppd, **demand_kwargs),
-                calculate_all_water_demand(
+                calculate_total_water_demand_phr(
                     consumption_lppd=max_consumption_lppd, **demand_kwargs),
             )
-        daily_flow.append(demand_min)
+        flow_phr.append(demand_min)
         if med_consumption_lppd is not None:
-            demand_med = calculate_all_water_demand(
+            demand_med = calculate_total_water_demand_phr(
                     consumption_lppd=med_consumption_lppd, **demand_kwargs)
-            daily_flow.append(demand_med)
-        daily_flow.append(demand_max)
-        # daily_flow.append(((no_persons * to_m3perhour(med_consumption_lppd)) + irgflow + industflow) * (1 + leak))
-        # daily_flow.append(((no_persons * to_m3perhour(max_consumption_lppd)) + irgflow + industflow) * (1 + leak))
-    return daily_flow
+            flow_phr.append(demand_med)
+        flow_phr.append(demand_max)
+    return flow_phr
 
 
 def flowcalc():
@@ -238,3 +342,39 @@ def flowcalc():
 # Example usage:
 # dailyflow, lanes, units, flowlane, flowunit = flowcalc()
 
+
+if __name__ == '__main__':
+    population_growth = [1.1e5, 1.2e5, 2e5]
+    delta_population = population_growth[0] * .1
+    leakage_factor = 0.2
+    delta_leakage_factor = 0.1
+    cons_lppd = 90.
+    delta_cons_lppd = cons_lppd * .1
+    demand_agriculture = 2000
+    demand_industry = 2000
+    delta_demand_agriculture = demand_agriculture * .1
+    delta_demand_industry = demand_industry * .1
+
+    dailyflow = calculate_flow_phr(
+        leakage_factor=leakage_factor,
+        population_growth=population_growth,
+        min_consumption_lppd=cons_lppd,
+        max_consumption_lppd=130.,
+        demand_agriculture_m3pd=demand_agriculture,
+        demand_industry_m3pd=demand_industry
+        )
+    flow_per_lane = calculate_flow_per_lane(lanes=2, daily_flow_list=dailyflow)
+    flow_per_unit = calculate_flow_per_unit(
+        units=3, flow_per_lane_list=flow_per_lane)
+    var_water_demand = var_total_water_demand(
+        delta_population=delta_population,
+        delta_leakage_factor=delta_leakage_factor,
+        delta_consumption_lppd=delta_cons_lppd,
+        delta_demand_agriculture=delta_demand_agriculture,
+        delta_demand_industry=delta_demand_industry,
+        population_persons=population_growth[0],
+        leakage_factor=leakage_factor,
+        consumption_lppd=cons_lppd,
+        demand_industry=demand_industry,
+        demand_agriculture=demand_agriculture)
+    uncertainty_water_demand = stdev(var_water_demand)
