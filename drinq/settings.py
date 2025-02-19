@@ -143,6 +143,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # PUBCHEM REST API REQUEST SETTING
 TIME_BETWEEN_PUBCHEM_REQUESTS = 0.3

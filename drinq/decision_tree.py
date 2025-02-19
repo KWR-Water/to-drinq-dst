@@ -50,7 +50,7 @@ def get_table_designtreedecidingfactors():
 def get_decidingfactor_all_ids(design_tree_id: int) -> List[int]:
     query_set = DesignTreeDecidingFactors.objects.all()
     child_dfs = query_set.filter(design_tree=design_tree_id).values_list(
-        'parent_decidingfactor', 'child_decidingfactor').distinct()
+        'parent', 'child').distinct()
     return list(set(chain.from_iterable(child_dfs)))
 
 

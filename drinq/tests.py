@@ -1,4 +1,3 @@
-import uuid
 from django.test import TestCase
 from django import VERSION
 from django.db import models, transaction
