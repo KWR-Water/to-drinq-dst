@@ -1,54 +1,46 @@
 from typing import Dict, List, Any
 import pandas as pd
 from itertools import chain
+from django.db.models import QuerySet
 from django_pandas.io import read_frame
 
 from drinq.models import (
-    Technology, Stage, TechnologyDecidingFactors, DecidingFactor, DesignTree,
-    DesignTreeDecidingFactors,
+    Technology, TechnologyDecidingFactors, DecidingFactor, DesignTree,
 )
 
 
 def select_technologies_with_deciding_factor(
-    filter_conditions: List[Dict[str, str]]
+    query_set: QuerySet | None
 ) -> Dict[str, str]:
-
     result = {}
-    primary_keys_df = []
-    query_set = DecidingFactor.objects.all()
-    # First get the primary key values that match the conditions
-    for condition in filter_conditions:
-        query_set = query_set.filter(**condition)
-        if query_set.exists():
-            primary_keys_df.append(DecidingFactor.objects.get(**condition).pk)
-        else:
-            # TODO output logging message?
-            pass
-    if primary_keys_df:
+    decidingfactor_pks = []
+    technologies = []
+    
+    if query_set is None:
+        query_set = DecidingFactor.objects.all() 
+    decidingfactor_pks = list(query_set.values_list('id', flat=True))
+
+    if decidingfactor_pks:
         query_set = TechnologyDecidingFactors.objects.all()
-        for pk_df in primary_keys_df:
-            # Then get the technologies by filtering for the deciding factor
-            # primary keys
-            query_set = query_set.filter(
-                deciding_factor_true=pk_df).values_list(
+        query_set = query_set.filter(
+            deciding_factor_true_id__in=decidingfactor_pks).values_list(
                 'effective_technology', flat=True).distinct()
-        technologies = []
-        for pk in query_set:
-            technologies.append({
-                'name': Technology.objects.get(pk=pk).name,
-                'description': Technology.objects.get(pk=pk).description
-            })
-        result['selected_technologies'] = technologies
+
+        technologies = Technology.objects.all().filter(
+            id__in=list(query_set)
+            ).values_list('name', 'description')
+
+        result['selected_technologies'] = dict(technologies)
 
     return result
 
 
-def get_table_designtreedecidingfactors():
-    return read_frame(DesignTreeDecidingFactors.objects.all())
+def get_table_decidingfactors():
+    return read_frame(DecidingFactor.objects.all())
 
 
 def get_decidingfactor_all_ids(design_tree_id: int) -> List[int]:
-    query_set = DesignTreeDecidingFactors.objects.all()
+    query_set = DecidingFactor.objects.all()
     child_dfs = query_set.filter(design_tree=design_tree_id).values_list(
         'parent', 'child').distinct()
     return list(set(chain.from_iterable(child_dfs)))
@@ -83,34 +75,24 @@ def get_decidingfactor_table(
 
 
 def decision_stage_screening(
+    decidingfactor_parent: Any,
     form_data: dict,
-    design_tree: int
 ) -> dict:
 
     result = {}
 
     # First, select the relevant questions (deciding factors)
-    deciding_factors = get_decidingfactor_table(
-        as_dataframe=True,
-        design_tree_id=design_tree)
+    # decidingfactor_parent = DecidingFactor.objects.get(id=parent_id)
 
+    deciding_factors = decidingfactor_parent.get_descendants(depth=1)
     # TODO: design a staged approach, where per stage different questions are
     # asked and some questions depend on other choices. Hence, per stage, also
     # a dependency on historic choices.
-    # TODO: read from table decision_factor
-    source_is_surfacewater, algae_high, nom_high = (
-        form_data['source_is_surfacewater'],
-        form_data['algae_high'],
-        form_data['nom_high'],
-    )
-    conditions = []
-    # STEP 1
-    if source_is_surfacewater:
-        conditions.append({'name': 'source_is_surface_water'})
-    if algae_high:
-        conditions.append({'name': 'algae_high'})
-
-    result.update(select_technologies_with_deciding_factor(conditions))
+    # conditions = [
+    #     {'name': label_of_dfact} for label_of_dfact in deciding_factors
+    #     if label_of_dfact in form_data.keys()]
+    # DesignTreeDecidingFactors.rebuildtable()
+    result.update(select_technologies_with_deciding_factor(deciding_factors))
     # TODO: register 1st stage in chain of technology stages
 
     # STEP 2 - TODO
@@ -123,4 +105,4 @@ def decision_stage_screening(
 
 
 if __name__ == '__main__':
-    design_tree = get_table_designtreedecidingfactors()
+    design_tree = get_table_decidingfactors()

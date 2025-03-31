@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block page_content %}
-  <h1>Results</h1>
+  <h1>User selection</h1>
   <h2>First stage</h2>
-  <h3>Form summary</h3>
+  <p>Choices made:</p>
   <ul>
-    {% if source_is_surfacewater %}
+    {% if source_is_surface_water %}
     <li>Source is surface water.</li>
     {% endif %}
     {% if algae_high %}
@@ -15,7 +15,7 @@
   {% if selected_technologies %}
     <h3>Suggested technologies</h3>
     <table class="table">
-      {% for tech in selected_technologies|slice:":1" %}
+      {% comment %} {% for tech in selected_technologies|slice:":1" %}
       <thead>
       <tr>
         {% for key in tech.keys %}
@@ -23,13 +23,14 @@
         {% endfor %}
       </tr>
       </thead>
-      {% endfor %}
+      {% endfor %} {% endcomment %}
       <tbody>
-      {% for tech in selected_technologies %}
+      {% for name, descriptions in selected_technologies.items %}
         <tr>
-        {% for value in tech.values %}
-          <td> {{ value }} </td>
-        {% endfor %}
+          <td>{{name}}</td> 
+          {% for descr in descriptions.items %}
+            <td>{{descr}}</td> 
+          {% endfor %}
         </tr>
       {% endfor %}
       </tbody>

@@ -22,7 +22,7 @@
 # pylint: disable=R0904
 # pylint: disable=
 # pylint: disable=
-
+import mock
 from django import VERSION, setup
 from django.test import TestCase
 from django.db import models

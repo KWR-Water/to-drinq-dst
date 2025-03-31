@@ -1,12 +1,27 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect, QueryDict
 from django.views import generic
 from drinq.models import (
     Compound, CompoundCas, Configuration, Technology, Process, DesignTree,
 )
-from drinq.forms import TechnologyForm, DesignTreeDecidingFactors
+from drinq.forms import TechnologyForm, DecidingFactor
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
+
+EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
+
+
+def process_form_data(
+    post_request: QueryDict,
+) -> dict[str, str]:
+    querydata = {}
+    for key, value in post_request.items():
+        if key in EXCLUDE_KEY:
+            continue
+        if isinstance(value, str):
+            if value == 'on':
+                querydata[key] = True
+    return querydata
 
 
 class Register(generic.TemplateView):
@@ -60,28 +75,28 @@ def dst_form_surfacewater(request: HttpResponse):
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         # old code --> manual checkboxes:
-        surface_water_id = DesignTree.objects.get(name='surface_water').id
-        dst.decision_stage_screening(design_tree=surface_water_id)
-        # form = TechnologyForm(request.POST)
-        form = DesignTreeDecidingFactors(
-            request.POST, design_tree='surface_water')
+        querydata = process_form_data(post_request=request.POST)
+        # surface_water_id = DesignTree.objects.get(name='surface_water').id
+        # ground_water_id = DesignTree.objects.get(name='ground_water').id
+            
+        form = TechnologyForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
             # process the data in form.cleaned_data as required
-            selected = dst.decision_stage_screening(
-                form_data=form.cleaned_data)
+            if 'source_is_surface_water' in form.changed_data:
+                df_sw = DecidingFactor.objects.get(
+                    name='source_is_surface_water')
+                selected = dst.decision_stage_screening(
+                    decidingfactor_parent=df_sw, form_data=form.cleaned_data)
             # form.save()
             # render the result in a new URL:
-            return render(
-                request, 'drinq/form_result.html', context=selected)
+            return render(request, 'drinq/form_result.html', context=selected)
         else:
             return HttpResponseRedirect(redirect('drinq_redirect'))
-
     # if a GET (or any other method) we'll create a blank form
     else:
         form = TechnologyForm()
-
-    return render(request, "drinq/form.html", {"form": form})
+        return render(request, "drinq/form.html", {"form": form})
 
 
 def compound_search(request: HttpResponse):

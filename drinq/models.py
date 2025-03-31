@@ -7,8 +7,18 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from autoslug import AutoSlugField
-from users.models import CustomUser
 from closuretree.models import ClosureModel
+
+
+# class UserSetting(models.Model):
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+#     theme = models.CharField(
+#         max_length=100, choices=[('light', 'Light'), ('dark', 'Dark')],
+#         default='light')
+#     notifications = models.BooleanField(default=True)
+
+#     def __str__(self):
+#         return f"{self.user.username}'s settings"
 
 
 class Citation(models.Model):
@@ -92,9 +102,16 @@ class CompoundSynonym(models.Model):
         return f'{self.synonym} ({self.cid})'
 
 
-class DecidingFactor(models.Model):
+class DecidingFactor(ClosureModel):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(null=False, unique=True)
+    parent = models.ForeignKey(
+        "self",
+        related_name='children',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        db_column='parent')
     description = models.TextField(blank=True, null=True)
     form_label = models.TextField(unique=True)
     # NB: when specifying a foreign key where the column name has an
@@ -103,6 +120,11 @@ class DecidingFactor(models.Model):
     categorical_variable = models.ForeignKey(
         CategoricalVariable, on_delete=models.CASCADE,
         db_column='categorical_variable')
+    design_tree = models.ForeignKey(
+        "DesignTree",
+        null=False,
+        on_delete=models.CASCADE,
+        db_column='design_tree')
 
     class Meta:
         # managed = False
@@ -283,42 +305,43 @@ class TechnologyDecidingFactors(models.Model):
         return f"Condition: '{d_f_name}' is True, eff. technology: {eff_tech.name}"
 
 
-class DesignTreeDecidingFactors(ClosureModel):
-    id = models.AutoField(primary_key=True, unique=True)
-    parent = models.ForeignKey(
-        DecidingFactor,
-        related_name="children",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        db_column='parent')
-    child = models.ForeignKey(
-        DecidingFactor,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        db_column='child',
-        related_name='parent')
-    design_tree = models.ForeignKey(
-        DesignTree, on_delete=models.CASCADE,
-        db_column='design_tree')
-    path_length = models.IntegerField(null=False)
+# class DesignTreeDecidingFactors(ClosureModel):
+#     id = models.AutoField(primary_key=True, unique=True)
+#     parent = models.ForeignKey(
+#         DecidingFactor,
+#         related_name='children',
+#         null=True,
+#         blank=True,
+#         on_delete=models.CASCADE,
+#         db_column='parent')
+#     child = models.ForeignKey(
+#         DecidingFactor,
+#         null=True,
+#         blank=True,
+#         on_delete=models.CASCADE,
+#         db_column='child',
+#         related_name='parent')
+#     design_tree = models.ForeignKey(
+#         DesignTree,
+#         on_delete=models.CASCADE,
+#         db_column='design_tree')
+#     path_length = models.IntegerField(null=False)
 
-    class Meta:
-        # managed = False
-        db_table = 'designtree_decidingfactors'
-        verbose_name_plural = "design tree deciding factors"
+#     class Meta:
+#         # managed = False
+#         db_table = 'designtree_decidingfactors'
+#         verbose_name_plural = "design tree deciding factors"
 
-    def __unicode__(self):
-        return f"{self.id}"
+#     def __unicode__(self):
+#         return f"{self.id}"
 
-    def __str__(self) -> str:
-        return (
-            f"Form {self.id}, parent deciding factor: "
-            f"{self.parent}, child deciding factor: "
-            f"{self.child} and design tree id "
-            f"{self.design_tree}"
-        )
+#     def __str__(self) -> str:
+#         return (
+#             f"Form {self.id}, parent deciding factor: "
+#             f"{self.parent}, child deciding factor: "
+#             f"{self.child} and design tree id "
+#             f"{self.design_tree}"
+#         )
 
 
 class ConfiguredTechnologies(models.Model):

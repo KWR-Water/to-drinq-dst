@@ -1,12 +1,22 @@
 from django.test import TestCase
-from django import VERSION
+from django import VERSION, setup
 from django.db import models, transaction
 from django.test import TestCase, SimpleTestCase, TransactionTestCase
 
 from django.db import IntegrityError
-from drinq.models import (
-    ClosureModel, DesignTreeDecidingFactors, DecidingFactor, DesignTree,
-    CategoricalVariable)
+from django.core.exceptions import ImproperlyConfigured
+try:
+    from drinq.models import DecidingFactor
+except ImproperlyConfigured:
+    print(
+        'Module cannot be found due to missing Django initialisation, starting'
+        ' forced initialisation.')
+    import os
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
+    setup()
+    from drinq.models import DecidingFactor
+
+from drinq.models import DesignTree, CategoricalVariable
 
 
 class TestClosureDesignTree(SimpleTestCase):
@@ -16,67 +26,115 @@ class TestClosureDesignTree(SimpleTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test = 1
-        # with transaction.atomic():
+        cls.parent_name = 'Parent Deciding Factor'
+        cls.child_name = 'Child Deciding Factor'
+        cls.grandchild_name = 'Grand Child Deciding Factor'
         dichotomous, _ = CategoricalVariable.objects.get_or_create(
             name="dichotomous", n_levels=2)
-        cls.parent_decidingfactor, _ = DecidingFactor.objects.get_or_create(
-            name='Parent Deciding Factor',
-            categorical_variable=dichotomous,
-            form_label='parent_test_dfactor'
+        cls.design_tree_test, _ = DesignTree.objects.get_or_create(
+            name='Design Tree Test')
+        try:
+            cls.df_table = DecidingFactor()
+            cls.df_table.rebuildtable()
+        except IntegrityError:
+            print("DecidingFactorClosure table might not exist.")
+            pass
+        try:
+            with transaction.atomic():
+                cls.parent_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    name=cls.parent_name,
+                    description='Parent deciding factor for a unit test',
+                    form_label='parent_test_dfactor',
+                    categorical_variable=dichotomous,
+                    design_tree=cls.design_tree_test
+                    )
+        except IntegrityError:
+            cls.parent_decidingfactor = DecidingFactor.objects.get(
+                    name='Parent Deciding Factor')
+        try:
+            with transaction.atomic():
+                cls.test_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    name='Test Deciding Factor',
+                    form_label='test_dfactor',
+                    categorical_variable=dichotomous,
+                    design_tree=cls.design_tree_test,
+                    )
+        except IntegrityError:
+            cls.test_decidingfactor = DecidingFactor.objects.get(
+                name='Test Deciding Factor'
             )
-        cls.test_decidingfactor, _ = DecidingFactor.objects.get_or_create(
-            name='Test Factor',
-            categorical_variable=dichotomous,
-            form_label='test_dfactor')
-        cls.child_decidingfactor, _ = DecidingFactor.objects.get_or_create(
-            name='Child Deciding Factor', form_label='child_test_dfactor',
-            categorical_variable=dichotomous)
-        cls.design_tree, _ = DesignTree.objects.get_or_create(name='Design Tree')
+        with transaction.atomic():
+            try:
+                cls.child_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    name=cls.child_name,
+                    parent=cls.parent_decidingfactor,
+                    description='Child deciding factor for a unit test',
+                    form_label='child_test_dfactor',
+                    design_tree=cls.design_tree_test,
+                    categorical_variable=dichotomous)
+            except IntegrityError:
+                cls.child_decidingfactor = DecidingFactor.objects.get(
+                        name='Child Deciding Factor')
+        with transaction.atomic():
+            try:
+                cls.grandchild_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    name=cls.grandchild_name,
+                    parent=cls.child_decidingfactor,
+                    description='Grand child deciding factor for a unit test',
+                    form_label='grandchild_test_dfactor',
+                    design_tree=cls.design_tree_test,
+                    categorical_variable=dichotomous)
+            except IntegrityError:
+                cls.grandchild_decidingfactor = DecidingFactor.objects.get(
+                    name='Grand Child Deciding Factor')
         # with transaction.atomic():
         cls.parent_decidingfactor.save()
         cls.child_decidingfactor.save()
-        cls.design_tree.save()
-        # DesignTreeDecidingFactors.rebuildtable()
+        cls.grandchild_decidingfactor.save()
+        cls.design_tree_test.save()
         
         # Somehow, when using TestCase, the closure_model of DesignTreeFactors 
         # gives a unique constraint error. This error does not appear in a 
         # django managed shell case.
-        cls.dt, _ = DesignTreeDecidingFactors.objects.get_or_create(
-                parent=cls.parent_decidingfactor,
-                child=cls.child_decidingfactor,
-                design_tree=cls.design_tree,
-                path_length=1
-            )
-        cls.dt_empty = DesignTreeDecidingFactors()
-        try:
-            DesignTreeDecidingFactors.rebuildtable()
-        except IntegrityError:
-            pass
+        # cls.dt, _ = DesignTreeDecidingFactors.objects.get_or_create(
+        #         parent=cls.parent_decidingfactor,
+        #         design_tree=cls.design_tree,
+        #         path_length=1
+        #     )
+        cls.df_empty = DecidingFactor()
         return super().setUpClass()
 
     def test_create_instance(self):
-        self.assertIsInstance(self.dt_empty, DesignTreeDecidingFactors)
+        self.assertIsInstance(self.df_empty, DecidingFactor)
 
     def test_set_parent_decidingfactor(self):
-        self.assertEqual(self.dt.parent, self.parent_decidingfactor)
+        self.assertEqual(self.parent_decidingfactor.name, self.parent_name)
 
     def test_set_child_decidingfactor(self):
-        dt_deciding_factor = DesignTreeDecidingFactors()
-        dt_deciding_factor.child = self.test_decidingfactor
+        self.assertEqual(self.child_decidingfactor.name, self.child_name)
         self.assertEqual(
-            dt_deciding_factor.child, self.test_decidingfactor)
+            self.parent_decidingfactor.get_children()[0].name,
+            self.child_name)
+        
+    def test_set_grandchild_decidingfactor(self):
+        self.assertEqual(
+            self.grandchild_decidingfactor.name, self.grandchild_name)
+        self.assertEqual(
+            self.child_decidingfactor.get_children()[0].name,
+            self.grandchild_name)
+    
+    def test_get_descendants_decidingfactor(self):
+        descendants_d1 = self.parent_decidingfactor.get_descendants(depth=1)
+        descendants_d2 = self.parent_decidingfactor.get_descendants(depth=2)
+        self.assertEqual(
+            descendants_d1[0].name, self.child_decidingfactor.name)
+        self.assertEqual(
+            descendants_d2[1].name, self.grandchild_decidingfactor.name)
 
     def test_set_design_tree(self):
-        deciding_factor = DecidingFactor.objects.create(
-            name='Test Deciding Factor', categorical_variable_id=1)
-        with transaction.atomic():
-            dt_deciding_factors = DesignTreeDecidingFactors.objects.get_or_create(
-                parent=deciding_factor,
-                child=deciding_factor,
-                design_tree=self.design_tree,
-                path_length=1
-            )
-        self.assertEqual(dt_deciding_factors.design_tree, self.design_tree)
+        self.assertEqual(
+            self.test_decidingfactor.design_tree,
+            self.design_tree_test)
 
     # def test_set_path_length_positive_integer(self):
     #     dt = DesignTreeDecidingFactors()

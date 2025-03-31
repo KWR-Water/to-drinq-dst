@@ -33,11 +33,13 @@ from django.dispatch import receiver
 from six import with_metaclass
 import sys
 
+
 def _closure_model_unicode(self):
     """__unicode__ implementation for the dynamically created
         <Model>Closure model.
     """
     return "Closure from %s to %s" % (self.parent, self.child)
+
 
 def create_closure_model(cls):
     """Creates a <Model>Closure model in the same module as the model."""
@@ -70,7 +72,7 @@ class ClosureModelBase(ModelBase):
     """Metaclass for Models inheriting from ClosureModel,
         to ensure the <Model>Closure model is created.
     """
-    #This is a metaclass. MAGIC!
+    # This is a metaclass. MAGIC!
     def __init__(cls, name, bases, dct):
         """Create the closure model in addition
             to doing all the normal django stuff.
@@ -82,6 +84,7 @@ class ClosureModelBase(ModelBase):
                 '%sClosure' % cls.__name__,
                 create_closure_model(cls)
             )
+
 
 class ClosureModel(with_metaclass(ClosureModelBase, models.Model)):
     """Provides methods to assist in a tree based structure."""

@@ -7,7 +7,7 @@ django.setup()
 
 from drinq.decision_tree import (
     select_technologies_with_deciding_factor, get_decidingfactor_table,
-    get_table_designtreedecidingfactors)
+    get_table_decidingfactors)
 
 
 class Testget_table_designtreedecidingfactors(TestCase):
@@ -63,7 +63,7 @@ class Testget_table_designtreedecidingfactors(TestCase):
             'path_length': 1
         }
 
-        result = get_table_designtreedecidingfactors().to_dict('records')
+        result = get_table_decidingfactors().to_dict('records')
         self.assertEqual(result[0], expected_result_0)
         self.assertEqual(result[2], expected_result_2)
 
@@ -76,7 +76,7 @@ class Testget_table_designtreedecidingfactors(TestCase):
             [
                 {'name': 'Microstrainer',
                  'description':
-                    'Strainer with mesh opening between 10 to 40 micrometer to remove small particles and algae'},
+                    'Strainer with mesh opening between 10 to 40 micrometer to remove small particles and algae'}, # noqa E501
             ]
         }
         result = select_technologies_with_deciding_factor(filter_conditions)

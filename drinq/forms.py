@@ -1,6 +1,7 @@
 from django import forms
+from django.contrib.auth.models import User
 from drinq.models import (
-    Configuration, DesignTreeDecidingFactors, DecidingFactor
+    Configuration, DecidingFactor
     )
 
 """
@@ -16,18 +17,23 @@ because you’ve already defined the fields in your model.
 For this reason, Django provides a helper class that lets you create a 
 Form class from a Django model."""
 
+BOOL_CHOICES = {"YES": "yes", "NO": "no"}
+
 
 class TechnologyForm(forms.Form):
-    source_is_surfacewater = forms.BooleanField(
+    source_is_surface_water = forms.BooleanField(
         label="Intake of surface water", required=False,
+        initial=False
     )
-    algae_high = forms.BooleanField(
-        label="Has large amounts of algae", required=False,
-    )
-    nom_high = forms.BooleanField(
-        label="Has high levels of NOM (> 5 ppm, or > 10 mg/l)",
-        required=False,
-    )
+    # algae_high = forms.BooleanField(
+    #     label="Has large amounts of algae", required=False,
+    # )
+    # nom_high = forms.BooleanField(
+    #     label="Has high levels of NOM (> 5 ppm, or > 10 mg/l)",
+    #     required=False,
+    # )
+
+
 
 
 # class TechnologyQuestionnaireDecidingFactors(forms.ModelForm):
