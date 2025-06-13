@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
+{% load rest_framework %}
+
+{% comment %} <p>Testje</p>
+<form class="form-horizontal" action="{% url 'login' %}" method="post" novalidate>
+    {% csrf_token %}
+    {% render_form serializer %}
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">Sign in</button>
+        </div>
+    </div>
+</form> {% endcomment %}
+
 {% block content %}
+<p>Test login procedure via the REST framework!</p>
 <div class="well" style="width: 320px; margin-left: auto; margin-right: auto">
     <div class="row-fluid">
         <div>

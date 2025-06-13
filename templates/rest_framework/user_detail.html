@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+Username: {{ user.username }}
+
+User Full name: {{ user.get_full_name }}
+
+User Group: {{ user.groups.all.0 }}
+
+Email: {{ user.email }}
+
+Session Started at: {{ user.last_login }}
+
+{% endblock %}

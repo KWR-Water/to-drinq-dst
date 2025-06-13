@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+<!-- templates/session_select.html -->
+
+<head>
+    <title>Select a previously stored configuration of treatment design options</title>
+</head>
+
+{% block content %}
+{% if form.fields.session.queryset.exists %}
+  <h2>Select a Saved Design Configuration</h2>
+  <p>
+    Below you can select a previously saved configuration of treatment design options.
+    After selecting a session, you will see the description of the session and the date 
+    it is created.
+    
+    Click "Load Configuration" to proceed with the selected session.
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="session-select"><strong>Name</strong></label>
+      <select id="session-select" name="session" class="form-control">
+        {% for session in form.fields.session.queryset %}
+            <option
+                value="{{ session.id }}" 
+                data-description="{{ session.description|escape }}" 
+                data-created="{{ session.date_created|date:'Y-m-d H:i' }}">
+                {{ session.name }}
+            </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="metadata-box" class="mt-3" style="display: none;">
+      <strong>Description</strong>
+      <p id="session-description"></p>
+      <strong>Created on</strong>
+      <p id="session-created"></p>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Load Configuration</button>
+  </form>
+{% else %}
+  <div class="alert alert-info mt-5">
+    <h4>No saved configurations found.</h4>
+    <p>You haven't saved any questionnaire sessions for preliminary treatment designs yet.</p>
+    <a href="{% url 'form_name' %}" class="btn btn-success mt-3">Start New Design</a>
+  </div>
+{% endif %}
+
+
+<script>
+    const select = document.getElementById('session-select');
+    const metadataBox = document.getElementById('metadata-box');
+    const descriptionText = document.getElementById('session-description');
+    const createdText = document.getElementById('session-created');
+{% comment %} 
+    const descriptionBox = document.getElementById('description-box');
+    const descriptionText = document.getElementById('session-description'); {% endcomment %}
+
+    select.addEventListener('change', function () {
+    const selectedOption = select.options[select.selectedIndex];
+    const description = selectedOption.getAttribute('data-description');
+    const created = selectedOption.getAttribute('data-created');
+
+    if (description || created) {
+        descriptionText.textContent = description || 'No description available.';
+        createdText.textContent = created || 'Unknown';
+        metadataBox.style.display = 'block';
+        } else {
+            metadataBox.style.display = 'none';
+        }
+    });
+
+    // Trigger change on page load if a session is pre-selected
+    window.addEventListener('DOMContentLoaded', () => {
+        select.dispatchEvent(new Event('change'));
+    });
+</script>
+
+{% comment %} <div class="container mt-5">
+    <h2>Select a Saved Configuration</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.session.label_tag }}
+            {{ form.session }}
+        </div>
+    <button type="submit" class="btn btn-primary mt-3">Load Configuration</button>
+    </form>
+</div> {% endcomment %}
+{% endblock %}

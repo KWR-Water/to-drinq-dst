@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+<!-- templates/form_name.html -->
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+    <span class="nav-link {% if step == 1 %}active{% endif %}">
+      1. Name
+    </span>
+  </li>
+  <li class="nav-item">
+    <span class="nav-link {% if step == 2 %}active{% endif %}">
+      2. Water source
+    </span>
+  </li>
+  <li class="nav-item">
+    <span class="nav-link {% if step >= 3 and step < total_steps %}active{% endif %}">
+      3. Additional questions
+    </span>
+  </li>
+  <li class="nav-item">
+    <span class="nav-link {% if step == total_steps %}active{% endif %}">
+      4. Show configuration
+    </span>
+  </li>
+</ul>
+<h2>Step 1: Name your design configuration</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Next</button>
+</form>
+{% endblock %}

@@ -6,19 +6,9 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from accounts.models import CustomUser
 from autoslug import AutoSlugField
 from closuretree.models import ClosureModel
-
-
-# class UserSetting(models.Model):
-#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-#     theme = models.CharField(
-#         max_length=100, choices=[('light', 'Light'), ('dark', 'Dark')],
-#         default='light')
-#     notifications = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return f"{self.user.username}'s settings"
 
 
 class Citation(models.Model):
@@ -41,19 +31,6 @@ class CategoricalVariable(models.Model):
 
     def __str__(self) -> str:
         return f"Categorical variable (pk={self.id}): {self.name}"
-
-
-class Configuration(models.Model):
-    id = models.AutoField(primary_key=True, null=False, unique=True)
-    name = models.TextField(unique=True, null=False)
-    date_created = models.DateTimeField()
-
-    class Meta:
-        # managed = False
-        db_table = 'configuration'
-
-    def __str__(self):
-        return f"Configuration: {self.name}"
 
 
 class Compound(models.Model):
@@ -102,9 +79,121 @@ class CompoundSynonym(models.Model):
         return f'{self.synonym} ({self.cid})'
 
 
-class DecidingFactor(ClosureModel):
+# class FormWaterSource(models.Model):
+#     id = models.AutoField(primary_key=True, unique=True)
+#     form = models.ForeignKey(
+#         'MultiStepForm',
+#         on_delete=models.CASCADE,
+#         related_name='formwatersources')
+#     design_tree = models.ForeignKey(
+#         'DesignTree',
+#         on_delete=models.CASCADE,
+#         related_name='formwatersources')
+
+#     class Meta:
+#         db_table = 'form_designtree'
+
+#     def __str__(self) -> str:
+#         return f'{self.form} ({self.design_tree})'
+
+
+class MultiStepConfiguration(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True, max_length=500)
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='multistepforms',
+        db_column='user',
+        blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    water_source = models.ForeignKey(
+        'DesignTree',
+        on_delete=models.SET_NULL,
+        db_column='water_source',
+        related_name='multistepforms',
+        blank=True, null=True)
+    session_key = models.CharField(max_length=40)
+
+    class Meta:
+        db_table = 'form_multistep'
+
+    def __str__(self) -> str:
+        return f'{self.name} ({self.user.username})'
+
+
+class QuestionAnswer(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    question = models.ForeignKey(
+        'DecidingFactorQuestion',
+        db_column='question',
+        on_delete=models.CASCADE,
+        related_name='questionanswers')
+    answer = models.ForeignKey(
+        'DecidingFactorChoice',
+        on_delete=models.CASCADE,
+        db_column='answer',
+        related_name='questionanswers')
+    configuration = models.ForeignKey(
+        MultiStepConfiguration,
+        db_column='configuration',
+        on_delete=models.CASCADE,
+        related_name='questionanswers')
+    decidingfactor = models.ForeignKey(
+        'DecidingFactor',
+        db_column='decidingfactor',
+        on_delete=models.CASCADE,
+        related_name='questionanswers')
+
+    class Meta:
+        db_table = 'form_questionanswer'
+
+    def __str__(self) -> str:
+        return f'{self.question} ({self.answer}), deciding factor: {self.decidingfactor}'
+
+
+class DecidingFactorQuestion(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(null=False, unique=True)
+    text = models.TextField(null=False, blank=True)
+    categorical_variable = models.ForeignKey(
+        CategoricalVariable, on_delete=models.CASCADE,
+        db_column='categoricalvariable')
+
+    class Meta:
+        db_table = 'decidingfactorquestion'
+
+    def __str__(self) -> str:
+        return f'{self.text}'
+
+
+class DecidingFactorChoice(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(null=False, unique=True)
+    text = models.TextField(null=False, blank=True)
+    question = models.ForeignKey(
+        DecidingFactorQuestion,
+        on_delete=models.CASCADE,
+        db_column='question',
+        related_name='decidingfactorchoices_question',
+        blank=True, null=True)
+    design_tree = models.ForeignKey(
+        'DesignTree',
+        on_delete=models.CASCADE,
+        db_column='designtree',
+        related_name='decidingfactorchoices_designtree',
+        blank=True, null=True)
+
+    class Meta:
+        db_table = 'decidingfactorchoice'
+
+    def __str__(self) -> str:
+        return f'{self.text}'
+
+
+class DecidingFactor(ClosureModel):
+    id = models.AutoField(primary_key=True, unique=True)
+    # name = models.TextField(null=False, unique=True)
     parent = models.ForeignKey(
         "self",
         related_name='children',
@@ -112,26 +201,52 @@ class DecidingFactor(ClosureModel):
         blank=True,
         on_delete=models.CASCADE,
         db_column='parent')
-    description = models.TextField(blank=True, null=True)
-    form_label = models.TextField(unique=True)
+    question = models.ForeignKey(
+        DecidingFactorQuestion,
+        db_column='question',
+        on_delete=models.SET_NULL,
+        related_name='decidingfactors',
+        unique=True,
+        blank=True, null=True)
+    choice = models.ForeignKey(
+        DecidingFactorChoice,
+        db_column='choice',
+        on_delete=models.CASCADE,
+        related_name='decidingfactors',
+        unique=True,
+        blank=True, null=True)
+    # form_label = models.TextField(unique=True)
     # NB: when specifying a foreign key where the column name has an
     # underscore, we have to specify db_column (otherwise, it searches for the
     # wrong table).
-    categorical_variable = models.ForeignKey(
-        CategoricalVariable, on_delete=models.CASCADE,
-        db_column='categorical_variable')
     design_tree = models.ForeignKey(
         "DesignTree",
         null=False,
         on_delete=models.CASCADE,
-        db_column='design_tree')
+        db_column='designtree')
 
     class Meta:
-        # managed = False
         db_table = 'decidingfactor'
-
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         # condition=models.Q(choice__isnull=True),
+        #         fields=['name', 'question'],
+        #         name='unique_namequestion',),
+        #     models.UniqueConstraint(
+        #         # condition=models.Q(question__isnull=True),
+        #         fields=['name', 'choice'],
+        #         name='unique_namechoice',
+        #         )
+        # ]
+        # condition = [
+        #     models.Q(question__isnull=True) | models.Q(choice__isnull=True)
+        #     ]
+        verbose_name_plural = 'deciding factors'
+    
     def __str__(self) -> str:
-        return f'{self.name}'
+        return f'{self.id} (parent: {self.parent}, ' \
+               f'question: {self.question}, choice: {self.choice}, ' \
+               f'design tree: {self.design_tree})'
 
 
 class Goal(models.Model):
@@ -141,7 +256,6 @@ class Goal(models.Model):
     slug = AutoSlugField(populate_from='goal', )
 
     class Meta:
-        # managed = False
         db_table = 'goal'
 
     def __str__(self) -> str:
@@ -286,9 +400,9 @@ class DesignTree(models.Model):
 
 class TechnologyDecidingFactors(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    deciding_factor_true = models.ForeignKey(
-        DecidingFactor, on_delete=models.CASCADE,
-        db_column='deciding_factor')
+    choice = models.ForeignKey(
+        DecidingFactorChoice, on_delete=models.CASCADE,
+        db_column='choice', related_name='decidingfactorchoices')
     effective_technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE, db_column='effective_technology')
     threshold_value = models.FloatField(null=True, db_column='threshold_value')
@@ -298,56 +412,19 @@ class TechnologyDecidingFactors(models.Model):
         verbose_name_plural = "technology deciding factors"
 
     def __str__(self) -> str:
-        d_f = DecidingFactor.objects.get(pk=self.deciding_factor_true.pk)
+        d_f = DecidingFactor.objects.get(pk=self.choice.pk)
         d_f_name = d_f.name.replace('_', ' ')
         eff_tech = Technology.objects.get(pk=self.effective_technology.pk)
 
         return f"Condition: '{d_f_name}' is True, eff. technology: {eff_tech.name}"
 
 
-# class DesignTreeDecidingFactors(ClosureModel):
-#     id = models.AutoField(primary_key=True, unique=True)
-#     parent = models.ForeignKey(
-#         DecidingFactor,
-#         related_name='children',
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#         db_column='parent')
-#     child = models.ForeignKey(
-#         DecidingFactor,
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#         db_column='child',
-#         related_name='parent')
-#     design_tree = models.ForeignKey(
-#         DesignTree,
-#         on_delete=models.CASCADE,
-#         db_column='design_tree')
-#     path_length = models.IntegerField(null=False)
-
-#     class Meta:
-#         # managed = False
-#         db_table = 'designtree_decidingfactors'
-#         verbose_name_plural = "design tree deciding factors"
-
-#     def __unicode__(self):
-#         return f"{self.id}"
-
-#     def __str__(self) -> str:
-#         return (
-#             f"Form {self.id}, parent deciding factor: "
-#             f"{self.parent}, child deciding factor: "
-#             f"{self.child} and design tree id "
-#             f"{self.design_tree}"
-#         )
-
-
 class ConfiguredTechnologies(models.Model):
     id = models.AutoField(primary_key=True, null=False, unique=True)
-    configuration = models.ForeignKey(Configuration, models.CASCADE)
-    technology = models.ForeignKey(Technology, models.CASCADE)
+    configuration = models.ForeignKey(
+        MultiStepConfiguration, on_delete=models.CASCADE)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE)
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -375,6 +452,18 @@ class StageTechnologies(models.Model):
         stage_name = Stage.objects.get(pk=self.stage).name
         tech_name = Technology.objects.get(pk=self.technology).name
         return f"Stage: {stage_name}, technology: {tech_name}"
+
+
+class Watercompany(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=True, blank=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'watercompany'
+
+    def __str__(self) -> str:
+        return f"{self.name}"
 
 
 # class TC(ClosureModel):

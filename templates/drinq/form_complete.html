@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+<!-- templates/form_complete.html -->
+
+<head>
+    <title>Preliminary treatment design options</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+
+<h1>Preliminary treatment design options</h1>
+<p>
+    You have completed the multi-step design of a water treatment. Below follow 
+    the different design options, grouped in tables. The first row 
+    after the table header shows the first step of a treatment, after intake of
+    the water source.</p>
+
+{% for group_key, technologies in data.treatment_options.items %}
+<h3>Option {{ group_key }}</h3>
+    <table border="1" style="margin-bottom: 20px;">
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Technology</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for step_key, technology in technologies.items %}
+            <tr>
+                <td>{{ step_key }}</td>
+                <td>{{ technology.name }}</td>
+                <td>{{ technology.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
+
+<p>
+    These treatment options are based on the input you provided in the
+    <a href="{% url 'form_name' %}">water treatment design form</a>.
+
+<h2>Your inputs</h2>
+    <table border="1" style="margin-bottom: 20px;">
+        <thead>
+            <tr>
+                <th>Nr.</th>
+                <th>Choice</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for choice_key, choice in data.choices.items %}
+            <tr>
+                <td>{{ choice_key }}</td>
+                <td>{{ choice }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

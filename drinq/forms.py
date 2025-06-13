@@ -1,11 +1,22 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+# from django.contrib.auth.models import User
+from accounts.models import CustomUser, UserProfile
+from betterforms.multiform import MultiForm, MultiModelForm
+from accounts.forms import (
+    CustomUserAuthForm, CustomUserProfileForm)
 from drinq.models import (
-    Configuration, DecidingFactor
+    MultiStepConfiguration,
+    QuestionAnswer,
+    DecidingFactor,
+    DecidingFactorChoice,
+    DecidingFactorQuestion,
+    DesignTree,
+    # DecisionConfiguration,
     )
 
 """
-Note - When to use ModelForm (and when not)
+Note 1. - When to use ModelForm (and when not)
 
 See https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/#django.forms.ModelForm
 
@@ -15,134 +26,147 @@ model, and you want to create a form that lets people submit comments.
 In this case, it would be redundant to define the field types in your form, 
 because you’ve already defined the fields in your model.
 For this reason, Django provides a helper class that lets you create a 
-Form class from a Django model."""
+Form class from a Django model.
 
-BOOL_CHOICES = {"YES": "yes", "NO": "no"}
+Note 2. - handling of forms in SessionWizardView is broken, or does not work as 
+expected. I encountered a similar problem with the SessionWizardView as posted 
+on StackOverflow:
+https://stackoverflow.com/questions/33623023/sessionwizardview-state-only-saved-on-final-form-done-not-executed 
+"""
 
+AUTH_NAME = "user"
+WATERSOURCE_NAME = "watersource"
+WATERSOURCE_QUESTION_NAME = "q_sourcewater"
+CONFIG_NAME = "configuration"
 
-class TechnologyForm(forms.Form):
-    source_is_surface_water = forms.BooleanField(
-        label="Intake of surface water", required=False,
-        initial=False
-    )
-    # algae_high = forms.BooleanField(
-    #     label="Has large amounts of algae", required=False,
-    # )
-    # nom_high = forms.BooleanField(
-    #     label="Has high levels of NOM (> 5 ppm, or > 10 mg/l)",
-    #     required=False,
-    # )
-
-
-
-
-# class TechnologyQuestionnaireDecidingFactors(forms.ModelForm):
-
-#     def __init__(self,  *args, **kwargs):
-#         # choice = kwargs.pop('choice', None)
-#         # deciding_factors = None
-#         form_flavour = kwargs.pop('form_flavour', 'simple')
-#         selected = TechnologyQuestionnaireDecidingFactors.objects.filter(
-#             form_flavour=form_flavour).only()
-#         flavour_id = [f.id for f in selected]
-#         self.select_by_form_flavour(form_flavour_id=flavour_id)
-
-#         super(TechnologyQuestionnaireDecidingFactors, self).__init__(
-#             *args, **kwargs)
-
-#     def select_by_form_flavour(self, form_flavour_id: int):
-#         entries_of_form_flavour = DesignTreeDecidingFactors.objects.filter(
-#             form_flavour=form_flavour_id).all()
-
-#         for entry in entries_of_form_flavour:
-#             pk_deciding_factor = entry.deciding_factor
-#             deciding_factor = DecidingFactor.objects.get(id=pk_deciding_factor)
-#             forms.BooleanField(
-#                 label=deciding_factor.description, required=False
-#             )
-
-#     class Meta:
-#         model = DesignTreeDecidingFactors
+QUESTION_STEPS = [
+    # AUTH_NAME,
+    CONFIG_NAME,
+    WATERSOURCE_NAME,
+    'deciding_step1',
+    'deciding_step2',
+    'deciding_step3',
+]   
 
 
-# class UserForm(forms.ModelForm):
-#     CHOICES = [
-#         (choice.pk, choice.email) for choice in CustomUser.objects.all()]
-#     username = forms.ChoiceField(
-#         label='Your email (is username)', choices=CHOICES, required=True)
+class AuthMultiForm(MultiModelForm):
+    """
+    A MultiForm that wraps the custom authentication form and any additional
+    info.
+    """
+    base_fields = {}
+    # form_classes = {
+    #     'auth_form': CustomUserAuthForm,
+    #     'additional_form': CustomUserProfileForm,
+    # }
+    form_classes = {
+        AUTH_NAME: CustomUserAuthForm,
+        # 'profile': CustomUserProfileForm,
+    }
 
-#     class Meta:
-#         model = CustomUser
-#         fields = ['username']
+    def clean(self):
+        """
+        If you need to validate interdependent data between the sub-forms,
+        do so here and raise forms.ValidationError if needed.
+        """
+        cleaned_data = super().clean()
+        identifier = cleaned_data[AUTH_NAME].get("username")
+        password = cleaned_data[AUTH_NAME].get("password")
+        # Adjust the parameters as needed for your authentication backend
+        user = authenticate(username=identifier, password=password)
+        if user is None:
+            raise forms.ValidationError(
+                "Invalid credentials. Please try again.")
+        self.user = user  # Store the user for later use
+        # self.profile = cleaned_data["profile"]  # Store the user for later use
+        return cleaned_data
+
+    def save(self, commit=True):
+        # NB the save method can only be called from a MultiModelFormn
+        objects = super(AuthMultiForm, self).save(commit=False)
+        if commit:
+            user = objects['user']
+            user.save()
+            # profile = objects['profile']
+            # profile.user = user
+            # profile.save()
+        return objects
 
 
-# Example from co-pilot:
-#
-# # forms.py
-# from django import forms
-
-# class EnqueteForm(forms.Form):
-#     vraag1 = forms.ChoiceField(choices=[('ja', 'Ja'), ('nee', 'Nee')])
-#     vraag2 = forms.CharField(required=False)
-#     # Voeg andere velden toe zoals nodig
-
-# # views.py
-# from django.shortcuts import render
-# from .forms import EnqueteForm
-
-# def enquete_view(request):
-#     if request.method == 'POST':
-#         form = EnqueteForm(request.POST)
-#         if form.is_valid():
-#             antwoord_vraag1 = form.cleaned_data['vraag1']
-#             # Voeg logica toe om de volgende vraag te bepalen op basis van antwoord_vraag1
-#             # Bijvoorbeeld:
-#             if antwoord_vraag1 == 'ja':
-#                 volgende_vraag = 'Wat is je favoriete kleur?'
-#             else:
-#                 volgende_vraag = 'Wat is je leeftijd?'
-#     else:
-#         form = EnqueteForm()
-
-#     return render(request, 'enquete.html', {'form': form, 'volgende_vraag': volgende_vraag})
-
-class ConfigurationForm(forms.ModelForm):
-
-    def __init__(self,  *args, **kwargs):
-        choice = kwargs.pop('choice', None)
-        super(Configuration, self).__init__(*args, **kwargs)
-
-        if choice is not None:
-            self.fields['name'] = forms.ChoiceField(
-                choices=choice)
-
+class ConfigurationNameForm(forms.ModelForm):
     class Meta:
-        model = Configuration
-        # fields = ['name']
-        exclude = ['id']
+        model = MultiStepConfiguration
+        fields = ['name', 'description']
 
 
-# class DecidingFactorsForm(forms.ModelForm):
-#     """_summary_
+class WaterSourceForm(forms.ModelForm):
+    class Meta:
+        model = MultiStepConfiguration
+        fields = ['water_source']
 
-#     Args:
-#         forms (_type_): _description_
-#     """
-#     pass
-# class TechnologyStepsForm(forms.ModelForm):
-#     """Form which guides user in the different technology design choices
-#     TODO: this will replace the TechnologyForm above.
-#     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['water_source'].queryset = DesignTree.objects.all()
+        watersource_q = DecidingFactorQuestion.objects.get(
+            name=WATERSOURCE_QUESTION_NAME)
+        self.fields['water_source'].label = watersource_q.text.capitalize()
 
-#     def __init__(self, *args, **kwargs):
-#         choice = kwargs.pop('choice', None)
-#         super(TechnologyStepsForm, self).__init__(*args, **kwargs)
 
-#         if choice is not None:
-#             self.fields['decisionchoices'] = forms.ChoiceField(
-#                 choices=choice, label="Existing decisions")
+class QuestionAnswerForm(forms.ModelForm):
+    class Meta:
+        model = QuestionAnswer
+        fields = ['question', 'answer']
 
-#     class Meta:
-#         model = Technology
 
-#         # exclude = ['dataset']
+class QuestionWizardForm(forms.Form):
+    def __init__(self, decidingfactor_id: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # id = kwargs.get('id', None)
+        if decidingfactor_id is not None:
+            deciding_factor = DecidingFactor.objects.get(pk=decidingfactor_id)
+            # TODO: fix ugly code
+            if deciding_factor.question is not None:
+                self.set_form_fields(question=deciding_factor.question)
+        else:
+            raise forms.ValidationError("No deciding factor available.")
+
+    def get_next_deciding_factor(self, deciding_factor):
+        """
+        Get the next deciding factor based on the current one.
+        """
+        try:
+            next_deciding_factor = deciding_factor.get_children().first()
+            return next_deciding_factor
+        except DecidingFactor.DoesNotExist:
+            return None
+
+    def set_form_fields(self, question):
+        """
+        Set the form fields based on the current deciding factor.
+        """
+        queryset = DecidingFactorChoice.objects.filter(
+            question=question)
+        if len(queryset) == 0:
+            raise forms.ValidationError(
+                "No choices available for this question.")
+        self.fields['choice'] = forms.ModelChoiceField(
+            queryset=queryset,
+            widget=forms.RadioSelect,
+            label=question.text.capitalize(),
+        )
+
+
+class SessionSelectForm(forms.Form):
+    config_objects = MultiStepConfiguration.objects
+    session = forms.ModelChoiceField(
+        queryset=config_objects.none(),
+        label="Select a configuration",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['session'].queryset = self.config_objects.filter(
+                user=user)

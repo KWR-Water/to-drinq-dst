@@ -55,13 +55,13 @@
                         <a class="nav-link" rel="nofollow" href="{% url 'index' %}">Homepage
                             <span class="sr-only">(current)</span>
                         </a>
-                        {% comment %} <ul class="nav navbar-nav pull-right">
+                        <ul class="nav navbar-nav pull-right">
                         {% if user.is_authenticated %}
                             {% my_logout request user %}
-                        {% else %}
-                            {% optional_login request %}
+                        {% comment %} {% else %}
+                            {% optional_login request %} {% endcomment %}
                         {% endif %}
-                        </ul> {% endcomment %}
+                        </ul>
                         {% endblock %}
                     </li>
                     <li class="nav-item dropdown">
@@ -73,8 +73,18 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         {% comment %} <div class="dropdown-content"> {% endcomment %}
-                            <li><a class="dropdown-item" href="{% url 'db_stats' %}">Database statistics</a></li>
-                            <li><a class="dropdown-item" href="{% url 'drinq_form' %}">Questionnaire for design</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'db_stats' %}">
+                                    Database statistics</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'form_name' %}">
+                                    Start a new design
+                                </a>
+                            </li>
+                            <a class="dropdown-item" href="{% url 'session_select' %}">
+                                Load a stored configuration session
+                            </a>
                             {% comment %} <a class='dropdown-item' href="{% url 'drinq:compound:detail' %}">Compound details</a> {% endcomment %}
                             {% comment %} <a class='dropdown-item' href="{% url 'about' %}">About</a> {% endcomment %}
                         </ul>
@@ -94,6 +104,19 @@
     </div>
     {% comment %} <script src="{% static 'js/hello.js' %}"></script> {% endcomment %}
 </body>
+
+{% block content %}
+{% if user.is_authenticated %}
+Hi {{ user.username }}!
+<form action="{% url 'rest_framework:logout' %}" method="post">
+  {% csrf_token %}
+  <button type="submit">Log Out</button>
+</form>
+{% else %}
+<p>Please make sure you <a href="{% url 'rest_framework:login' %}">log in</a> 
+    before starting a treatment design workflow.</p>
+{% endif %}
+{% endblock %}
 
 {% block script %}
     {{ block.super }}

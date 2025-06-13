@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django import VERSION, setup
+from django import setup
 from django.db import models, transaction
 from django.test import TestCase, SimpleTestCase, TransactionTestCase
 

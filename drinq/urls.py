@@ -14,28 +14,63 @@
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from django.contrib import admin
 import django.contrib.auth.views as auth_views
 from drinq import views
-
+from drinq.forms import CustomUserAuthForm
+from accounts.views import UserAPI
+from accounts.api import UserViewSet
 
 urlpatterns = [
     path("", views.index, name='drinq'),
     path('db_stats/', views.db_stats, name='db_stats'),
-    path('form/', views.dst_form_surfacewater, name='drinq_form'),
-    path('form_result/', RedirectView.as_view(), name='drinq_result'),
-    path('form_redirect/', RedirectView.as_view(), name='drinq_redirect'),
+    # path('form/', views.dst_form_surfacewater, name='drinq_form'),
+    # path('multi_form/', views.MultiStepQuestionnaire.as_view(
+    #     [
+    #         CustomUserAuthForm,
+    #         Step2Form,
+    #         ], template_name='drinq/form_multi.html',
+    #     ), name='drinq_form'),
+    path('session_select/',  views.SessionSelectView.as_view(),
+         name='session_select'),
+    path('form-name/', views.FormNameView.as_view(), name='form_name'),
+    path(
+        'form-designtree/', views.FormWaterSourceView.as_view(),
+        name='form_watersource'),
+    path('multi_form/<int:decidingfactor_id>/',
+         views.MultiStepQuestionView.as_view(),
+         name='form_multistep'),
+    path('form_complete/<slug:session_key>/',
+         views.QuestionsCompleteView.as_view(),
+         name='form_complete'),
+    # path('form/', views.my_multi_step_view, name='drinq_form'),
+    path('success/', TemplateView.as_view(template_name="success.html"),
+         name='success'),
+    path('form_result/', RedirectView.as_view(), name='form_result'),
     # path('dst_redirect/', views.dst_redirect, name='dst_redirect'),
     path('compound/<cid>/', views.compound_detail, name='drinq'),
+    # path('config/', views.ConfigWizard.as_view(), name='config_wizard'),
     path('admin/', admin.site.urls),
     path('', views.Welcome.as_view(), name='index'),
-    path('', views.Register.as_view(), name='register'),
-    path('register/', views.Register.as_view(), name='register'),
-    path('login/', RedirectView.as_view(
-        pattern_name='rest_framework:login', permanent=False), name='login'),
-    path('logout/', RedirectView.as_view(
-        pattern_name='rest_framework:logout', permanent=False), name='logout'),
+    path('accounts/profile/', views.Welcome.as_view(), name='index'),
+    # path('accounts/profile/', user_detail),  # doesn't work
+    path('login/',
+         RedirectView.as_view(
+             pattern_name='rest_framework:login', permanent=False),
+         name='login'),
+    path('logout/',
+         RedirectView.as_view(
+             pattern_name='rest_framework:logout', permanent=False),
+         name='logout'),
+    path('register/',
+         RedirectView.as_view(
+             pattern_name='rest_framework:register', permanent=False),
+         name='register'),
+    path('accounts/', include('accounts.urls')),  # Include the app's URLs
+    path('accounts/users', UserViewSet.as_view, name='users'),
+    path('accounts/users/<user_id>/', UserAPI.as_view()),
+    # path('api/users/<user_id>/profile/', ProfileAPI.as_view()),
     path(
         'change-password/',
         auth_views.PasswordChangeView.as_view(),
@@ -45,7 +80,7 @@ urlpatterns = [
         views.PasswordChangeOk.as_view(),
         name='change-password-done'),
     path(
-        'api-auth/',
+        'accounts-auth/',
         include('rest_framework.urls', namespace='rest_framework'),
     ),
     # path('__debug__/', include(debug_toolbar.urls)),
