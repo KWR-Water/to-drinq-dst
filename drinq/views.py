@@ -33,7 +33,7 @@ import drinq.decision_tree as dst
 
 EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
 INITIAL_TOTAL_STEPS = 4
-DECISION_TREE_MAX_STEPS = 100
+DECISION_TREE_MAX_STEPS = 50
 
 
 class Register(generic.TemplateView):
@@ -199,8 +199,19 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
         )
         current_decidingfactor = deciding_factor.get_children().get(
             choice=choice)
-        next_decidingfactor, goto_next_step = self.get_next_decidingfactor(
+        (
+            next_decidingfactor,
+            prev_decidingfactor_w_choice,
+            goto_next_step,
+            ) = self.get_next_decidingfactor(
             current_decidingfactor=current_decidingfactor)
+        if prev_decidingfactor_w_choice is not None:
+            QuestionAnswer.objects.create(
+                configuration=configuration,
+                question=prev_decidingfactor_w_choice.question,
+                decidingfactor=prev_decidingfactor_w_choice,
+                answer=prev_decidingfactor_w_choice.choice
+            )
         _ = self.get_context_data()
         self.request.session['form_multistep'] = self.request.session.get(
             'form_multistep', 3) + 1
@@ -221,6 +232,7 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
             counter = 0
             question = None
             goto_next_step = True
+            previous_decidingfactor_with_choice = None
             while counter < DECISION_TREE_MAX_STEPS and question is None:
                 counter += 1
                 if decidingfactor_children.exists():
@@ -231,6 +243,11 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
                     else:
                         # If the next deciding factor has no question,
                         # get the next one
+                        if next_deciding_factor.choice is not None:
+                            # If the next deciding factor has a choice,
+                            # store it as the previous one
+                            previous_decidingfactor_with_choice = (
+                                next_deciding_factor)
                         decidingfactor_children = next_deciding_factor.get_children()  # noqa, E501
                 else:
                     # No more children, break the loop
@@ -239,9 +256,13 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
                     break
             if counter == DECISION_TREE_MAX_STEPS:
                 goto_next_step = False
-            return next_deciding_factor, goto_next_step
+            return (
+                next_deciding_factor,
+                previous_decidingfactor_with_choice,
+                goto_next_step,
+            )
         except DecidingFactor.DoesNotExist:
-            return None, False
+            return None, None, False
 
 
 class QuestionsCompleteView(generic.TemplateView):
@@ -260,11 +281,12 @@ class QuestionsCompleteView(generic.TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpResponse, *args, **kwargs):
-        # querydata = process_form_data(post_request=request.POST)
         results = QuestionAnswer.objects.filter(
             configuration__id=request.session['configuration_id'])
         if results.exists():
             context = self.get_context_data(results=results)
+            # TODO: store the results in the database
+            # Render the template with the context
             return render(
                 request,
                 template_name=self.template_name,
