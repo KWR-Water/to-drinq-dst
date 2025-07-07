@@ -81,6 +81,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'drinq_tags': 'templatetags.drinq.drinq_tags'},
         },
     },
 ]

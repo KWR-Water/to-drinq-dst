@@ -54,3 +54,15 @@ td ul.errorlist li {
 .form-row.errors ul.errorlist li {
     padding-left: 0;
 }
+
+.form-container {
+    max-width: 600px;
+    margin: auto;
+    }
+
+.field-small {
+    max-width: 200px;
+    }
+.field-medium {
+    max-width: 450px;
+    }

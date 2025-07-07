@@ -12,6 +12,8 @@ from drinq.models import (
     DecidingFactorChoice,
     DecidingFactorQuestion,
     DesignTree,
+    TreatmentPlant,
+    TreatmentPlantLayout
     # DecisionConfiguration,
     )
 
@@ -170,3 +172,48 @@ class SessionSelectForm(forms.Form):
         if user:
             self.fields['session'].queryset = self.config_objects.filter(
                 user=user)
+
+
+class TreatmentDesignSelectionForm(forms.ModelForm):
+    option = forms.IntegerField(widget=forms.HiddenInput(), initial=None)
+
+    class Meta:
+        model = TreatmentPlant
+        fields = ['name', 'description', 'option']
+        widgets = {
+            'option': forms.HiddenInput(),
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    # def __init__(self, **kwargs):
+    #     initial = kwargs.pop('initial', None)
+    #     option = initial.get('option', None) if initial else None
+    #     # slug = initial.get('slug', None) if initial else None
+    #     instance = kwargs.get('instance', None)
+    #     if option is None and instance is not None:
+    #         option = instance.option
+    #     # if slug is None and instance is not None:
+    #     #     slug = instance.slug
+    #     super(TreatmentDesignSelectionForm, self).__init__(**kwargs)
+    #     if option is not None:
+    #         self.fields['option'].initial = option
+
+    def clean_name(self):cleaned_data = super(TreatmentDesignSelectionForm, self).clean()
+        if 'name' in cleaned_data.keys():
+            name = cleaned_data['name']
+            if len(name) < 3:
+                raise forms.ValidationError(
+                    "The name must be at least 3 characters long.")
+            return name
+
+    def clean_option(self):
+        if self.cleaned_data['option'] is None:
+            option = self.instance.option
+            self.initial['option'] = option
+            if option is not None:
+                self.cleaned_data['option'] = option
+                return option
+        raise forms.ValidationError(
+                "The option number of the treatment plant is required.")
+

@@ -5,6 +5,9 @@
 
 <!-- templates/form_complete.html -->
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<body class="bg-light">
 <head>
     <title>Preliminary treatment design options</title>
     <style>
@@ -25,38 +28,63 @@
 </head>
 
 <h1>Preliminary treatment design options</h1>
-<p>
+<p class="card-text">
     You have completed the multi-step design of a water treatment. Below follow 
     the different design options, grouped in tables. The first row 
     after the table header shows the first step of a treatment, after intake of
-    the water source.</p>
+    the water source.
+</p>
 
-{% for group_key, technologies in data.treatment_options.items %}
-<h3>Option {{ group_key }}</h3>
-    <table border="1" style="margin-bottom: 20px;">
-        <thead>
-            <tr>
-                <th>Step</th>
-                <th>Technology</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for step_key, technology in technologies.items %}
-            <tr>
-                <td>{{ step_key }}</td>
-                <td>{{ technology.name }}</td>
-                <td>{{ technology.description }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+{% for option_number, option_attr in data.treatment_options.items %}
+<div class="card mb-4 shadow-sm" id="option-card-{{ option_number }}">
+    <div class="card-body">
+        <h3 class="card-title">Option {{ option_number }}</h3>
+        <table border="1" style="margin-bottom: 20px;" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Step</th>
+                    <th>Technology</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for step_number, technology in option_attr.steps.items %}
+                <tr>
+                    <td>{{ step_number }}</td>
+                    <td>{{ technology.name }}</td>
+                    <td>{{ technology.description }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if option_attr.already_named %}
+            <div class="alert alert-info mt-3">
+                This design has already been named.
+                <a href="{% url 'design_detail' option_attr.slug %}" class="btn btn-outline-primary btn-sm ml-2">
+                    View Details</a>
+            </div>
+        {% else %}
+            <form class="name-design-form" data-option-id="{{ option_number }}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_name_{{ option_number }}">Give this design a name:</label>
+                    <input type="text" name="name" class="form-control" id="id_name_{{ option_number }}" required>
+                    <input type="hidden" name="option_number" value="{{ option_number }}">
+                    <input type="hidden" name="configuration" value="{{ data.configuration.id }}">
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Select and Continue</button>
+            </form>
+            <div class="alert alert-success mt-2 d-none" id="success-msg-{{ option_number }}"></div>
+        {% endif %}
+    </div>
+</div>
 {% endfor %}
 
 <p>
     These treatment options are based on the input you provided in the
     <a href="{% url 'form_name' %}">water treatment design form</a>.
-
+</p>
 <h2>Your inputs</h2>
     <table border="1" style="margin-bottom: 20px;">
         <thead>
@@ -74,4 +102,43 @@
         {% endfor %}
         </tbody>
     </table>
+</body>
+
+
+<script>
+$(document).ready(function() {
+    $(".name-design-form").on("submit", function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const optionId = form.data("option-id");
+        const formData = form.serialize();
+
+        $.ajax({
+            url: "{% url 'name_treatmentdesign' %}",
+            method: "POST",
+            data: formData,
+            headers: {
+                "X-CSRFToken": form.find("input[name='csrfmiddlewaretoken']").val()
+            },
+            success: function(response) {
+                // Hide the form and show success message
+                form.hide();
+                // Show success message and "View Details" button
+                const successDiv = $("#success-msg-" + optionId);
+                successDiv.removeClass("d-none").html(`
+                    <div class="alert alert-success">
+                        <strong>Design named successfully!</strong>
+                        <a href="${ response.redirect_url }" class="btn btn-outline-primary btn-sm ml-3">
+                            View Details</a>
+                    </div>
+                `);
+            },
+            error: function(xhr) {
+                alert("Something went wrong. Please try again.");
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

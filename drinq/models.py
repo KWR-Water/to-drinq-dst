@@ -6,6 +6,7 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.utils.text import slugify
 from accounts.models import CustomUser
 from autoslug import AutoSlugField
 from closuretree.models import ClosureModel
@@ -247,6 +248,61 @@ class DecidingFactor(ClosureModel):
         return f'{self.id} (parent: {self.parent}, ' \
                f'question: {self.question}, choice: {self.choice}, ' \
                f'design tree: {self.design_tree})'
+
+
+class TreatmentPlant(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    configuration = models.ForeignKey(
+        MultiStepConfiguration, models.CASCADE, blank=True, null=True,
+        db_column='configuration')
+    option = models.IntegerField(
+        blank=False, null=False,
+        help_text="Identifying number in a set of preliminary treatment design options"
+        )
+    name = models.TextField(blank=True, null=False)
+    description = models.TextField(blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant'
+        verbose_name_plural = "treatment plants"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while TreatmentPlant.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Plant (id: {self.id}, option: {self.option}), name: {self.name}"  # noqa: E501
+
+
+class TreatmentPlantLayout(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatment_plant = models.ForeignKey(
+        TreatmentPlant, models.CASCADE, blank=True, null=True,
+        db_column='treatmentplant')
+    step = models.IntegerField(blank=True, null=False)
+    technology = models.ForeignKey(
+        'Technology', models.CASCADE, blank=True, null=True,
+        db_column='technology'
+    )
+    # removal_efficiency = models.FloatField(blank=True, null=True)
+    # removal_efficiency_log10 = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplantlayout'
+        verbose_name_plural = "treatment plant layouts"
+
+    def __str__(self):
+        return f"{self.treatment_plant} ({self.id})"
 
 
 class Goal(models.Model):

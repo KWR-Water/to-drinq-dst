@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<!-- templates/drinq/treatment_details.html -->
+
+<body class="bg-light">
+<div class="container mt-5">
+    <h1>Treatment Design Details</h1>
+    
+    <h2>Design configuration "{{ treatment_plant.configuration.name }}"</h2>
+    <p class="card-text">
+        The technologies of option {{ treatment_plant.option }} of the preliminary
+        design of a treatment plant "{{ treatment_plant.configuration.name }}" is shown. 
+        The top row relates to the step where intake water is treated, the final 
+        row corresponds to the last treatment step.
+    </p>
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Technologies in option {{ treatment_plant.option }}: {{ treatment_plant.name }}</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Technology</th>
+                        <th>Description</th>
+                        <th>Advantages</th>
+                        <th>Disadvantages</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for layout in treatment_layout %}
+                    <tr>
+                        <th>{{ layout.step }}</th>
+                        <td>{{ layout.technology.name }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#descModal{{ layout.technology.id }}">
+                                View
+                            </button>
+                            <!-- Modal -->
+                            <div class="modal fade" id="descModal{{ layout.technology.id }}" tabindex="-1" aria-labelledby="descModalLabel{{ layout.technology.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="descModalLabel{{ layout.technology.id }}">{{ layout.technology.name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                    <div class="modal-body">
+                                        {{ layout.technology.description }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ layout.technology.advantage }}</td>
+                        <td>{{ layout.technology.disadvantage }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<p>
+    This treatment option is based on the input you provided in the
+    <a href="{% url 'form_name' %}">water treatment design form</a>.
+</body>
+
+{% comment %} <script src="bootstrap.bundle.min.js"></script> {% endcomment %}
+
+{% endblock %}
+

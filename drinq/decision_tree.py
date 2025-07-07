@@ -43,24 +43,33 @@ def get_technology_of_choice(
 def get_treatment_trains(technology_tuples: List[tuple]) -> List[Technology]:
     treatment_id_sets = get_unique_combinations(technology_tuples)
     number_of_options = len(treatment_id_sets)
-    treatment_options = {}
+    treatment_options, treatment_maps = {}, {}
     if number_of_options == 0:
         return treatment_options
     elif number_of_options >= 1:
         for opt_nr, option in enumerate(treatment_id_sets):
-            treatment_options[opt_nr+1] = {}
+            treatment_options[opt_nr+1] = {
+                'steps': {},
+                'id': None,
+                'already_named': False,
+                'slug': None,
+                }
+            treatment_maps[opt_nr+1] = {}
             for tech_nr, technology_id in enumerate(option):
                 technology = Technology.objects.get(id=technology_id)
                 if technology is not None:
-                    if tech_nr not in treatment_options[opt_nr+1]:
+                    if tech_nr not in treatment_options[opt_nr+1]['steps']:
                         # Initialize the technology entry if it doesn't exist
-                        treatment_options[opt_nr+1][tech_nr+1] = {}
-                    treatment_options[opt_nr+1][tech_nr+1] = {
+                        treatment_options[opt_nr+1]['steps'] = {tech_nr+1: {}}
+                    if tech_nr+1 not in treatment_maps[opt_nr+1]:
+                        treatment_maps[opt_nr+1][tech_nr+1] = {}
+                    treatment_maps[opt_nr+1][tech_nr+1] = {
+                        'technology': technology_id}
+                    treatment_options[opt_nr+1]['steps'][tech_nr+1] = {
                         'name': technology.name,
                         'description': technology.description,
                     }
-    
-    return treatment_options
+    return treatment_options, treatment_maps
 
 
 def get_unique_combinations(combination_tuple):
@@ -71,33 +80,6 @@ def get_unique_combinations(combination_tuple):
     unique_combinations = [tu for tu in combinations]
 
     return unique_combinations
-
-
-def select_technologies_with_deciding_factor(
-    query_set: QuerySet | None
-) -> Dict[str, str]:
-    # TODO: this is obsolete, remove code
-    result = {}
-    decidingfactor_pks = []
-    technologies = []
-    
-    if query_set is None:
-        query_set = DecidingFactor.objects.all() 
-    decidingfactor_pks = list(query_set.values_list('id', flat=True))
-
-    if decidingfactor_pks:
-        query_set = TechnologyDecidingFactors.objects.all()
-        query_set = query_set.filter(
-            deciding_factor_true_id__in=decidingfactor_pks).values_list(
-                'effective_technology', flat=True).distinct()
-
-        technologies = Technology.objects.all().filter(
-            id__in=list(query_set)
-            ).values_list('name', 'description')
-
-        result['selected_technologies'] = dict(technologies)
-
-    return result
 
 
 def get_table_decidingfactors():
@@ -139,35 +121,6 @@ def get_decidingfactor_table(
     return deciding_factors
 
 
-# def decision_stage_screening(
-#     decidingfactor_parent: Any,
-#     form_data: dict,
-# ) -> dict:
-
-#     result = {}
-
-#     # First, select the relevant questions (deciding factors)
-#     # decidingfactor_parent = DecidingFactor.objects.get(id=parent_id)
-
-#     deciding_factors = decidingfactor_parent.get_descendants(depth=1)
-#     # TODO: design a staged approach, where per stage different questions are
-#     # asked and some questions depend on other choices. Hence, per stage, also
-#     # a dependency on historic choices.
-#     # conditions = [
-#     #     {'name': label_of_dfact} for label_of_dfact in deciding_factors
-#     #     if label_of_dfact in form_data.keys()]
-#     # DesignTreeDecidingFactors.rebuildtable()
-#     result.update(select_technologies_with_deciding_factor(deciding_factors))
-#     # TODO: register 1st stage in chain of technology stages
-
-#     # STEP 2 - TODO
-#     # conditions = []
-#     # if nom_high:
-#     #     conditions = [{'name': 'nom_high'}]
-
-#     result.update(form_data)
-#     return result
-
-
 if __name__ == '__main__':
-    design_tree = get_table_decidingfactors()
+    pass
+    # design_tree = get_table_decidingfactors()

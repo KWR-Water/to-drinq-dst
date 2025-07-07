@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load drinq_tags %}
+
+{% block content %}
+
+<!-- templates/form_edit-treatment-design-name.html -->
+<body class="bg-light">
+<div class="container mt-5">
+    <h1 class="mb-4">Edit name and description of the current treatment design</h1>
+    <div class="form-container bg-white p-4 shadow rounded">
+        <form method="post" class="mt-4" novalidate>
+            {% csrf_token %}
+
+            {{ form.option }}  {# Hidden field must be included manually #}
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+            {% comment %} <div class="mb-3 field-small">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                    {{ form.name|add_class:"form-control" }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small">
+                            {{ form.name.errors|striptags }}
+                        </div>
+                    {% endif %}
+            </div>
+            <div class="mb-3 field-medium">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description|add_class:"form-control" }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small">
+                            {{ form.description.errors|striptags }}
+                        </div>
+                    {% endif %}
+            </div> {% endcomment %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'design_detail' object.slug %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save Changes</button>
+            </div>
+        </form>
+            {% comment %} {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{% url 'design_detail' object.slug %}" class="btn btn-secondary">Cancel</a> {% endcomment %}
+    </div>
+</div>
+</body>
+
+{% endblock %}
+

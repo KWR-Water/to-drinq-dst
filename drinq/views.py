@@ -1,15 +1,13 @@
-# from multiform import MultiFormMixin
-# from formtools.wizard.views import SessionWizardView
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.http import HttpResponse, Http404, HttpResponseRedirect, QueryDict
-# from formtools.wizard.views import SessionWizardView
+from django.http import (
+    HttpResponse, Http404, HttpResponseRedirect, JsonResponse,
+    )
 from django.views import generic
 from django.forms import ValidationError
-from django.urls import reverse_lazy, reverse
-from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
 from accounts.models import CustomUser
 from drinq.models import (
     Compound,
@@ -20,12 +18,15 @@ from drinq.models import (
     DecidingFactorChoice,
     QuestionAnswer,
     MultiStepConfiguration,
+    TreatmentPlant,
+    TreatmentPlantLayout,
 )
 from drinq.forms import (
     ConfigurationNameForm,
     WaterSourceForm,
     QuestionWizardForm,
-    SessionSelectForm
+    SessionSelectForm,
+    TreatmentDesignSelectionForm,
     )
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
@@ -297,12 +298,26 @@ class QuestionsCompleteView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         results = kwargs.get('results', None)
         choices, technologies, treatment_options = {}, [], []
+        session_key = self.request.session.session_key
+        if session_key is not None:
+            configuration = MultiStepConfiguration.objects.get(
+                session_key=session_key)
+        else:
+            configuration = None
+        named_option_ids = TreatmentPlant.objects.filter(
+                configuration=configuration).values_list(
+                    'option', flat=True)
+        slugged_plants = TreatmentPlant.objects.filter(
+                configuration=configuration)
         context = {
             'choices': choices,
             'technologies': technologies,
             'treatment_options': treatment_options,
+            'form_treatment': TreatmentDesignSelectionForm(),
+            'treatment_layouts': {},
+            'configuration': configuration
         }
-        if results is not None:
+        if results is not None and configuration is not None:
             choices = results.values_list('answer', flat=True)
             for choice in choices:
                 if choice is not None:
@@ -313,11 +328,160 @@ class QuestionsCompleteView(generic.TemplateView):
                     technology = dst.get_technology_of_choice(choice=choice)
                     if technology:
                         technologies += [technology]
-            
-            context['technologies'] = technologies
-            context['treatment_options'] = dst.get_treatment_trains(
-                technology_tuples=technologies)
 
+            context['technologies'] = technologies
+            (
+                treatment_options,
+                treatment_maps,
+                ) = dst.get_treatment_trains(
+                    technology_tuples=technologies)
+            for option_number, _ in treatment_options.items():
+                treatment_options[option_number]['already_named'] = (
+                    option_number in named_option_ids
+                    )
+            for plant in slugged_plants:
+                if plant.slug is not None:
+                    treatment_options[plant.option]['slug'] = plant.slug
+            context['treatment_options'] = treatment_options
+            self.request.session['treatment_maps'] = treatment_maps
+
+        return context
+
+
+class NamedDesignCreateView(generic.CreateView):
+    model = TreatmentPlant
+    form_class = TreatmentDesignSelectionForm
+    template_name = 'drinq/form_complete.html'
+
+    def post(self, request, *args, **kwargs):
+        session = request.session
+        name = request.POST.get('name')
+        option_number = request.POST.get('option_number')
+        configuration_id = request.POST.get('configuration')
+
+        # Retrieve technologies from session or re-derive them
+        treatment_map = session.get('treatment_maps', {}).get(option_number)
+        if not treatment_map:
+            return JsonResponse({
+                'error': 'Technologies not found for this option'},
+                status=400
+                )
+
+        # Create DesignOption and TreatmentPlantLayout
+        configuration = MultiStepConfiguration.objects.get(
+            id=configuration_id)
+        treatment_plant, created = TreatmentPlant.objects.get_or_create(
+            name=name,
+            description=f"{name} for option {option_number}",
+            option=option_number,
+            configuration=configuration,
+        )
+        if created:
+            for step_number, tech in treatment_map.items():
+                tech_id = tech['technology']
+                technology = Technology.objects.get(id=tech_id)
+                _, _ = TreatmentPlantLayout.objects.get_or_create(
+                    treatment_plant=treatment_plant,
+                    step=step_number,
+                    technology=technology
+                )
+        redirect_url = reverse(
+            'design_detail',
+            kwargs={'slug': treatment_plant.slug})
+        return JsonResponse({'redirect_url': redirect_url})
+
+    def form_valid(self, form):
+        # session_key = self.request.session.session_key
+        self.object = form.save()
+        if self.request.user.is_authenticated:
+            form.instance.user = self.request.user
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            option_id = form.cleaned_data.get('option')
+            configuration = form.cleaned_data.get('configuration')
+            plant_slug = TreatmentPlant.objects.get(
+                option=option_id,
+                configuration=configuration
+            ).slug
+            redirect_url = reverse(
+                'design_detail',
+                kwargs={'slug': plant_slug}
+            )
+            return JsonResponse({'redirect_url': redirect_url})
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'errors': form.errors}, status=400)
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return reverse(
+            'design_detail',
+            kwargs={'slug': self.object.slug}
+            )
+
+
+class NamedDesignUpdateView(generic.UpdateView):
+    model = TreatmentPlant
+    form_class = TreatmentDesignSelectionForm
+    template_name = 'drinq/form_edit-treatment-design-name.html'
+
+    def get_object(self):
+        return get_object_or_404(
+            TreatmentPlant,
+            slug=self.kwargs.get('slug')
+        )
+
+    def get_success_url(self):
+        return reverse(
+            'design_detail',
+            kwargs={'slug': self.object.slug})
+
+    def form_valid(self, form):
+        # Update the slug and description of the design option
+        self.object = form.save(commit=False)
+        option_number = self.request.POST.get('option_number')
+        if option_number is None:
+            form.clean()
+            plant_id = getattr(self.object, 'id', None)
+            if plant_id is not None:
+                option_number = TreatmentPlant.objects.get(
+                    id=plant_id).option
+        if option_number:
+            # Save the form and return a response
+            # form.cleaned_data['option'] = option_number
+            form.initial['option'] = option_number
+            self.object.option = option_number
+            self.object.save()
+            response = super(NamedDesignUpdateView, self).form_valid(form)
+            return response
+        else:
+            return JsonResponse({
+                'error': 'Option number of the treatment plant is required.'},
+                status=400)
+            
+    def post(self, request, *args, **kwargs):
+        """Handle POST request to update the treatment design name."""
+        form = self.get_form()
+        form.clean()
+        if form.is_valid():
+            return self.form_valid(form)
+
+
+class TreatmentDesignDetailView(generic.DetailView):
+    model = TreatmentPlantLayout
+    template_name = 'drinq/treatmentdesign_details.html'
+
+    def get_object(self):
+        return get_object_or_404(
+            TreatmentPlant,
+            slug=self.kwargs.get('slug')
+        )
+
+    def get_context_data(self, **kwargs):
+        context = {}
+        context['treatment_plant'] = self.object
+        context['treatment_layout'] = TreatmentPlantLayout.objects.filter(
+            treatment_plant=self.object)
         return context
 
 
@@ -362,8 +526,8 @@ def compound_search(request: HttpResponse):
 def compound_detail(request, cid):
     try:
         compound = Compound.objects.get(cid=cid)
-    except Compound.DoesNotExist:
-        raise Http404("Compound does not exist")
+    except Compound.DoesNotExist as err:
+        raise Http404("Compound does not exist") from err
     try:
         cas_list = CompoundCas.objects.filter(cid=cid)
     except CompoundCas.DoesNotExist:
