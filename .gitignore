@@ -1,4 +1,5 @@
 .vscode
+.VSCodeCounter
 .pytest_cache
 __pycache__
 *.cpython-*
