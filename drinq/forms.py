@@ -199,7 +199,8 @@ class TreatmentDesignSelectionForm(forms.ModelForm):
     #     if option is not None:
     #         self.fields['option'].initial = option
 
-    def clean_name(self):cleaned_data = super(TreatmentDesignSelectionForm, self).clean()
+    def clean_name(self) -> str | None:
+        cleaned_data = super(TreatmentDesignSelectionForm, self).clean()
         if 'name' in cleaned_data.keys():
             name = cleaned_data['name']
             if len(name) < 3:
@@ -208,12 +209,13 @@ class TreatmentDesignSelectionForm(forms.ModelForm):
             return name
 
     def clean_option(self):
-        if self.cleaned_data['option'] is None:
+        option = self.cleaned_data.get('option', None)
+        if option is None:
             option = self.instance.option
             self.initial['option'] = option
-            if option is not None:
-                self.cleaned_data['option'] = option
-                return option
+            self.cleaned_data['option'] = option
+        if option:
+            return option
         raise forms.ValidationError(
                 "The option number of the treatment plant is required.")
 

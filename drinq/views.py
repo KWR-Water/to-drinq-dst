@@ -356,11 +356,11 @@ class NamedDesignCreateView(generic.CreateView):
     def post(self, request, *args, **kwargs):
         session = request.session
         name = request.POST.get('name')
-        option_number = request.POST.get('option_number')
+        option = request.POST.get('option')
         configuration_id = request.POST.get('configuration')
 
         # Retrieve technologies from session or re-derive them
-        treatment_map = session.get('treatment_maps', {}).get(option_number)
+        treatment_map = session.get('treatment_maps', {}).get(option)
         if not treatment_map:
             return JsonResponse({
                 'error': 'Technologies not found for this option'},
@@ -372,8 +372,8 @@ class NamedDesignCreateView(generic.CreateView):
             id=configuration_id)
         treatment_plant, created = TreatmentPlant.objects.get_or_create(
             name=name,
-            description=f"{name} for option {option_number}",
-            option=option_number,
+            description=f"{name} for option {option}",
+            option=option,
             configuration=configuration,
         )
         if created:
@@ -425,11 +425,11 @@ class NamedDesignUpdateView(generic.UpdateView):
     form_class = TreatmentDesignSelectionForm
     template_name = 'drinq/form_edit-treatment-design-name.html'
 
-    def get_object(self):
-        return get_object_or_404(
-            TreatmentPlant,
-            slug=self.kwargs.get('slug')
-        )
+    # def get_object(self):
+    #     return get_object_or_404(
+    #         TreatmentPlant,
+    #         slug=self.kwargs.get('slug')
+    #     )
 
     def get_success_url(self):
         return reverse(
@@ -439,19 +439,21 @@ class NamedDesignUpdateView(generic.UpdateView):
     def form_valid(self, form):
         # Update the slug and description of the design option
         self.object = form.save(commit=False)
-        option_number = self.request.POST.get('option_number')
-        if option_number is None:
+        option = self.request.POST.get('option', None)
+        if option is None:
             form.clean()
             plant_id = getattr(self.object, 'id', None)
             if plant_id is not None:
-                option_number = TreatmentPlant.objects.get(
+                option = TreatmentPlant.objects.get(
                     id=plant_id).option
-        if option_number:
+        if option:
             # Save the form and return a response
             # form.cleaned_data['option'] = option_number
-            form.initial['option'] = option_number
-            self.object.option = option_number
-            self.object.save()
+            form.initial['option'] = option
+            object_option = form.cleaned_data.get('option', None)
+            if object_option is None:
+                self.object.option = option
+                self.object.save()
             response = super(NamedDesignUpdateView, self).form_valid(form)
             return response
         else:
@@ -461,10 +463,12 @@ class NamedDesignUpdateView(generic.UpdateView):
             
     def post(self, request, *args, **kwargs):
         """Handle POST request to update the treatment design name."""
+        self.object = self.get_object()
         form = self.get_form()
-        form.clean()
+        form.full_clean()
         if form.is_valid():
             return self.form_valid(form)
+        return self.form_invalid(form)
 
 
 class TreatmentDesignDetailView(generic.DetailView):

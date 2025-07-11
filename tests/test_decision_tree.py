@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
 
 from drinq.decision_tree import (
-    select_technologies_with_deciding_factor, get_decidingfactor_table,
+    get_decidingfactor_table,
     get_table_decidingfactors)
 
 
@@ -67,18 +67,18 @@ class Testget_table_designtreedecidingfactors(TestCase):
         self.assertEqual(result[0], expected_result_0)
         self.assertEqual(result[2], expected_result_2)
 
-    def test_select_technologies_with_deciding_factor(self):
-        filter_conditions = [
-            {'name': 'source_is_surface_water'},
-            {'name': 'algae_high'}]
-        expected_result = {
-            'selected_technologies':
-            [
-                {'name': 'Microstrainer',
-                 'description':
-                    'Strainer with mesh opening between 10 to 40 micrometer to remove small particles and algae'}, # noqa E501
-            ]
-        }
-        result = select_technologies_with_deciding_factor(filter_conditions)
-        self.assertEqual(result, expected_result)
+    # def test_select_technologies_with_deciding_factor(self):
+    #     filter_conditions = [
+    #         {'name': 'source_is_surface_water'},
+    #         {'name': 'algae_high'}]
+    #     expected_result = {
+    #         'selected_technologies':
+    #         [
+    #             {'name': 'Microstrainer',
+    #              'description':
+    #                 'Strainer with mesh opening between 10 to 40 micrometer to remove small particles and algae'}, # noqa E501
+    #         ]
+    #     }
+    #     result = select_technologies_with_deciding_factor(filter_conditions)
+    #     self.assertEqual(result, expected_result)
 

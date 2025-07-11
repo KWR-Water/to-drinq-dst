@@ -15,6 +15,10 @@
         The top row relates to the step where intake water is treated, the final 
         row corresponds to the last treatment step.
     </p>
+    <p class="card-text">
+        You can edit the name and description of this treatment design: <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
+        <br>
+    </p>
     <div class="card mt-4 shadow-sm">
         <div class="card-body">
             <h5 class="card-title">Technologies in option {{ treatment_plant.option }}: {{ treatment_plant.name }}</h5>
@@ -62,7 +66,7 @@
 </div>
 <p>
     This treatment option is based on the input you provided in the
-    <a href="{% url 'form_name' %}">water treatment design form</a>.
+    <a href="{% url 'form_name' %}">water treatment design form</a>. 
 </body>
 
 {% comment %} <script src="bootstrap.bundle.min.js"></script> {% endcomment %}
