@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+<body class="bg-light">
+
+<h1 class="mb-4">Design Parameter Input</h1>
+<div class="container mt-5">
+    <p>Name of the treatment plant: <strong>{{ treatment_plant.name }}</strong></p>
+    <p>Configuration: <strong>{{ treatment_plant.configuration.name }}</strong></p>
+
+    <div class="form-container bg-white p-4 shadow rounded">
+        <h3>Set the design parameters</h3>
+        <p>Enter the design parameters for the treatment plant configuration by 
+            following these steps:</p>
+        <ul>
+            <li>Ensure all parameters are filled out correctly.</li>
+            <li>Click "Submit" to process the parameters.</li>
+            <li>Results will be displayed below after submission.</li>
+        </ul>
+        <form id="design-parameter-form">
+            <input type="hidden" name="treatmentplant_id" value="{{ treatment_plant.id }}">
+            <input type="hidden" name="configuration_id" value="{{ treatment_plant.configuration.id }}">
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+                {% for form in formset %}
+                <tr>
+                    <td>{{ form.instance.designparameter.name }}</td>
+                    <td>
+                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" %}
+                            <input type="number"
+                                step="any"
+                                name="{{ form.value.name }}"
+                                class="parameter-value"
+                                data-param-id="{{ form.instance.designparameter.id }}"
+                                value="{{ form.value.value }}">
+                        {% else %}
+                            <input type="number"
+                                name="{{ form.value.name }}"
+                                class="parameter-value"
+                                data-param-id="{{ form.instance.designparameter.id }}"
+                                value="{{ form.value.value }}">
+                        {% endif %}
+                        {{ form.designparameter }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+    <div id="api-result" style="margin-top:2em;"></div>
+</div>
+</div>
+<script>
+document.getElementById('design-parameter-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const treatmentplant_id = form.elements['treatmentplant_id'].value;
+    const configuration_id = form.elements['configuration_id'].value;
+    const parameters = {};
+    // Select all inputs with class 'parameter-value'
+    document.querySelectorAll('.parameter-value').forEach(function(input) {
+        const paramId = input.getAttribute('data-param-id');
+        parameters[paramId] = input.value;
+    });
+
+    fetch("{% url 'api_process_parameters' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            treatmentplant_id: treatmentplant_id,
+            configuration_id: configuration_id,
+            parameters: parameters
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let resultDiv = document.getElementById('api-result');
+        if (data.value) {
+            resultDiv.innerHTML = `<strong>Nominal flow (m3/hr):</strong> ${data.value}`;
+        } else if (data.error) {
+            resultDiv.innerHTML = `<span style="color:red;">${data.error}</span>`;
+        } else {
+            resultDiv.innerHTML = `<span style="color:red;">Error: ${JSON.stringify(data)}</span>`;
+        }
+    });
+});
+</script>
+{% endblock %}

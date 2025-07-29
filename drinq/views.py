@@ -18,8 +18,12 @@ from drinq.models import (
     DecidingFactorChoice,
     QuestionAnswer,
     MultiStepConfiguration,
+    DesignParameter,
     TreatmentPlant,
     TreatmentPlantLayout,
+    TreatmentplantDesignParameter,
+    TreatmentplantPropertyValue,
+    TreatmentplantProperty,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -27,6 +31,7 @@ from drinq.forms import (
     QuestionWizardForm,
     SessionSelectForm,
     TreatmentDesignSelectionForm,
+    DesignParameterValueFormSet,
     )
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
@@ -486,6 +491,98 @@ class TreatmentDesignDetailView(generic.DetailView):
         context['treatment_plant'] = self.object
         context['treatment_layout'] = TreatmentPlantLayout.objects.filter(
             treatment_plant=self.object)
+        return context
+
+
+class DesignParameterInputView(generic.FormView):
+    template_name = 'drinq/form_design-parameter-input.html'
+    form_class = DesignParameterValueFormSet
+
+    def get_treatment_plant(self):
+        return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
+
+    # def get_form(self, form_class=None):
+    #     treatment_plant = self.get_treatment_plant()
+    #     # Get all design parameters for this plant (customize as needed)
+    #     design_parameters = DesignParameter.objects.all()
+    #     initial = []
+    #     for param in design_parameters:
+    #         obj, _ = TreatmentplantDesignParameter.objects.get_or_create(
+    #             treatmentplant=treatment_plant,
+    #             designparameter=param,
+    #             defaults={'value': 0}
+    #         )
+    #         initial.append(
+    #             {'designparameter': param.id, 'value': obj.value, 'id': obj.id}
+    #             )
+    #     queryset = TreatmentplantDesignParameter.objects.filter(
+    #         treatmentplant=treatment_plant,
+    #         designparameter__in=design_parameters
+    #     )
+    #     return DesignParameterValueFormSet(queryset=queryset)
+
+    def form_valid(self, formset):
+        treatment_plant = self.get_treatment_plant()
+        instances = formset.save(commit=False)
+        for instance in instances:
+            instance.treatmentplant = treatment_plant
+            instance.save()
+        # Process results and store in TreatmentplantPropertyValue
+        self.process_results(treatment_plant)
+        return redirect(
+            'design_parameter_results', plant_id=treatment_plant.id)
+
+    def process_results(self, treatment_plant):
+        plant_calculator = dst.TreatmentPlantCalculator(
+            treatment_plant=treatment_plant)
+        
+        # Calculate and store the nominal flow value
+        nominal_flow_value = plant_calculator.get_nominal_flow()
+        nominal_flow, _ = TreatmentplantProperty.objects.get_or_create(
+            name='nominal flow (m3/hr)')
+        TreatmentplantPropertyValue.objects.update_or_create(
+            treatmentplant=treatment_plant,
+            property=nominal_flow,
+            defaults={'value': str(nominal_flow_value)}
+        )
+
+    def get(self, request, *args, **kwargs):
+        formset = self.get_form()
+        treatment_plant = self.get_treatment_plant()
+        return render(
+            request,
+            self.template_name,
+            {
+                'formset': formset,
+                'treatment_plant': treatment_plant,
+            }
+        )
+
+    def post(self, request, *args, **kwargs):
+        treatment_plant = self.get_treatment_plant()
+        formset = DesignParameterValueFormSet(request.POST)
+        if formset.is_valid():
+            return self.form_valid(formset)
+        return render(
+            request,
+            self.template_name,
+            {
+                'formset': formset,
+                'treatment_plant': treatment_plant,
+            }
+        )
+
+
+class DesignParameterResultsView(generic.DetailView):
+    model = TreatmentPlant
+    template_name = 'drinq/treatmentplant_property_results.html'
+    pk_url_kwarg = 'plant_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['properties'] = TreatmentplantPropertyValue.objects.filter(
+            treatmentplant=self.object
+        )
         return context
 
 

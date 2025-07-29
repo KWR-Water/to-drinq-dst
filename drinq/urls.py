@@ -19,6 +19,7 @@ from django.contrib import admin
 import django.contrib.auth.views as auth_views
 from drinq import views
 from drinq.forms import CustomUserAuthForm
+from drinq.api_views import ProcessDesignParametersAPI
 from accounts.views import UserAPI
 from accounts.api import UserViewSet
 
@@ -57,7 +58,20 @@ urlpatterns = [
     path('success/', TemplateView.as_view(template_name="success.html"),
          name='success'),
     path('form_result/', RedirectView.as_view(), name='form_result'),
-    # path('dst_redirect/', views.dst_redirect, name='dst_redirect'),
+    # Treatment plant design parameter input and results
+    path(
+        'treatmentplant/<int:plant_id>/parameters/',
+        views.DesignParameterInputView.as_view(),
+        name='design_parameter_input'
+    ),
+    path(
+        'treatmentplant/<int:plant_id>/results/',
+        views.DesignParameterResultsView.as_view(),
+        name='design_parameter_results'
+    ),
+    path('api/process_parameters/',
+         ProcessDesignParametersAPI.as_view(),
+         name='api_process_parameters'),
     path('compound/<cid>/', views.compound_detail, name='drinq'),
     # path('config/', views.ConfigWizard.as_view(), name='config_wizard'),
     path('admin/', admin.site.urls),

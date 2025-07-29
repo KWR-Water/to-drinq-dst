@@ -285,7 +285,7 @@ class TreatmentPlant(models.Model):
 
 class TreatmentPlantLayout(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    treatment_plant = models.ForeignKey(
+    treatmentplant = models.ForeignKey(
         TreatmentPlant, models.CASCADE, blank=True, null=True,
         db_column='treatmentplant')
     step = models.IntegerField(blank=True, null=False)
@@ -302,7 +302,95 @@ class TreatmentPlantLayout(models.Model):
         verbose_name_plural = "treatment plant layouts"
 
     def __str__(self):
-        return f"{self.treatment_plant} ({self.id})"
+        return f"{self.treatmentplant} ({self.id})"
+
+
+class TreatmentplantDesignParameter(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant, models.CASCADE, blank=True, null=True,
+        db_column='treatmentplant')
+    designparameter = models.ForeignKey(
+        'DesignParameter', models.CASCADE, blank=True, null=True,
+        db_column='designparameter')
+    value = models.FloatField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_designparametervalue'
+        verbose_name_plural = "treatment plant design parameters"
+
+    def __str__(self):
+        return f"{self.treatmentplant} ({self.designparameter}): {self.value}"
+
+
+class TreatmentplantPropertyValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant,
+        on_delete=models.CASCADE, blank=True, null=True,
+        db_column='treatmentplant')
+    property = models.ForeignKey(
+        'TreatmentplantProperty',
+        on_delete=models.CASCADE, blank=True, null=True,
+        db_column='property')
+    value = models.TextField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_propertyvalue'
+        verbose_name_plural = "treatment plant property values"
+
+    def __str__(self):
+        return f"{self.treatmentplant} ({self.property}): {self.value}"
+
+
+class TreatmentplantProperty(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
+    unit = models.TextField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplantproperty'
+        verbose_name_plural = "treatment plant properties"
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+
+
+class DesignParameter(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
+    unit = models.TextField(blank=True, null=True)
+    category = models.ForeignKey(
+        'ParameterCategory', models.CASCADE, blank=True, null=True,
+        db_column='category')
+    slug = AutoSlugField(populate_from='name', unique=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'designparameter'
+        verbose_name_plural = "design parameters"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.id})"
+
+
+class ParameterCategory(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'parametercategory'
+        verbose_name_plural = "parameter categories"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.id})"
 
 
 class Goal(models.Model):
@@ -440,6 +528,62 @@ class Technology(models.Model):
         return f"{self.name}"
 
 
+class TechnologyProperty(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
+    unit = models.TextField(blank=True, null=True)
+    category = models.ForeignKey(
+        'ParameterCategory', models.CASCADE, blank=True, null=True, 
+        db_column='category')
+
+    class Meta:
+        # managed = False
+        db_table = 'technologyproperty'
+        verbose_name_plural = "technology parametric properties"
+
+    def __str__(self):
+        return f"{self.name} ({self.technology})"
+
+
+class TechnologyPropertyDefaultValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE,
+        db_column='technology')
+    property = models.ForeignKey(
+        TechnologyProperty, on_delete=models.CASCADE,
+        db_column='property')
+    defaultvalue = models.FloatField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_property'
+        verbose_name_plural = "technology properties and their default values"
+
+    def __str__(self):
+        return f"{self.technology_property} ({self.defaultvalue})"
+
+
+class TreatmentPlantTechnologyPropertyValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant, on_delete=models.CASCADE,
+        db_column='treatmentplant')
+    technology_property = models.ForeignKey(
+        TechnologyProperty, on_delete=models.CASCADE,
+        db_column='technology_property')
+    value = models.FloatField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_technologypropertyvalue'
+        verbose_name_plural = "treatment plant technology property values"
+
+    def __str__(self):
+        return f"{self.treatmentplant} ({self.technology_property}): {self.value}"
+
+
 class DesignTree(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(unique=True)
@@ -496,9 +640,11 @@ class ConfiguredTechnologies(models.Model):
 class StageTechnologies(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     stage = models.ForeignKey(
-        Stage, on_delete=models.CASCADE, blank=True, null=True)
+        Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage')
     technology = models.ForeignKey(
-        Technology, on_delete=models.CASCADE, blank=True, null=True)
+        Technology, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technology')
 
     class Meta:
         # managed = False
@@ -521,130 +667,3 @@ class Watercompany(models.Model):
     def __str__(self) -> str:
         return f"{self.name}"
 
-
-# class TC(ClosureModel):
-#     """A test model."""
-
-#     parent2 = models.ForeignKey(
-#         "self",
-#         related_name="children",
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-#     name = models.CharField(max_length=32)
-#     blah = models.ForeignKey(
-#         "Blah", related_name="tcs", null=True, blank=True, on_delete=models.CASCADE,
-#     )
-
-#     class ClosureMeta(object):
-#         """Closure options."""
-#         parent_attr = "parent2"
-
-#     def __unicode__(self):
-#         return "%s: %s" % (self.pk, self.name)
-
-
-# class Blah(models.Model):
-#     """A test model for foreign keys"""
-#     # class Meta:  # added by DV
-#         # app_label = 'closuretree'  # added by DV
-#     thing = models.CharField(max_length=32)
-
-
-# class TCSUB(TC):
-#     """Testing closure subclasses."""
-#     # class Meta:
-#         # app_label = 'closuretree_testcase'
-
-#     extrafield = models.IntegerField()
-
-
-# class TCSUB2(TCSUB):
-#     """Testing closure subclasses."""
-#     ef = models.IntegerField()
-
-
-# class TCNoMeta(ClosureModel):
-#     """A test model without a ClosureMeta."""
-#     parent = models.ForeignKey(
-#         "self",
-#         related_name="children",
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-#     name = models.CharField(max_length=32)
-
-
-# class SentinelModel(ClosureModel):
-#     """A model using a sentinel attribute."""
-#     location = models.ForeignKey(
-#         "IntermediateModel",
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-
-#     @property
-#     def parent(self):
-#         """Return the object's parent."""
-#         if self.location:
-#             return self.location.real_parent
-
-#     class ClosureMeta(object):
-#         """Closure options."""
-#         sentinel_attr = "location"
-#         parent_attr = "parent"
-
-
-# class IntermediateModel(models.Model):
-#     """The intermediate model between the sentinel model
-#         and its parent (itself).
-#     """
-#     real_parent = models.ForeignKey(
-#         'SentinelModel',
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-
-
-# class TCAbstract(ClosureModel):
-#     """A test model with Meta.abstract = True."""
-
-#     class Meta:
-#         abstract = True
-
-#     parent = models.ForeignKey(
-#         "self",
-#         related_name="children",
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-#     name = models.CharField(max_length=32)
-
-
-# class TCConcrete(TCAbstract):
-#     """A test model inheriting from abstract base model."""
-#     pass
-
-# class UUIDTC(ClosureModel):
-#     '''Testing support for models with a UUID primary key. See #30'''
-#     primary_key = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     parent2 = models.ForeignKey(
-#         "self",
-#         related_name="children",
-#         null=True,
-#         blank=True,
-#         on_delete=models.CASCADE,
-#     )
-#     name = models.CharField(max_length=32)
-
-#     class ClosureMeta(object):
-#         """Closure options."""
-#         parent_attr = "parent2"
-
-#     def __unicode__(self):
-#         return "%s: %s" % (self.pk, self.name)

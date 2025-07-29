@@ -10,14 +10,23 @@
     
     <h2>Design configuration "{{ treatment_plant.configuration.name }}"</h2>
     <p class="card-text">
-        The technologies of option {{ treatment_plant.option }} of the preliminary
-        design of a treatment plant "{{ treatment_plant.configuration.name }}" is shown. 
+        If needed, edit the name and description of this treatment design: <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
+        <br>
+    </p>
+
+    <h3>Specify characteristics of the treatment plant</h3>
+    <p class="card-text">
+        Proceed with specifying details about expected 
+        water demand, and other techno-economical parameters of the treatment plant:
+        <a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Specify design parameters</a>
+    </p>
+
+    <h3>View technologies in option {{ treatment_plant.option }}</h3>
+    <p class="card-text">
+        Below, the technologies of option {{ treatment_plant.option }} of the preliminary
+        design of a treatment plant "{{ treatment_plant.configuration.name }}" are shown. 
         The top row relates to the step where intake water is treated, the final 
         row corresponds to the last treatment step.
-    </p>
-    <p class="card-text">
-        You can edit the name and description of this treatment design: <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
-        <br>
     </p>
     <div class="card mt-4 shadow-sm">
         <div class="card-body">

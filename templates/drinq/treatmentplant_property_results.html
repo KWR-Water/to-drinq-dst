@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<!-- templates/drinq/treatmentplant_property_results.html -->
+<body class="bg-light">
+<div class="container mt-5">
+    <h2>Processed results for {{ object.name }}</h2>
+    <table>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+        </tr>
+        {% for prop in properties %}
+        <tr>
+            <td>{{ prop.property.name }}</td>
+            <td>{{ prop.value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+    {% endblock %}
+</div>
+</body>
+
+{% endblock content %}

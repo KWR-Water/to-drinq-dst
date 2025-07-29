@@ -13,7 +13,9 @@ from drinq.models import (
     DecidingFactorQuestion,
     DesignTree,
     TreatmentPlant,
-    TreatmentPlantLayout
+    TreatmentPlantLayout,
+    TreatmentplantDesignParameter,
+    DesignParameter,
     # DecisionConfiguration,
     )
 
@@ -219,3 +221,19 @@ class TreatmentDesignSelectionForm(forms.ModelForm):
         raise forms.ValidationError(
                 "The option number of the treatment plant is required.")
 
+
+class DesignParameterValueForm(forms.ModelForm):
+    class Meta:
+        model = TreatmentplantDesignParameter
+        fields = ['designparameter', 'value']
+        widgets = {
+            'designparameter': forms.HiddenInput(),
+            'value': forms.NumberInput(attrs={'class': 'parameter-value'}),
+        }
+
+
+DesignParameterValueFormSet = forms.modelformset_factory(
+    TreatmentplantDesignParameter,
+    form=DesignParameterValueForm,
+    extra=0
+)
