@@ -80,24 +80,6 @@ class CompoundSynonym(models.Model):
         return f'{self.synonym} ({self.cid})'
 
 
-# class FormWaterSource(models.Model):
-#     id = models.AutoField(primary_key=True, unique=True)
-#     form = models.ForeignKey(
-#         'MultiStepForm',
-#         on_delete=models.CASCADE,
-#         related_name='formwatersources')
-#     design_tree = models.ForeignKey(
-#         'DesignTree',
-#         on_delete=models.CASCADE,
-#         related_name='formwatersources')
-
-#     class Meta:
-#         db_table = 'form_designtree'
-
-#     def __str__(self) -> str:
-#         return f'{self.form} ({self.design_tree})'
-
-
 class MultiStepConfiguration(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True, max_length=500)
