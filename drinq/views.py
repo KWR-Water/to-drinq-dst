@@ -13,6 +13,8 @@ from drinq.models import (
     Compound,
     CompoundCas,
     Technology,
+    StageTechnologies,
+    Stage,
     DecidingFactor,
     DecidingFactorQuestion,
     DecidingFactorChoice,
@@ -22,8 +24,9 @@ from drinq.models import (
     TreatmentPlant,
     TreatmentPlantLayout,
     TreatmentplantDesignParameter,
-    TreatmentplantPropertyValue,
-    TreatmentplantProperty,
+    TreatmentPlantPropertyValue,
+    TreatmentPlantProperty,
+    TechnologyConstructionCostParameter,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -35,6 +38,7 @@ from drinq.forms import (
     )
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
+import drinq.api_calculation as dac
 
 
 EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
@@ -280,10 +284,10 @@ class QuestionsCompleteView(generic.TemplateView):
         if session_key is None:
             session_key = session.get('session_key', None)
         if 'configuration_id' not in session and session_key is not None:
-            configuration_id = MultiStepConfiguration.objects.filter(
-                session_key=session_key).first()
-            if configuration_id is not None:
-                session['configuration_id'] = configuration_id.id
+            configuration = MultiStepConfiguration.objects.get(
+                session_key=session_key)
+            if configuration is not None:
+                session['configuration_id'] = configuration.id
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpResponse, *args, **kwargs):
@@ -303,7 +307,10 @@ class QuestionsCompleteView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         results = kwargs.get('results', None)
         choices, technologies, treatment_options = {}, [], []
-        session_key = self.request.session.session_key
+        # session_key = self.request.session.session_key
+        config_id = self.request.session['configuration_id']
+        session_key = MultiStepConfiguration.objects.get(
+            id=config_id).session_key
         if session_key is not None:
             configuration = MultiStepConfiguration.objects.get(
                 session_key=session_key)
@@ -361,7 +368,7 @@ class NamedDesignCreateView(generic.CreateView):
     def post(self, request, *args, **kwargs):
         session = request.session
         name = request.POST.get('name')
-        option = request.POST.get('option')
+        option = request.POST.get('option_number')
         configuration_id = request.POST.get('configuration')
 
         # Retrieve technologies from session or re-derive them
@@ -386,7 +393,7 @@ class NamedDesignCreateView(generic.CreateView):
                 tech_id = tech['technology']
                 technology = Technology.objects.get(id=tech_id)
                 _, _ = TreatmentPlantLayout.objects.get_or_create(
-                    treatment_plant=treatment_plant,
+                    treatmentplant=treatment_plant,
                     step=step_number,
                     technology=technology
                 )
@@ -490,7 +497,7 @@ class TreatmentDesignDetailView(generic.DetailView):
         context = {}
         context['treatment_plant'] = self.object
         context['treatment_layout'] = TreatmentPlantLayout.objects.filter(
-            treatment_plant=self.object)
+            treatmentplant=self.object)
         return context
 
 
@@ -501,76 +508,170 @@ class DesignParameterInputView(generic.FormView):
     def get_treatment_plant(self):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
-    # def get_form(self, form_class=None):
-    #     treatment_plant = self.get_treatment_plant()
-    #     # Get all design parameters for this plant (customize as needed)
-    #     design_parameters = DesignParameter.objects.all()
-    #     initial = []
-    #     for param in design_parameters:
-    #         obj, _ = TreatmentplantDesignParameter.objects.get_or_create(
-    #             treatmentplant=treatment_plant,
-    #             designparameter=param,
-    #             defaults={'value': 0}
-    #         )
-    #         initial.append(
-    #             {'designparameter': param.id, 'value': obj.value, 'id': obj.id}
-    #             )
-    #     queryset = TreatmentplantDesignParameter.objects.filter(
-    #         treatmentplant=treatment_plant,
-    #         designparameter__in=design_parameters
-    #     )
-    #     return DesignParameterValueFormSet(queryset=queryset)
+    def get_treatment_technology_ids(self):
+        treatment_plant = self.get_treatment_plant()
+        return TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant
+        ).values_list('technology', flat=True)
+
+    def get_treatment_technology_names(self, technology_ids: list = None):
+        if technology_ids is None:
+            technology_ids = self.get_treatment_technology_ids()
+        technology_names = []
+        for technology_id in technology_ids:
+            technology_names += Technology.objects.get(
+                id=technology_id).name
+        return technology_names
+
+    def get_treatment_stage_ids(self, technology_ids: list = None):
+        if technology_ids is None:
+            technology_ids = self.get_treatment_technology_ids()
+        stages = []
+        if technology_ids is None:
+            return stages
+        for technology_id in technology_ids:
+            stage = StageTechnologies.objects.filter(
+                technology_id=technology_id)
+            if len(stage) > 1:
+                print("Multiple stages found for technology:", technology_id)
+            stages += stage.values_list('stage', flat=True)
+        return stages
+
+    def get_treatment_stage_names(self, stages: list = None):
+        if stages is None:
+            stages = self.get_treatment_stage_ids()
+        stage_names = []
+        for stage_id in stages:
+            try:
+                stage_name = Stage.objects.get(id=stage_id).name
+                stage_names += stage_name
+            except Stage.DoesNotExist:
+                raise Http404("Stage does not exist")
+        return stage_names
+
+    def get_constructioncost_parameter_dict(self, technology_ids: list = None):
+        if technology_ids is None:
+            technology_ids = self.get_treatment_technology_ids()
+        cost_parameters = {tech: {} for tech in technology_ids}
+        for tech in technology_ids:
+            # Fetch cost parameters for each technology
+            tech_obj = Technology.objects.get(id=tech)
+            cost_params = TechnologyConstructionCostParameter.objects.filter(
+                technology=tech_obj).first()
+            if cost_params:
+                plantproperty = cost_params.plantproperty.name if cost_params.plantproperty else None  # noqa, E501
+                cost_parameters[tech] = {
+                    'a': cost_params.a,
+                    'b': cost_params.b,
+                    'c': cost_params.c,
+                    'plant_property': plantproperty,
+                    'cost_function': cost_params.costfunction,
+                }
+            else:
+                cost_parameters[tech] = None
+
+        return cost_parameters
+
+    def get_form(self, form_class=None):
+        treatment_plant = self.get_treatment_plant()
+        design_parameters = DesignParameter.objects.all()
+        # Ensure each parameter has a TreatmentplantDesignParameter instance
+        for param in design_parameters:
+            TreatmentplantDesignParameter.objects.get_or_create(
+                treatmentplant=treatment_plant,
+                designparameter=param,
+                defaults={'value': 0}
+            )
+        queryset = TreatmentplantDesignParameter.objects.filter(
+            treatmentplant=treatment_plant,
+            designparameter__in=design_parameters
+        )
+        if self.request.method == 'POST':
+            return DesignParameterValueFormSet(
+                self.request.POST, queryset=queryset)
+        return DesignParameterValueFormSet(queryset=queryset)
+
+    def get_context_data(self, **kwargs):
+        """Add treatment plant to context"""
+        context = super().get_context_data(**kwargs)
+        context['treatment_plant'] = self.get_treatment_plant()
+        if 'formset' not in context:
+            context['formset'] = self.get_form()
+        return context
 
     def form_valid(self, formset):
         treatment_plant = self.get_treatment_plant()
-        instances = formset.save(commit=False)
-        for instance in instances:
-            instance.treatmentplant = treatment_plant
+        if not formset.is_valid():
+            return self.form_invalid(formset)
+
+        # Save every form explicitly to ensure values are persisted
+        saved = []
+        for form in formset.forms:
+            # skip deleted forms if formset supports deletion
+            if getattr(form, 'cleaned_data', None) is None:
+                # bind cleaned_data if not already (safe because formset.is_valid() was True)
+                form.full_clean()
+            if form.cleaned_data.get('DELETE', False):
+                # if deletion supported
+                if form.instance.pk:
+                    form.instance.delete()
+                continue
+
+            instance = form.save(commit=False)
+            # ensure the FK is set
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
             instance.save()
-        # Process results and store in TreatmentplantPropertyValue
-        self.process_results(treatment_plant)
+            saved.append(instance)
+
+        # Process results after saving
+        # self.process_results(treatment_plant)
         return redirect(
             'design_parameter_results', plant_id=treatment_plant.id)
 
+    def form_invalid(self, formset):
+        """Handle invalid form"""
+        return self.render_to_response(self.get_context_data(formset=formset))
+
     def process_results(self, treatment_plant):
-        plant_calculator = dst.TreatmentPlantCalculator(
-            treatment_plant=treatment_plant)
+        stages = self.get_treatment_stage_names()
+        technologies = self.get_treatment_technology_names()
+
+        # Initialize the treatment plant performance calculator
+        plant_calculator = dac.TreatmentPlantPerformanceCalculator(
+            treatmentplant_id=treatment_plant.id,
+            stages=stages,
+            technologies=technologies,
+            design_parameters={
+                dp.designparameter.name: dp.value
+                for dp in TreatmentplantDesignParameter.objects.filter(
+                    treatmentplant=treatment_plant
+                )
+            }
+            )
+
+        # Calculate and store plant properties
         
-        # Calculate and store the nominal flow value
-        nominal_flow_value = plant_calculator.get_nominal_flow()
-        nominal_flow, _ = TreatmentplantProperty.objects.get_or_create(
+        nominal_flow_value = plant_calculator.get_nominal_flow_m3hr()
+        nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
             name='nominal flow (m3/hr)')
-        TreatmentplantPropertyValue.objects.update_or_create(
+        # TODO: area footprint, energy consumption, construction costs
+        construction_costs = plant_calculator.get_constructioncosts(
+            plant_properties={},
+            cost_parameters=self.get_constructioncost_parameter_dict(),
+        )
+        TreatmentPlantPropertyValue.objects.update_or_create(
             treatmentplant=treatment_plant,
             property=nominal_flow,
             defaults={'value': str(nominal_flow_value)}
         )
 
-    def get(self, request, *args, **kwargs):
-        formset = self.get_form()
-        treatment_plant = self.get_treatment_plant()
-        return render(
-            request,
-            self.template_name,
-            {
-                'formset': formset,
-                'treatment_plant': treatment_plant,
-            }
-        )
-
     def post(self, request, *args, **kwargs):
-        treatment_plant = self.get_treatment_plant()
-        formset = DesignParameterValueFormSet(request.POST)
+        """Handle POST requests"""
+        formset = self.get_form()
         if formset.is_valid():
             return self.form_valid(formset)
-        return render(
-            request,
-            self.template_name,
-            {
-                'formset': formset,
-                'treatment_plant': treatment_plant,
-            }
-        )
+        return self.form_invalid(formset)
 
 
 class DesignParameterResultsView(generic.DetailView):
@@ -580,7 +681,7 @@ class DesignParameterResultsView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['properties'] = TreatmentplantPropertyValue.objects.filter(
+        context['properties'] = TreatmentPlantPropertyValue.objects.filter(
             treatmentplant=self.object
         )
         return context

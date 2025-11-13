@@ -2,35 +2,79 @@
 {% load i18n %}
 
 {% block content %}
-<!-- templates/drinq/treatment_details.html -->
+<!-- templates/drinq/treatmentdesign_details.html -->
 
 <body class="bg-light">
 <div class="container mt-5">
-    <h1>Treatment Design Details</h1>
+    <h1>Treatment Design: View details and specify further</h1>
     
-    <h2>Design configuration "{{ treatment_plant.configuration.name }}"</h2>
     <p class="card-text">
-        If needed, edit the name and description of this treatment design: <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
-        <br>
+        This page shows the details of the selected design of a treatment plant.
+        You can view the technologies used in this design, and specify further 
+        details.
     </p>
-
-    <h3>Specify characteristics of the treatment plant</h3>
-    <p class="card-text">
-        Proceed with specifying details about expected 
-        water demand, and other techno-economical parameters of the treatment plant:
-        <a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Specify design parameters</a>
-    </p>
-
-    <h3>View technologies in option {{ treatment_plant.option }}</h3>
-    <p class="card-text">
-        Below, the technologies of option {{ treatment_plant.option }} of the preliminary
-        design of a treatment plant "{{ treatment_plant.configuration.name }}" are shown. 
-        The top row relates to the step where intake water is treated, the final 
-        row corresponds to the last treatment step.
-    </p>
+    <div class="form-container bg-white p-4 shadow rounded">
+        <h3>Details of treatment design</h3>
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Characteristic</th>
+                            <th>Details</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Current treatment plant configuration</td>
+                            <td>{{ treatment_plant.configuration.name }}</td>
+                            <td>TODO: add treatment plant configuration edit link</td>
+                        </tr>
+                        <tr>
+                            <td>Current name of treatment plant</td>
+                            <td>{{ treatment_plant.name }}</td>
+                            <td>
+                                <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Option number</td>
+                            <td>{{ treatment_plant.option }}</td>
+                            <td><em>Not configurable.</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <h2 class="mt-4">Calculate performance of plant</h2>
     <div class="card mt-4 shadow-sm">
         <div class="card-body">
-            <h5 class="card-title">Technologies in option {{ treatment_plant.option }}: {{ treatment_plant.name }}</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Description of action</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Calculate the performance of the plant and specify design parameters</td>
+                        <td><a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Calculate performance</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <h2 class="mt-4">Technologies used in this design</h2>
+    <p class="card-text">
+        The technologies used in this design are shown in the table below. The top row relates to the step where intake water is 
+        treated, the final row corresponds to the last treatment step. You can view the details of each technology by clicking on the "View" button.
+    </p>
+    <h5 class="card-title">Technologies in option {{ treatment_plant.option }}  of plant: "{{ treatment_plant.name }}".</h5>
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body">
             <table class="table table-striped">
                 <thead>
                     <tr>

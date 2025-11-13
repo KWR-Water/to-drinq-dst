@@ -10,17 +10,18 @@
         <tr>
             <th>Property</th>
             <th>Value</th>
+            <th>Unit</th>
         </tr>
         {% for prop in properties %}
         <tr>
             <td>{{ prop.property.name }}</td>
             <td>{{ prop.value }}</td>
+            <td>{{ prop.unit }}</td>
         </tr>
         {% endfor %}
     </table>
     <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
-    {% endblock %}
 </div>
 </body>
 
-{% endblock content %}
+{% endblock %}

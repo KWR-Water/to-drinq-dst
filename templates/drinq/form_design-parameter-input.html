@@ -17,44 +17,54 @@
         <ul>
             <li>Ensure all parameters are filled out correctly.</li>
             <li>Click "Submit" to process the parameters.</li>
-            <li>Results will be displayed below after submission.</li>
+            <li>Results, i.e. the performance indicators, will be displayed below after submission.</li>
         </ul>
-        <form id="design-parameter-form">
+        <form id="design-parameter-form" method="post">
+            {% csrf_token %}
+            {{ formset.management_form }}
             <input type="hidden" name="treatmentplant_id" value="{{ treatment_plant.id }}">
             <input type="hidden" name="configuration_id" value="{{ treatment_plant.configuration.id }}">
-            <table>
+            <table class="table table-striped">
+                <thead>
                 <tr>
                     <th>Parameter</th>
                     <th>Value</th>
                 </tr>
+                </thead>
+                <tbody>
                 {% for form in formset %}
                 <tr>
                     <td>{{ form.instance.designparameter.name }}</td>
                     <td>
-                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" %}
+                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" or form.instance.designparameter.name == "interest rate" or form.instance.designparameter.name == "energy price (EUR/kWh)" %}
                             <input type="number"
                                 step="any"
-                                name="{{ form.value.name }}"
+                                name="{{ form.value.html_name }}"
                                 class="parameter-value"
                                 data-param-id="{{ form.instance.designparameter.id }}"
-                                value="{{ form.value.value }}">
+                                value="{{ form.instance.value|default_if_none:form.initial.value|default:0  }}">
                         {% else %}
                             <input type="number"
-                                name="{{ form.value.name }}"
+                                name="{{ form.value.html_name }}"
                                 class="parameter-value"
                                 data-param-id="{{ form.instance.designparameter.id }}"
-                                value="{{ form.value.value }}">
+                                value="{{ form.instance.value|default_if_none:form.initial.value|default:0  }}">
                         {% endif %}
+                        {# keep hidden fields so Django can bind/update instances #}
                         {{ form.designparameter }}
+                        {{ form.id }}
                     </td>
                 </tr>
                 {% endfor %}
+                </tbody>
             </table>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-secondary mr-2">Cancel or go Back</a>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
         </form>
-
-    <div id="api-result" style="margin-top:2em;"></div>
-</div>
+        <div id="api-result" style="margin-top:2em;"></div>
+    </div>
 </div>
 <script>
 document.getElementById('design-parameter-form').addEventListener('submit', function(e) {
@@ -83,14 +93,52 @@ document.getElementById('design-parameter-form').addEventListener('submit', func
     })
     .then(response => response.json())
     .then(data => {
-        let resultDiv = document.getElementById('api-result');
-        if (data.value) {
-            resultDiv.innerHTML = `<strong>Nominal flow (m3/hr):</strong> ${data.value}`;
-        } else if (data.error) {
-            resultDiv.innerHTML = `<span style="color:red;">${data.error}</span>`;
-        } else {
-            resultDiv.innerHTML = `<span style="color:red;">Error: ${JSON.stringify(data)}</span>`;
+        if (data.redirect_url) {
+            // server persisted results — follow to results page
+            window.location.href = data.redirect_url;
+            return;
         }
+        // fallback: render returned properties if no redirect provided
+        const resultDiv = document.getElementById('api-result');
+        if (data.properties && Array.isArray(data.properties)) {
+            let html = '<h2 class="mt-4">Performance indicators</h2>';
+            // Group properties by category from the property object
+            const categories = {};
+            data.properties.forEach(function(prop) {
+                // prop.property is an object, e.g. {id, name, unit, category}
+                let category = prop.property.category ? prop.property.category : "Uncategorized";
+                if (!categories[category]) {
+                    categories[category] = [];
+                }
+                categories[category].push(prop);
+            });
+            Object.keys(categories).forEach(cat => {
+                const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
+                html += `<h4 class="mt-4">${catLabel}</h4>
+                    <table class="table table-bordered mt-2">
+                        <thead><tr>
+                            <th style="width:200px;">Property</th>
+                            <th class="text-left">Value</th>
+                            <th class="text-left">Unit</th>
+                        </tr></thead><tbody>`;
+                html += categories[cat].map(prop => {
+                    const name = prop.property && prop.property.name ? prop.property.name : prop.property;
+                    const unit = prop.property && prop.property.unit ? prop.property.unit : '';
+                    return `<tr><td style="width:200px;">${name}</td>
+                                <td class="text-left">${prop.value}</td>
+                                <td class="text-left">${unit}</td></tr>`;
+                }).join('');
+                html += `</tbody></table>`;
+            });
+            resultDiv.innerHTML = html;
+        } else if (data.error) {
+            document.getElementById('api-result').innerHTML = `<span style="color:red;">${data.error}</span>`;
+        } else {
+            document.getElementById('api-result').innerHTML = `<pre>${JSON.stringify(data)}</pre>`;
+        }
+    })
+    .catch(err => {
+        document.getElementById('api-result').innerHTML = `<span style="color:red;">${err}</span>`;
     });
 });
 </script>

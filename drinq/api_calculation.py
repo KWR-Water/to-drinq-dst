@@ -115,7 +115,7 @@ def var_total_water_demand(
     return var_persons + var_leakage + var_demand_lscons + var_cons_lppd
 
 
-class TreatmentPlantDesignCalculator:
+class TreatmentPlantPerformanceCalculator:
     treatmentplant_id: int
     stages: list[str]  # names of stages
     technologies: list[str]  # names of technologies
@@ -133,7 +133,7 @@ class TreatmentPlantDesignCalculator:
         self.technologies = technologies
         self.stages = stages
 
-    def calculate_nominal_flow_m3hr(
+    def get_nominal_flow_m3hr(
         self,
     ):
         parameters = self.design_parameters
@@ -156,7 +156,58 @@ class TreatmentPlantDesignCalculator:
         expected_flow = flow_population + largescaleconsumption_m3pd/24
         return expected_flow * (1 + leakage_factor) * peak_demand_factor
 
-    def filterarea_rapidsandfilter(
+    def get_constructioncosts(
+        self,
+        plant_properties: dict[str, float] = None,
+        cost_parameters: dict[str, dict] = None,
+    ) -> float:
+        """Purpose: Calculate costs based on design parameters and nominal
+        flow.
+        
+        Args:
+            plant_properties (dict[str, float], optional): Dictionary of plant 
+                properties, where each key is a plant property name. 
+                Defaults to None.
+            cost_parameters (dict[str, dict], optional): Dictionary of cost 
+                parameters for each technology. The keys of the dictionary 
+                refer to technology names. Defaults to None.
+        """
+        if cost_parameters is None:
+            raise ValueError("Cost parameters must be provided.")
+        if plant_properties is None:
+            raise ValueError("Plant properties must be provided.")
+        # parameters = self.design_parameters
+        # plc_costs = parameters.get('PLC costs (EUR)', 0.)
+        # personnel_costs = parameters.get('personnel costs (EUR)', 0.)
+
+        costs = 0.
+        if self.technologies:
+            for technology in self.technologies:
+                x_value = 0.
+                constrcost_params = cost_parameters[technology]
+                if constrcost_params is not None:
+                    a, b, c = (
+                        constrcost_params.get('a', 0.),
+                        constrcost_params.get('b', 0.),
+                        constrcost_params.get('c', 0.),
+                    )
+                    plant_property = constrcost_params.get('plantproperty', None)  # noqa, E501
+                    technology_property = constrcost_params.get(
+                        'technologyproperty', None)
+                    plantproperty_value = constrcost_params.get(
+                        'plantproperty_value', 0)
+                    technologyproperty_value = constrcost_params.get(
+                        'technologyproperty_value', 0)
+                    if plantproperty_value:
+                        x_value = plantproperty_value
+                    if technologyproperty_value:
+                        x_value = technologyproperty_value
+                    constr_costs = a*x_value**2 + b*x_value + c
+                    costs += constr_costs
+        costs = 1000 * round(abs(costs)/1000.0, 2)
+        return costs
+
+    def get_filterarea(
         self,
         filter_technology,
         units_per_lane: int = 1,
@@ -168,11 +219,11 @@ class TreatmentPlantDesignCalculator:
         lanes = parameters.get('number of lanes', 1)
         filter_area, filter_area_per_unit = None, None
         if nominal_flow is None:
-            nominal_flow = self.calculate_nominal_flow_m3hr()
+            nominal_flow = self.get_nominal_flow_m3hr()
 
         # Calculate surface loading rate based on filter technology
         match filter_technology:
-            case str(tech) if 'single medium' in tech:
+            case str(tech) if ('single medium' or 'granular activated carbon') in tech:  # noqa, E501
                 surface_loading_rate = 10
             case str(tech) if 'dual media' in tech:
                 surface_loading_rate = 15  # m3/h/m2 average filtration rate for a dual media filtration  # noqa, E501

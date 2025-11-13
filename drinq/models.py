@@ -150,7 +150,7 @@ class QuestionAnswer(models.Model):
         db_table = 'form_questionanswer'
 
     def __str__(self) -> str:
-        return f'{self.question} ({self.answer}), deciding factor: {self.decidingfactor}'
+        return f'{self.id} (deciding factor: {self.decidingfactor})'
 
 
 class DecidingFactorQuestion(models.Model):
@@ -324,14 +324,14 @@ class TreatmentplantDesignParameter(models.Model):
         return f"{self.treatmentplant} ({self.designparameter}): {self.value}"
 
 
-class TreatmentplantPropertyValue(models.Model):
+class TreatmentPlantPropertyValue(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     treatmentplant = models.ForeignKey(
         TreatmentPlant,
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='treatmentplant')
     property = models.ForeignKey(
-        'TreatmentplantProperty',
+        'TreatmentPlantProperty',
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='property')
     value = models.TextField(blank=True, null=False)
@@ -345,11 +345,14 @@ class TreatmentplantPropertyValue(models.Model):
         return f"{self.treatmentplant} ({self.property}): {self.value}"
 
 
-class TreatmentplantProperty(models.Model):
+class TreatmentPlantProperty(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(unique=True, null=False)
     description = models.TextField(blank=True, null=True)
     unit = models.TextField(blank=True, null=True)
+    category = models.ForeignKey(
+        'ParameterCategory', models.CASCADE, blank=True, null=True,
+        db_column='category')
 
     class Meta:
         # managed = False
@@ -358,6 +361,31 @@ class TreatmentplantProperty(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.id})"
+
+
+class TreatmentPlantTechnologyPropertyValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant,
+        on_delete=models.CASCADE, blank=True, null=True,
+        db_column='treatmentplant')
+    technology = models.ForeignKey(
+        'Technology',
+        on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technology')
+    technologyproperty = models.ForeignKey(
+        'TechnologyProperty',
+        on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technologyproperty')
+    value = models.TextField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_technologypropertyvalue'
+        verbose_name_plural = "treatment plant technology property values"
+
+    def __str__(self):
+        return f"{self.treatmentplant} ({self.technologyproperty}): {self.value}"
 
 
 class DesignParameter(models.Model):
@@ -536,6 +564,9 @@ class TechnologyProperty(models.Model):
     category = models.ForeignKey(
         'ParameterCategory', models.CASCADE, blank=True, null=True, 
         db_column='category')
+    parent_property = models.ForeignKey(
+        'TechnologyProperty', models.CASCADE, blank=True, null=True,
+        db_column='parent_property', related_name='child_properties')
 
     class Meta:
         # managed = False
@@ -543,16 +574,16 @@ class TechnologyProperty(models.Model):
         verbose_name_plural = "technology parametric properties"
 
     def __str__(self):
-        return f"{self.name} ({self.technology})"
+        return f"{self.name} [unit {self.unit}] (id: {self.id})"
 
 
-class TechnologyPropertyDefaultValue(models.Model):
+class TechnologyPropertyDefault(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     technology = models.ForeignKey(
-        Technology, on_delete=models.CASCADE,
+        'Technology', on_delete=models.CASCADE,
         db_column='technology')
     property = models.ForeignKey(
-        TechnologyProperty, on_delete=models.CASCADE,
+        'TechnologyProperty', on_delete=models.CASCADE,
         db_column='property')
     defaultvalue = models.FloatField(blank=True, null=False)
 
@@ -562,26 +593,7 @@ class TechnologyPropertyDefaultValue(models.Model):
         verbose_name_plural = "technology properties and their default values"
 
     def __str__(self):
-        return f"{self.technology_property} ({self.defaultvalue})"
-
-
-class TreatmentPlantTechnologyPropertyValue(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    treatmentplant = models.ForeignKey(
-        TreatmentPlant, on_delete=models.CASCADE,
-        db_column='treatmentplant')
-    technology_property = models.ForeignKey(
-        TechnologyProperty, on_delete=models.CASCADE,
-        db_column='technology_property')
-    value = models.FloatField(blank=True, null=False)
-
-    class Meta:
-        # managed = False
-        db_table = 'treatmentplant_technologypropertyvalue'
-        verbose_name_plural = "treatment plant technology property values"
-
-    def __str__(self):
-        return f"{self.treatmentplant} ({self.technology_property}): {self.value}"
+        return f"{self.technology}: {self.property} ({self.defaultvalue})"
 
 
 class DesignTree(models.Model):
@@ -617,6 +629,29 @@ class TechnologyDecidingFactors(models.Model):
         eff_tech = Technology.objects.get(pk=self.effective_technology.pk)
 
         return f"Condition: '{d_f_name}' is True, eff. technology: {eff_tech.name}"
+
+
+class TechnologyConstructionCostParameter(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, db_column='technology')
+    a = models.FloatField(blank=True, null=False)
+    b = models.FloatField(blank=True, null=False)
+    c = models.FloatField(blank=True, null=False)
+    plantproperty = models.ForeignKey(
+        'TreatmentPlantProperty', on_delete=models.CASCADE,
+        db_column='plantproperty', blank=True, null=True)
+    technologyproperty = models.ForeignKey(
+        'TechnologyProperty', on_delete=models.CASCADE,
+        db_column='technologyproperty', blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_constructioncostparameter'
+        verbose_name_plural = "technology construction cost parameters"
+
+    def __str__(self):
+        return f"{self.id} [{self.technology}] ({self.a}, {self.b}, {self.c})"
 
 
 class ConfiguredTechnologies(models.Model):

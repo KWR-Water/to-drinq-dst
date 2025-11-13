@@ -6,7 +6,10 @@ from django.test import TestCase, SimpleTestCase, TransactionTestCase
 from django.db import IntegrityError
 from django.core.exceptions import ImproperlyConfigured
 try:
-    from drinq.models import DecidingFactor
+    from drinq.models import (
+        DecidingFactor, DecidingFactorQuestion, DecidingFactorChoice,
+        CategoricalVariable, DesignTree,
+        )
 except ImproperlyConfigured:
     print(
         'Module cannot be found due to missing Django initialisation, starting'
@@ -14,9 +17,12 @@ except ImproperlyConfigured:
     import os
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
     setup()
-    from drinq.models import DecidingFactor
+    from drinq.models import (
+        DecidingFactor, DecidingFactorQuestion, DecidingFactorChoice, 
+        CategoricalVariable, DesignTree,
+        )
 
-from drinq.models import DesignTree, CategoricalVariable
+# TODO: Fix the unit test of working with deciding factors and technologies
 
 
 class TestClosureDesignTree(SimpleTestCase):
@@ -26,7 +32,7 @@ class TestClosureDesignTree(SimpleTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test = 1
-        cls.parent_name = 'Parent Deciding Factor'
+        cls.parent_choicename = 'Parent choice for testing'
         cls.child_name = 'Child Deciding Factor'
         cls.grandchild_name = 'Grand Child Deciding Factor'
         dichotomous, _ = CategoricalVariable.objects.get_or_create(
@@ -39,30 +45,70 @@ class TestClosureDesignTree(SimpleTestCase):
         except IntegrityError:
             print("DecidingFactorClosure table might not exist.")
             pass
+        cls.parent_question, _ = DecidingFactorQuestion.objects.get_or_create(
+            name='parent_question',
+            text='Is this a parent deciding factor?',
+            categorical_variable=dichotomous
+        )
+        cls.child_question, _ = DecidingFactorQuestion.objects.get_or_create(
+            name='child_question',
+            text='Is this a another question?',
+            categorical_variable=dichotomous
+        )
         try:
-            with transaction.atomic():
+            with transaction.atomic():                
+                cls.parent_choice, _ = DecidingFactorChoice.objects.get_or_create(
+                    text=cls.parent_choicename,
+                    name=cls.parent_choicename,
+                    question=cls.parent_question,
+                    design_tree=cls.design_tree_test,
+                )
                 cls.parent_decidingfactor, _ = DecidingFactor.objects.get_or_create(
-                    name=cls.parent_name,
-                    description='Parent deciding factor for a unit test',
-                    form_label='parent_test_dfactor',
-                    categorical_variable=dichotomous,
+                    parent=None,
+                    question=None,
+                    choice=cls.parent_choice,
                     design_tree=cls.design_tree_test
                     )
-        except IntegrityError:
-            cls.parent_decidingfactor = DecidingFactor.objects.get(
-                    name='Parent Deciding Factor')
-        try:
-            with transaction.atomic():
-                cls.test_decidingfactor, _ = DecidingFactor.objects.get_or_create(
-                    name='Test Deciding Factor',
-                    form_label='test_dfactor',
-                    categorical_variable=dichotomous,
+                cls.child_choice_a, _ = DecidingFactorChoice.objects.get_or_create(
+                    text='Choice A for child deciding factor',
+                    name='parent_choiceA',
+                    question=None,
                     design_tree=cls.design_tree_test,
+                )
+                cls.child_choice_b, _ = DecidingFactorChoice.objects.get_or_create(
+                    text='Choice B for child deciding factor',
+                    name='parent_choiceB',
+                    question=None,
+                    design_tree=cls.design_tree_test,
+                )                
+                cls.child_a_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    parent=None,
+                    question=cls.child_question,
+                    choice=cls.child_choice_a,
+                    design_tree=cls.design_tree_test
                     )
+                cls.child_b_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+                    parent=None,
+                    question=cls.child_question,
+                    choice=cls.child_choice_b,
+                    design_tree=cls.design_tree_test
+                    )
+                
         except IntegrityError:
-            cls.test_decidingfactor = DecidingFactor.objects.get(
-                name='Test Deciding Factor'
-            )
+            cls.parent_choice, _ = DecidingFactorChoice.objects.get(
+                    name=cls.parent_choicename)
+        # try:
+        #     with transaction.atomic():
+        #         cls.test_decidingfactor, _ = DecidingFactor.objects.get_or_create(
+        #             name='Test Deciding Factor',
+        #             form_label='test_dfactor',
+        #             categorical_variable=dichotomous,
+        #             design_tree=cls.design_tree_test,
+        #             )
+        # except IntegrityError:
+        #     cls.test_decidingfactor = DecidingFactor.objects.get(
+        #         name='Test Deciding Factor'
+        #     )
         with transaction.atomic():
             try:
                 cls.child_decidingfactor, _ = DecidingFactor.objects.get_or_create(
@@ -108,7 +154,7 @@ class TestClosureDesignTree(SimpleTestCase):
         self.assertIsInstance(self.df_empty, DecidingFactor)
 
     def test_set_parent_decidingfactor(self):
-        self.assertEqual(self.parent_decidingfactor.name, self.parent_name)
+        self.assertEqual(self.parent_decidingfactor.name, self.parent_choicename)
 
     def test_set_child_decidingfactor(self):
         self.assertEqual(self.child_decidingfactor.name, self.child_name)

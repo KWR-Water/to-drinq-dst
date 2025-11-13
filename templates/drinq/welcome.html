@@ -1,7 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>Welcome to the decision support tool of ToDrinQ</h1>
-  <p>Some text</p>
-
+<body class="bg-light">
+<div class="container mt-5">
+  <h1>Welcome to the design support tool</h1>
+  <p class="card-text">
+    This tool supports you in designing small-scale drinking water treatment 
+    plants. It guides you through a series of steps, from naming your design, 
+    selecting a water source, answering additional questions, to finally 
+    showing you a recommended configuration for your treatment plant.
+  </p>
+  <div class="form-container bg-white p-4 shadow rounded">
+    <div class="card mt-4 shadow-sm">
+      <div class="card-body">
+        <h3>Getting started</h3>
+      </div>
+      <p class="card-text" style="padding: 15px;">
+        The design process constitutes of a series of steps:
+      </p>
+      <ul>
+        {% if not user.is_authenticated %}
+          <li>Register and login to the tool.</li>
+        {% endif %}
+        <li>Create a new treatment plant by providing a name and description.</li>
+        <li>Answer a questionnaire to determine the most suitable treatment 
+          configuration for the treatment plant.</li>
+        <li>Define the treatment plant by selecting a configuration 
+          ('treatment option') and setting the design parameters.</li>
+        <li>View the results of the design, i.e. the performance indicators.</li>
+      </ul>
+      <p class="card-text" style="padding: 15px;">
+          You can start a new design by clicking on <a href="{% url 'form_name' %}">"Start a new design"</a> 
+          in the menu above. If you have previously saved a configuration of treatment 
+          design options, you can load it by clicking on 
+          <a href="{% url 'session_select' %}">"Load a stored configuration session"</a>.
+      </p>
+    </div>
+    <div class="card mt-4 shadow-sm">
+      <div class="card-body">
+          <h3>About</h3>
+      </div>
+      <p class="card-text" style="padding: 15px;">
+          This tool has been developed in the context of the 
+          <a href="https://todrinq.eu/" target=_blank>ToDrinQ project</a>, 
+          which aims at developing a toolkit of technologies, systems and decision tools that
+          will improve overall water systems operations and secure high quality 
+          drinking water. The project is funded by the 
+          European Union and involves a consortium of research institutes and 
+          companies.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
 {% endblock %}

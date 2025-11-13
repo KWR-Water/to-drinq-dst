@@ -19,7 +19,7 @@ from django.contrib import admin
 import django.contrib.auth.views as auth_views
 from drinq import views
 from drinq.forms import CustomUserAuthForm
-from drinq.api_views import ProcessDesignParametersAPI
+from drinq.api_views import DigestDesignParametersAPI
 from accounts.views import UserAPI
 from accounts.api import UserViewSet
 
@@ -70,7 +70,7 @@ urlpatterns = [
         name='design_parameter_results'
     ),
     path('api/process_parameters/',
-         ProcessDesignParametersAPI.as_view(),
+         DigestDesignParametersAPI.as_view(),
          name='api_process_parameters'),
     path('compound/<cid>/', views.compound_detail, name='drinq'),
     # path('config/', views.ConfigWizard.as_view(), name='config_wizard'),

@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-c+uz=)1tyy#6f2o8#s%on)n0orr@wt^7zbdh8x++7p@+gn9ja8
 DEBUG = True
 
 # replace empty list of allowed hosts with testserver for testing purposes
-ALLOWED_HOSTS = []  # ['testserver', 'localhost', ]
+ALLOWED_HOSTS = ['testserver', 'localhost', ]  # []
 
 
 # Application definition
@@ -144,9 +144,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "static"),
-# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

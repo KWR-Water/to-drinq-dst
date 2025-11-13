@@ -38,29 +38,8 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <div class="container-fluid">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        {% block userlinks %}
-                        {% if user.is_authenticated %}
-                            <a class="nav-link" rel="nofollow" href="{% url 'index' %}">Home</a>
-                        {% endif %}
-                        {% comment %} <li><a href="{% url 'drinq:compound:detail' %}">
-                            Compound details</a>
-                        </li> {% endcomment %}
-                        {% comment %} <li><a href="{% url 'compound:search' %}">Compound search</a></li> {% endcomment %}
-                        {% if user.is_staff  %}
-                            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-                        {% endif %}
-                        <a class="nav-link" rel="nofollow" href="{% url 'index' %}">Homepage
-                            <span class="sr-only">(current)</span>
-                        </a>
-                        <ul class="nav navbar-nav pull-right">
-                        {% if user.is_authenticated %}
-                            {% my_logout request user %}
-                        {% comment %} {% else %}
-                            {% optional_login request %} {% endcomment %}
-                        {% endif %}
-                        </ul>
-                        {% endblock %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">Home</a>
                     </li>
                     <li class="nav-item dropdown">
                         {% comment %} <button class="dropbtn"> {% endcomment %}
@@ -70,7 +49,6 @@
                             Menu
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        {% comment %} <div class="dropdown-content"> {% endcomment %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'db_stats' %}">
                                     Database statistics</a>
@@ -92,9 +70,22 @@
                             {% comment %} <a class='dropdown-item' href="{% url 'about' %}">About</a> {% endcomment %}
                         </ul>
                     </li>
+                    {% block userlinks %}
                     <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled item</a>
+                        {% if user.is_staff  %}
+                            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <span class="nav-link">
+                            Welcome {{ user.username }}!
+                            <form action="{% url 'rest_framework:logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                                <button type="submit" class="btn btn-link p-0 align-baseline">Log out</button>
+                            </form>
+                            </span>
+                        {% endif %}
                     </li>
+                    {% endblock %}
                 </ul>
             </div>
         </div>
@@ -105,7 +96,6 @@
             {% block page_content %}{% endblock page_content %}
         </div>
     </div>
-    {% comment %} <script src="{% static 'js/hello.js' %}"></script> {% endcomment %}
 </body>
 
 {% block content %}
@@ -113,7 +103,7 @@
 Welcome {{ user.username }}!
 <form action="{% url 'rest_framework:logout' %}" method="post">
   {% csrf_token %}
-  <button type="submit">Log Out</button>
+  <button type="submit" class="btn btn-primary">Log out</button>
 </form>
 {% else %}
 <p>Please make sure you <a href="{% url 'rest_framework:login' %}">log in</a> 
