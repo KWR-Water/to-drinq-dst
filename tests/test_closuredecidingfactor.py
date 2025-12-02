@@ -4,13 +4,13 @@ from django.db import models, transaction
 from django.test import TestCase, SimpleTestCase, TransactionTestCase
 
 from django.db import IntegrityError
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, AppRegistryNotReady
 try:
     from drinq.models import (
         DecidingFactor, DecidingFactorQuestion, DecidingFactorChoice,
         CategoricalVariable, DesignTree,
         )
-except ImproperlyConfigured:
+except ImproperlyConfigured or AppRegistryNotReady:
     print(
         'Module cannot be found due to missing Django initialisation, starting'
         ' forced initialisation.')
