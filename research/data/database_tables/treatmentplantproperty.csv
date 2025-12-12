@@ -1,0 +1,9 @@
+﻿id,name,description,unit,category
+1,nominal flow (m3/hr),Nominal flow calculation taking into respect a leakage factor and a peak design factor,m^3/hour,1
+2,area footprint (m2/m3/hr),How much area is needed to reach the nominal flow,m^2/m^3/hour,1
+3,volume (m3),How much volume required in the nominal flow,m3,1
+4,construction costs (EUR/m3),Construction costs per unit volume of treated water,EUR/m3,2
+5,investment costs,Investment costs,EUR/year,2
+6,operation and maintenance costs,Operation and maintenance costs,EUR/year,2
+7,energy consumption (kWh),Energy consumption by the plant,kWh,3
+8,CO2 equivalent emissions (ton/year),Amount of CO2 equivalent emissions,ton/year,5

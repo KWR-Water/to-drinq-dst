@@ -1,0 +1,6 @@
+﻿id;name;description
+1;capacity;parameters related to capacity of the treatment plant
+2;costs;parameters related to financial costs
+3;energy;parameters related to energy (consumption or resources)
+4;chemicals;parameters related to the amount or concentration of chemicals involved.
+5;emissions;CO2 emissions (scope 1 and scope 2)

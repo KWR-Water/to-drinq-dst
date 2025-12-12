@@ -1,0 +1,98 @@
+﻿id;name;units;description;category;parent_property
+1;volume;m^3;Volume of the asset;1;
+2;lower bound of flow rate (m3/hr);m^3/hour;Lower value of the feasibile range of flow rates;1;8
+3;upper bound of flow rate (m3/hr);m^3/hour;Upper value of the feasibile range of flow rates;1;8
+4;lower bound of filter area;m^2;Lower bound of filter area specification;1;10
+5;upper bound of filter area;m^2;Upper bound of filter area specification;1;10
+6;lower bound of membrane area;m^2;Lower bound of membrane area specification;1;11
+7;upper bound of membrane area;m^2;Upper bound of membrane area specification;1;11
+8;nominal flow rate;m^3/hour;Nominal (design) value for flow rate;1;
+10;filter area;m^2;Nominal (design) value for filter area;1;
+11;membrane area;m^2;Nominal (design) value for membrane area;1;
+12;energy consumption (kWh/m3 water);kWh/m^3;energy consumption (kWh) per m3 water produced;2;
+13;lower bound of dosing flow rate (liter/hr);10^-3 m^3/hour;Lower value of the feasibile range of flow rates (liter per hour);4;17
+14;upper bound of dosing flow rate (liter/hr);10^-3 m^3/hour;Upper value of the feasibile range of flow rates (liter per hour);4;17
+15;target concentration of dosing chemical (kg/m3);kg/m^3;Nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume;4;
+16;number of units per lane;;Number of units per treatment lane;1;
+17;nominal dosing flow rate;10^-3 m^3/hour;Nominal (design) value for dosing flow rate;1;
+18;retention time;minutes;Retention time of water;1;
+19;tank depth;m;depth of tank or pressure vessel;1;
+20;tank depth of chemical storage;m;depth of storage tank for chemical(s);1;
+21;mixer velocity gradient;s^-1;velocity gradiënt of mixer (usually denoted as G);1;
+22;mass density of chemical;kg/m^3;mass density of chemical;1;
+23;storage time of chemicals (days);days;storage time of chemicals (days);1;
+24;water viscosity;N * sec/m^2;dynamic water viscosity;1;
+25;power efficiency of mixer(s);;power efficiency of mixer(s), a value between 0 and 1;3;
+26;concentration of dosing chemical (in w/w%);%;concentration of chemical in dosing solution (in w/w%);4;
+27;target residual concentration (kg/m3);kg/m^3;Nominal (design) value for residuals of chemical agents per unit water volume;4;
+28;low pressure UV dose;mJ/cm^2;Nominal design value for low pressure UV dose (typically between 30 and 70 mJ/cm2);3;
+29;UV power intensity;mW/cm^2;Nominal design value for UV power intensity (typically between 30 and 40 mW/cm2);3;
+30;dinamic mixer unit department volume;m^2;Volume of the asset's  unit department;1;
+31;lower bound surface overflow rate;m^3/m^2/hour;Lower bound of surface overflow rate;1;
+32;upper bound surface overflow rate;m^3/m^2/hour;Upper bound of surface overflow rate;1;
+33;lower bound retention time;minutes;Lower bound retention time;1;
+34;upper bound  retention time;minutes;Upper bound retention time;1;
+35;lower bound tank depth;m;Lower bound tank depth;1;
+36;upper bound tank depth;m;Upper bound tank depth;1;
+37;upper bound solids loading rate;kg/m2/day;Upper bound of slr;1;
+38;lower bound plate angle;;Lower bound of plate angle;1;
+39;upper bound plate angle;;Upper bound plate angle;1;
+40;air_solids ratio;kg air/kg solids;Air to solids ratio for DAF;1;
+41;recirculation_ratio;;Water recirculation in DAF process;1;
+42;plate_spacing;m;space between plates in Lamella processins;1;
+43;upper bound weir_loading;m3/m/day;Upper bound of lamella weird loading;1;
+44;backwash tank depth;m;Backwash tank depth;1;
+45;upper bound sand media depth;m;Upper bound rapid sand filtration media depth;1;
+46;lower bound sand media depth;m;Lower bound rapid sand filtration media depth;1;
+47;lower bound sand grain size;mm;Upper bound sand media grain size;1;
+48;upper bound sand grain size;mm;Lower bound sand media grain size;1;
+49;upper bound anthracite media depth;m;Upper bound rapid anthracite filtration media depth;1;
+50;lower bound anthracite media depth;m;Lower bound rapid anthracite filtration media depth;1;
+51;lower bound anthracite grain size;mm;Upper bound anthracite media grain size;1;
+52;upper bound anthracitegrain size;mm;Lower bound anthracite media grain size;1;
+53;lower bound pipe diameter;m;lower bound inlet pipe diameter;1;
+54;upper bound pipe diameter;m;Upper bound pipe diameter;1;
+55;lower bound pipe length;m;Lower bound inlet pipe length;1;
+56;upper bound pipe length;m;Upper bound pipe length;1;
+57;lower bound pipe roughness;;Lower bound pipe roughness;1;
+58;upper bound pipe roughness;;Upper bound pipe roughness;1;
+59;lower bound lever difference;m;Lower bound lever difference;1;
+60;upper bound  level difference;m;Upper bound  level difference;1;
+61;power efficiency of pumps;;power efficiency of pumps, a value between 0 and 1;3;
+62;motor efficiency of pumps;;motor efficiency of pumps, a value between 0 and 1;3;
+63;lower bound screen velocity;;lower bound screen velocity;1;
+64;upper bound screen velocity;;upper bound screen velocity;1;
+65;blockage factor;;screens blockage factor, a value between 0 and 1;1;
+66;open area factor;;Microsieves area factor, a value between 0 and 1;1;
+67;lower bound bar width;m;lower bound bar width;1;
+68;upper bound bar width;m;upper bound bar width;1;
+69;lower bound bar space;m;lower bound bar space;1;
+70;upper bound bar space;m;upper bound bar space;1;
+71;empty bed contact time;minutes;empty bed contact time;1;
+72;lower bound gac particle diameter;mm;lower bound gac particle diameter;1;
+73;upper bound gac particle diameter;mm;upper bound gac particle diameter;1;
+74;lower bound powder activated carbon;mg/l;lower bound powder activated carbon;4;
+75;upper bound powder activated carbon;mg/l;upper bound powder activated carbon;4;
+76;lower bound UV fraction;;lower bound UV fraction;1;
+77;upper bound UV fraction;;upper bound UV fraction;1;
+78;lower bound unmber of UV lamps;;lower bound unmber of UV lamps;2;
+79;upper bound unmber of UV lamps;;upper bound unmber of UV lamps;2;
+80;lower bound projected irradiated area;m2;lower bound projected irradiated area;1;
+81;upper bound projected irradiated area;m2;upper bound projected irradiated area;1;
+82;lamp loss factor (LLF);;lamp loss factor (LLF);2;
+83;lamp reflector factor;;lamp reflector factor;2;
+84;medium pressure UV dose;mJ/cm^2;Nominal design value for low pressure UV dose (typically between 600 and 1000 mJ/cm2);2;
+85;lower bound NF flow recovery rate;;lower bound NF flow recovery rate;1;
+86;upper bound NF flow recovery rate;;upper bound NF flow recovery rate;1;
+87;lower bound RO flow recovery rate;;lower bound RO flow recovery rate;1;
+88;upper bound RO flow recovery rate;;upper bound RO flow recovery rate;1;
+89;NF design flux;L/m2.h;Nominal design flux for nanofiltration (typically between 15 and 30  L/m2.h);1;
+90;RO design flux;L/m2.h;Nominal design flux for reverse osmosis (typically between 10 and 20  L/m2.h);1;
+92;lower bound of membranes per vessel;;Lower bound of membranes per vessel;1;11
+93;upper bound of membranes per vessel;;Upper bound of membranes per vessel;1;11
+94;nf operating pressure;bar;Nanofiltration required pressure head;1;
+95;ro operating pressure;bar;Reverse osmosis required pressure head;1;
+97;area;m^2;Area of the asset;1;
+98;energy emission factor;ton/kWh;emission factor for carbon dioxide emissions when energy is consumed;5;
+99;chemical emission factor;ton/kg;emission factor for carbon dioxide emissions when chemicals are dosed or released;5;
+100;mass of chemical agent;kg;mass of chemical used for dosing, ion exchange, sorption, etc.;;

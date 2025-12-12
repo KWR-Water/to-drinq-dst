@@ -1,0 +1,21 @@
+﻿id;name;description;slug
+1;Water intake;Intake of a drinking water source;water_intake
+2;Screening;Raw water screening by screening filters;screening
+3;Algae screening;Raw water screening by micro sieving filters to remove algae;algae_screening
+4;Trickling filtration;;trickling_filtration
+5;Infiltration;Groundwater or treated water infiltration;infiltration
+6;Coagulation;Addition of inorganic or organic chemicals, i.e. coagulants, to assist in the removal of particles in suspended water.;coagulation
+7;Flocculation;Process which occurs after addition or dosing of coagulants;flocculation
+8;Floc removal;;floc_removal
+9;Submerged rapid sand filtration;A separation treatment stage where particles, metal ions and dissolved substances are removed by the aid of sand particle media. Filters are cleaned by backflushing or backwashing.;submerged_rapid_sad_filtration
+10;OMP removal;Removal of micropollutants;omp_removal
+11;NOM removal;Removal of natural organic matter;nom_removal
+12;Softening;The softening process lowers the hardness of water;softening
+13;Aeration;Artificially induced addition of air to enable oxidation and gas stripping (e.g. carbon dioxide, methane, hydrogen sulfide and volatile organic compounds).;aeration
+14;Conditioning;;conditioning
+15;Disinfection;Inactivation of viruses, micro-organisms and protozoa;disinfection
+16;Ultra- and microfiltration;In ultra- and microfiltration systems, dissolved substances are filtered out by polymer or ceramic membranes with microscopic pores. The type of membrane media determines the amount of pressure that is needed to drive the water through the filter.;ultrafiltration
+17;Sludge treatment;Treatment of (heavy metal containing) sludge;sludge_treatment
+18;Sedimentation;After flocculation, water is fed into a sedimentation basin, also referred as a clarifier or settling basin.;sedimentation
+19;Distribution;Distribution of drinking water;distribution
+20;Clean water storage;Storage of drinking water in drinking water reservoir storage;clean_water_storage

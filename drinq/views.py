@@ -201,7 +201,7 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
         choice = form.data['choice']
         if choice is not None:  # should be cleaned_data['choice']
             choice = DecidingFactorChoice.objects.get(id=choice)
-        QuestionAnswer.objects.create(
+        _, created = QuestionAnswer.objects.get_or_create(
             configuration=configuration,
             question=deciding_factor.question,
             decidingfactor=deciding_factor,
@@ -216,12 +216,14 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
             ) = self.get_next_decidingfactor(
             current_decidingfactor=current_decidingfactor)
         if prev_decidingfactor_w_choice is not None:
-            QuestionAnswer.objects.create(
+            _, created = QuestionAnswer.objects.get_or_create(
                 configuration=configuration,
                 question=prev_decidingfactor_w_choice.question,
                 decidingfactor=prev_decidingfactor_w_choice,
                 answer=prev_decidingfactor_w_choice.choice
             )
+            if created:
+                pass  # log something?
         _ = self.get_context_data()
         self.request.session['form_multistep'] = self.request.session.get(
             'form_multistep', 3) + 1

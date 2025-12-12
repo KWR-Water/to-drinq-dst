@@ -111,21 +111,25 @@ class QuestionAnswer(models.Model):
         'DecidingFactorQuestion',
         db_column='question',
         on_delete=models.CASCADE,
+        null=True, blank=True,
         related_name='questionanswers')
     answer = models.ForeignKey(
         'DecidingFactorChoice',
         on_delete=models.CASCADE,
         db_column='answer',
+        blank=False,
         related_name='questionanswers')
     configuration = models.ForeignKey(
         MultiStepConfiguration,
         db_column='configuration',
         on_delete=models.CASCADE,
+        blank=False,
         related_name='questionanswers')
     decidingfactor = models.ForeignKey(
         'DecidingFactor',
         db_column='decidingfactor',
         on_delete=models.CASCADE,
+        blank=False,
         related_name='questionanswers')
 
     class Meta:
@@ -671,6 +675,25 @@ class StageTechnologies(models.Model):
         stage_name = Stage.objects.get(pk=self.stage).name
         tech_name = Technology.objects.get(pk=self.technology).name
         return f"Stage: {stage_name}, technology: {tech_name}"
+
+
+class TechnologyRelatedtechnology(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technology', related_name='tech')
+    related_technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='relatedtechnology', related_name='related_tech')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_relatedtechnology'
+
+    def __str__(self) -> str:
+        tech_name = Technology.objects.get(pk=self.technology).name
+        relatedtech_name = Technology.objects.get(pk=self.related_technology).name
+        return f"Technology: {tech_name}, related technology: {relatedtech_name}"
 
 
 class Watercompany(models.Model):

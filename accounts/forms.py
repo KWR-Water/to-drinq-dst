@@ -1,17 +1,18 @@
 # accounts/forms.py; see https://learndjango.com/tutorials/django-custom-user-model
 from django.contrib.auth.forms import (
-    UserChangeForm, UserCreationForm)
+    UserChangeForm, UserCreationForm, AdminUserCreationForm)
 from django.contrib.auth.forms import AuthenticationForm
 from django.forms import ModelForm
 from betterforms.multiform import MultiModelForm
 from accounts.models import CustomUser, UserProfile
 
 
-class CustomUserCreationForm(UserCreationForm):
-
-    class Meta:
+class CustomUserCreationForm(AdminUserCreationForm):
+    class CustomUserCreationForm(UserCreationForm):
+    # class Meta:
         model = CustomUser
-        fields = ("username", "email")
+        fields = AdminUserCreationForm.Meta.fields + ("email",)
+        # fields = ("username", "email")
 
 
 class CustomUserChangeForm(UserChangeForm):

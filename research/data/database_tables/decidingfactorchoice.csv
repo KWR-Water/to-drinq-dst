@@ -1,0 +1,33 @@
+﻿id;name;text;question;designtree
+0;;;;
+1;source_surfacewater;the source water is surface water;1;1
+2;source_groundwater;the source is groundwater;1;2
+3;source_infiltratedriverwater;the source is infiltrated bank river water;1;3
+11;algae_high;the intake water has high concentrations of algae;2;
+12;algae_low;the intake water has low concentrations of algae;2;
+21;pac_required;PAC is required to remove micropollutants;3;
+22;pac_notrequired;PAC is not required to remove micropollutants;3;
+31;coagflocc__pac;Coagulation and flocculation is required to remove particles;;
+32;coagflocc__notpac;Coagulation and flocculation is required to remove particles;;
+41;mfuf_required;MF/UF required to remove NOM;4;
+42;mfuf_notrequired;MF/UF not required to remove NOM;4;
+51;hardness_high__mfuf;Hardness is more than threshold value;5;
+52;hardness_low__mfuf;Hardness is less than threshold value;5;
+61;nom_high__mfuf;NOM concentration is higher than threshold value (typically 6 mg/l);6;
+62;nom_low__mfuf;NOM concentration is lower than threshold value;6;
+71;omp_high__mfuf;Micropollutant concentrations are higher than threshold value;7;
+72;omp_low__mfuf;Micropollutant concentrations are lower than threshold value;7;
+81;turbidity_high;Turbidity is higher than threshold value (typically 1 NTU);8;
+82;turbidity_low;Turbidity is lower than threshold value;8;
+91;nom_high__notmfuf;NOM concentration is higher than threshold value;9;
+92;nom_low__notmfuf;NOM concentration is lower than threshold value;9;
+101;hardness_high__notmfuf;Hardness is more than threshold value;10;
+102;hardness_low__notmfuf;Hardness is less than threshold value;10;
+111;filtration__notmfuf_highhardness;Remove particles by granular media filtration;;
+112;filtration__notmfuf_lowhardness;Remove particles by granular media filtration;;
+121;omp_high__notmfuf;Micropollutant concentrations are higher than threshold value;11;
+122;omp_low__notmfuf;Micropollutant concentrations are lower than threshold value;11;
+131;disinfection_required;Disinfection is required;12;
+132;disinfection_notrequired;Disinfection is not required;12;
+1000;Child Deciding Factor;Child deciding factor for a unit test;100000;3
+1002;Grand Child Deciding Factor;Grand child deciding factor for a unit test;;3
