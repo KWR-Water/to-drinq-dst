@@ -35,7 +35,10 @@ def get_technology_of_choice(
     try:
         technology_set = query_set.filter(choice_id=choice).values_list(
             'effective_technology', flat=True)
-        return tuple(technology_set, )
+        if technology_set.first():
+            return tuple(technology_set, )
+        else:
+            return None
     except TechnologyDecidingFactors.DoesNotExist:
         return None
 
