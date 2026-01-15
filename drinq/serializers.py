@@ -7,10 +7,21 @@ from drinq.models import (
 )
 
 
+class TreatmentPlantTechnologyPropertySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TreatmentPlantTechnologyPropertyValue
+        fields = ['technology', 'technologyproperty', 'value']
+
+
 class DesignParameterInputSerializer(serializers.Serializer):
     treatmentplant_id = serializers.IntegerField()
     configuration_id = serializers.IntegerField()
     parameters = serializers.DictField(child=serializers.FloatField())
+    # optional nested technology properties so a single POST can include
+    # both plant-level design parameters and technology-level values
+    technology_properties = TreatmentPlantTechnologyPropertySerializer(
+        many=True, required=False)
 
 
 class ParameterCategorySerializer(serializers.ModelSerializer):
@@ -33,10 +44,3 @@ class TreatmentPlantPropertyValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlantPropertyValue
         fields = ['property', 'value']
-
-
-class TreatmentPlantTechnologyPropertySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TreatmentPlantTechnologyPropertyValue
-        fields = ['technology', 'technologyproperty', 'value']

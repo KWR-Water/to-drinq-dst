@@ -16,6 +16,8 @@ from drinq.models import (
     TreatmentPlantLayout,
     TreatmentplantDesignParameter,
     DesignParameter,
+    TreatmentPlantTechnologyPropertyValue,
+    TechnologyPropertyJunction,
     # DecisionConfiguration,
     )
 
@@ -237,3 +239,86 @@ DesignParameterValueFormSet = forms.modelformset_factory(
     form=DesignParameterValueForm,
     extra=0
 )
+
+
+class PlantDesignParametersForm(forms.ModelForm):
+    """Wrapper ModelForm for a TreatmentPlant that exposes hidden ids and
+    provides a helper to build a design-parameter formset for rendering.
+    """
+    treatmentplant_id = forms.IntegerField(widget=forms.HiddenInput)
+    configuration_id = forms.IntegerField(widget=forms.HiddenInput)
+
+    class Meta:
+        model = TreatmentPlant
+        fields = []
+
+    def __init__(self, *args, designparameters_qs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if designparameters_qs is None:
+            designparameters_qs = DesignParameter.objects.all()
+        self.designparameters_qs = designparameters_qs
+
+    def get_designparameter_formset(self, treatmentplant=None):
+        """Return a modelformset for `TreatmentplantDesignParameter` for the
+        given `treatmentplant`. If no existing rows, create initial rows
+        from `self.designparameters_qs` so the formset can render editable
+        fields for each design parameter.
+        """
+        if treatmentplant is None:
+            qs = TreatmentplantDesignParameter.objects.none()
+        else:
+            qs = TreatmentplantDesignParameter.objects.filter(treatmentplant=treatmentplant)
+
+        if qs.exists():
+            return DesignParameterValueFormSet(queryset=qs)
+
+        # create initial data from designparameters
+        initial = []
+        for dp in self.designparameters_qs:
+            initial.append({'designparameter': dp.id, 'value': None})
+        return DesignParameterValueFormSet(queryset=qs, initial=initial)
+
+
+class TechnologyPropertyValueForm(forms.ModelForm):
+    class Meta:
+        model = TreatmentPlantTechnologyPropertyValue
+        fields = ['technology', 'technologyproperty', 'value']
+        widgets = {
+            'technology': forms.HiddenInput(),
+            'technologyproperty': forms.HiddenInput(),
+            'value': forms.NumberInput(attrs={'class': 'parameter-value'}),
+        }
+
+
+TechnologyPropertyValueFormSet = forms.modelformset_factory(
+    TreatmentPlantTechnologyPropertyValue,
+    form=TechnologyPropertyValueForm,
+    extra=0
+)
+
+
+def build_technology_property_initials(treatmentplant):
+    """Return initial data for `TechnologyPropertyValueFormSet` by
+    enumerating `TechnologyPropertyDefault` objects flagged as design
+    parameters for the plant's technologies.
+    """
+    techs = TreatmentPlantLayout.objects.filter(treatmentplant=treatmentplant)
+    tech_ids = techs.values_list('technology', flat=True)
+    defaults = TechnologyPropertyJunction.objects.filter(
+        technology__in=tech_ids,
+        is_designparameter=1,
+    ).select_related('technology', 'property')
+
+    initials = []
+    for td in defaults:
+        existing = TreatmentPlantTechnologyPropertyValue.objects.filter(
+            treatmentplant=treatmentplant,
+            technology=td.technology,
+            technologyproperty=td.property,
+        ).first()
+        initials.append({
+            'technology': td.technology.id,
+            'technologyproperty': td.property.id,
+            'value': existing.value if existing else td.defaultvalue,
+        })
+    return initials

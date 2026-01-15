@@ -12,7 +12,7 @@ from drinq.models import (
     TreatmentPlantLayout,
     Technology,
     TechnologyProperty,
-    TechnologyPropertyDefault,
+    TechnologyPropertyJunction,
     TechnologyConstructionCostParameter,
     TreatmentPlantTechnologyPropertyValue,
     ParameterCategory,
@@ -26,7 +26,7 @@ from drinq.serializers import (
 from drinq.api_calculation import TreatmentPlantPerformanceCalculator
 
 PLANT_PROPERTIES_TO_CALCULATE = [
-    'nominal flow',
+    'nominal flow rate (m3/hr)',
     'construction costs',
     # Add more properties as needed
 ]
@@ -77,10 +77,11 @@ def get_technology_properties(
     if technologies is None:
         technologies = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatmentplant)
-    technology_names, technology_dict = get_technology_names(treatmentplant, technologies)
+    technology_names, technology_dict = get_technology_names(
+        treatmentplant, technologies)
     technology_properties = {tech_name: {} for tech_name in technology_names}
     for name, tech in technology_dict.items():
-        tech_properties = TechnologyPropertyDefault.objects.filter(
+        tech_properties = TechnologyPropertyJunction.objects.filter(
             technology=tech.technology)
         for prop in tech_properties:
             parent_prop = TechnologyProperty.objects.get(
@@ -89,7 +90,7 @@ def get_technology_properties(
             if parent_prop:
                 child_properties = parent_prop.child_properties.all()
                 for child_prop in child_properties:
-                    child_default = TechnologyPropertyDefault.objects.filter(
+                    child_default = TechnologyPropertyJunction.objects.filter(
                         technology=tech.technology,
                         property=child_prop).first()
                     if child_default:
@@ -99,7 +100,7 @@ def get_technology_properties(
                         prop_name = child_prop.name
                         default_value = 0
                         # TODO: decide whether to raise an error or set to 0
-            prop_default = TechnologyPropertyDefault.objects.filter(
+            prop_default = TechnologyPropertyJunction.objects.filter(
                 technology=tech.technology,
                 property=prop.property).first()
             if prop_default:
@@ -213,6 +214,71 @@ class DigestDesignParametersAPI(APIView):
                 defaults={'value': item_val}
             )
 
+        # Check for technology-level design parameters that must be
+        # provided before instantiating the performance calculator.
+        technologies = TreatmentPlantLayout.objects.filter(
+            treatmentplant=plant)
+
+        # Find technology properties that are marked as design parameters
+        techprop_defaults = TechnologyPropertyJunction.objects.filter(
+            technology__in=technologies.values_list('technology', flat=True),
+            is_designparameter=1,
+        ).select_related('property', 'technology')
+
+        required_tech_props = []
+        for tp in techprop_defaults:
+            existing_val = TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=plant,
+                technology=tp.technology,
+                technologyproperty=tp.property,
+            ).first()
+            required_tech_props.append({
+                'technology_id': tp.technology.id,
+                'technology_name': tp.technology.name,
+                'technologyproperty_id': tp.property.id,
+                'technologyproperty_name': tp.property.name,
+                'default_value': tp.defaultvalue,
+                'existing_value': existing_val.value if existing_val else None,
+            })
+
+        # If technology properties are required but not provided in this
+        # request, return the form specification so the caller can fill them.
+        if required_tech_props and not request.data.get('technology_properties'):
+            # direct user to the technology-properties form so they can
+            # supply the required technology-level design parameters
+            redirect_url = reverse(
+                'technology_properties',
+                kwargs={'plant_id': plant.id})
+            return Response(
+                {
+                    'required_technology_properties': required_tech_props,
+                    'redirect_url': redirect_url,
+                    'message': 'Technology-level properties required; redirecting to technology-properties form.',
+                },
+                status=status.HTTP_200_OK,
+            )
+        # TODO: add a form for the technology properties and refer to it.
+        
+        # If technology property values are provided, validate and persist them
+        tech_props_input = request.data.get('technology_properties')
+        if tech_props_input:
+            from drinq.serializers import TreatmentPlantTechnologyPropertySerializer
+
+            tech_serializer = TreatmentPlantTechnologyPropertySerializer(data=tech_props_input, many=True)
+            if not tech_serializer.is_valid():
+                return Response(tech_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            for item in tech_serializer.validated_data:
+                tech_id = item.get('technology')
+                techprop_id = item.get('technologyproperty')
+                val = item.get('value')
+                TreatmentPlantTechnologyPropertyValue.objects.update_or_create(
+                    treatmentplant=plant,
+                    technology_id=tech_id,
+                    technologyproperty_id=techprop_id,
+                    defaults={'value': str(val)},
+                )
+
         # Build input for calculator (adapt as needed by your calculator API)
         dp_qs = TreatmentplantDesignParameter.objects.filter(
             treatmentplant=plant)
@@ -220,8 +286,7 @@ class DigestDesignParametersAPI(APIView):
             dp.designparameter.name: dp.value 
             for dp in dp_qs.select_related('designparameter')
         }
-        technologies = TreatmentPlantLayout.objects.filter(
-            treatmentplant=plant)
+        # `technologies` already defined above when checking tech props
         stage_names = get_stage_names(plant, technologies)
         technology_names, _ = get_technology_names(
             plant, technologies)
@@ -243,10 +308,10 @@ class DigestDesignParametersAPI(APIView):
         category_mapping = {cat.name: cat for cat in parameter_categories}
         nominalflow_prop_name = [
             prp for prp in PLANT_PROPERTIES_TO_CALCULATE
-            if prp == 'nominal flow'][0]
+            if 'nominal flow rate' in prp][0]
         constrcost_prop_name = [
             prp for prp in PLANT_PROPERTIES_TO_CALCULATE 
-            if prp == 'construction costs'][0]
+            if 'construction costs' in prp][0]
 
         computed_plantwide[nominalflow_prop_name] = calculator.get_nominal_flow_m3hr()
         constrcost_pars = get_constrcost_parameters(

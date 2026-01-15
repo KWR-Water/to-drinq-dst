@@ -6,7 +6,7 @@ from django_pandas.io import read_frame
 from string import ascii_uppercase
 
 from drinq.models import (
-    Technology, TechnologyDecidingFactors, DecidingFactor,
+    Technology, TechnologyDecidingFactorJunction, DecidingFactor,
     DecidingFactorChoice
 )
 
@@ -31,7 +31,7 @@ def get_technology_of_choice(
     Get the technology based on the choice string.
     """
     if query_set is None:
-        query_set = TechnologyDecidingFactors.objects.all()
+        query_set = TechnologyDecidingFactorJunction.objects.all()
     try:
         technology_set = query_set.filter(choice_id=choice).values_list(
             'effective_technology', flat=True)
@@ -39,7 +39,7 @@ def get_technology_of_choice(
             return tuple(technology_set, )
         else:
             return None
-    except TechnologyDecidingFactors.DoesNotExist:
+    except TechnologyDecidingFactorJunction.DoesNotExist:
         return None
 
 

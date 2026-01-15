@@ -1,5 +1,17 @@
 import numpy as np
 
+from drinq.api_treatmentkpi import (
+    Strainer,
+    CascadeMixerCoagulationDosing, 
+    CoagulationDynamicMixing,
+    ChlorineDisinfection,
+    ChloramineDisinfection,
+    ChainScrapedSedimentation,
+    MembraneFiltration,
+    calculate_water_demand_m3hr_for_population,
+    calculate_flow_per_unit
+)
+
 # ***Calculate daily nominal flow in m3/day***
 # See for variance and standard deviation calculation:
 # https://nicoco007.github.io/Propagation-of-Uncertainty-Calculator/
@@ -7,41 +19,6 @@ import numpy as np
 
 def stdev(variance: float):
     return float(np.sqrt(variance))
-
-
-def lppd_to_m3phr(flow_in_liter_per_day: float):
-    return flow_in_liter_per_day / 1000 / 24
-
-
-def calculate_flow_per_lane(
-    lanes: int,
-    flow: float,
-) -> float:
-    return flow / lanes
-
-
-def calculate_flow_per_unit(
-    units: int,
-    flow_per_lane: float
-) -> float:
-    return flow_per_lane / units
-
-
-def calculate_water_demand_m3hr_for_population(
-    population_persons: int,
-    avg_consumption_lppd: float,  # consumption as in liter per person per day
-):
-    """Calculates demand from population persons and (average/min/max) 
-    consumption .
-
-    Args:
-        population_persons (int): number of persons
-        consumption_lppd (float): consumption in liter per person per day
-
-    Returns:
-        float: water demand from population
-    """
-    return population_persons * lppd_to_m3phr(avg_consumption_lppd)
 
 
 def var_population(
@@ -115,6 +92,155 @@ def var_total_water_demand(
     return var_persons + var_leakage + var_demand_lscons + var_cons_lppd
 
 
+def technology_selector(
+    stage: str,
+    technology_options: list[str],
+) -> str | None:
+    """Select technology based on performance indicators.
+
+    Args:
+        stage (str): treatment stage
+        technology_options (list[str]): list of technology options
+        performance_indicators (dict[str, float | int]): performance indicators
+
+    Returns:
+        str | None: selected technology or None if no selection is made
+    """
+    selected_technology = None
+    match stage.lower():
+        case 'screening':
+            for technology in technology_options:
+                match technology.lower():
+                    case 'strainer':
+                        selected_technology = technology
+                    case _:
+                        pass
+        case 'algae screening':
+            for technology in technology_options:
+                match technology.lower():
+                    case 'micro strainer':
+                        selected_technology = technology
+                    case _:
+                        pass
+        case 'coagulation':
+            for technology in technology_options:
+                match technology.lower():
+                    case str(technology) if (
+                        'coagulant dosing' and 'dynamic mixing'
+                        ) in technology:
+                        selected_technology = technology
+                    case _:
+                        pass
+        case 'flocculation':
+            for technology in technology_options:
+                match technology.lower():
+                    case 'dynamic mixer':
+                        selected_technology = technology
+                    case _:
+                        pass
+        case _:
+            pass
+    return selected_technology
+
+
+class TechnologyPerformanceCalculator:
+    treatmentplant_id: int
+    stages: list[str]  # names of stages
+    technologies: list[str]  # names of technologies
+    tech_parameters: dict[str, dict[str, float | int]]  # tech: {parameter_id: value}
+    design_parameters: dict[str, float | int]  # plant parameter_id: value
+    kpis: dict[str, float | int]
+
+    def __init__(
+        self,
+        treatmentplant_id: int, 
+        technologies: list[str],
+        stages: list[str],
+        tech_parameters: dict[str, dict[str, float | int]],
+        design_parameters: dict[str, float | int],
+        performance_indicators: dict[str, float | int] = dict(),
+    ):
+        self.treatmentplant_id = treatmentplant_id
+        self.tech_parameters = tech_parameters
+        self.design_parameters = design_parameters
+        self.technologies = technologies
+        self.stages = stages
+        self.kpis = performance_indicators
+
+    def calculate_footprint_area_m2(
+        self,
+    ):
+        parameters = self.tech_parameters
+        stages = self.stages
+        technologies = self.technologies
+
+        footprint_area = None
+        if technologies is None or stages is None:
+            raise ValueError("Technologies and stages must be provided.")
+        footprint_area = {tech: None for tech in technologies}
+
+        for stage in stages:
+            match stage.lower():
+                case 'screening' | 'algae screening':
+                    for technology in technologies:
+                        match technology.lower():
+                            case 'strainer' | 'micro strainer':
+                                strainer = Strainer(
+                                    parameters=parameters[technology],
+                                    performance_indicators=self.kpis,
+                                    design_parameters=self.design_parameters,
+                                )
+                                for kpi in self.kpis:
+                                    self.kpis[kpi] = strainer.get_kpi(kpi)
+                            case _:
+                                pass
+                case 'coagulation':
+                    for technology in technologies:
+                        match technology.lower():
+                            case str(technology) if (
+                                'coagulant dosing' and 'dynamic mixing'
+                                ) in technology:
+                                coag_dynmixer = CoagulationDynamicMixing(
+                                    parameters=parameters[technology],
+                                    performance_indicators=self.kpis,
+                                    design_parameters=self.design_parameters,
+                                )
+                                for kpi in self.kpis:
+                                    self.kpis[kpi] = coag_dynmixer.get_kpi(kpi)
+                            case _:
+                                pass
+                case 'omp removal':
+                    for technology in technologies:
+                        match technology.lower():
+                            case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
+                                pars = parameters[technology]
+                                recovery_rate = pars.get('recovery rate (%)', 50)
+                                membranes_per_vessel = pars.get('membranes per vessel', 8)
+                                pressvessel_orientation = pars.get('pressure vessel orientation', 0)  # noqa, E501
+
+                                flow_per_unit = calculate_flow_per_unit(
+                                    units=pars.get('units per lane', 1),
+                                    flow_per_lane=flow_per_lane)
+                                permeate_flow_m3hr = (
+                                    flow_per_unit * (recovery_rate / 100))
+                                membranes_per_unit = permeate_flow_m3hr * 41.7 / (
+                                    recovery_rate)
+                                
+                                vessels_per_unit = membranes_per_unit / (
+                                    membranes_per_vessel)
+                                
+                                footprint_area_ = (
+                                    nominal_flow_m3hr /
+                                    surface_loading_rate)
+                                footprint_area[technology] = footprint_area_
+                            case _:
+                                pass
+
+        if footprint_area is None:
+            raise ValueError("Not possible to calculate footprint area (m2).")
+        return footprint_area
+    
+
 class TreatmentPlantPerformanceCalculator:
     treatmentplant_id: int
     stages: list[str]  # names of stages
@@ -161,8 +287,7 @@ class TreatmentPlantPerformanceCalculator:
         plant_properties: dict[str, float] = None,
         cost_parameters: dict[str, dict] = None,
     ) -> float:
-        """Purpose: Calculate costs based on design parameters and nominal
-        flow.
+        """Purpose: Calculate costs based on design parameters.
         
         Args:
             plant_properties (dict[str, float], optional): Dictionary of plant 
@@ -171,6 +296,10 @@ class TreatmentPlantPerformanceCalculator:
             cost_parameters (dict[str, dict], optional): Dictionary of cost 
                 parameters for each technology. The keys of the dictionary 
                 refer to technology names. Defaults to None.
+
+        Note:
+            The cost parameters dictionary for each technology should contain
+            the parameters 'a', 'b', and 'c' for the quadratic cost function.
         """
         if cost_parameters is None:
             raise ValueError("Cost parameters must be provided.")

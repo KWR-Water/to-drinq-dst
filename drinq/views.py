@@ -26,6 +26,7 @@ from drinq.models import (
     TreatmentplantDesignParameter,
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
+    TreatmentPlantTechnologyPropertyValue,
     TechnologyConstructionCostParameter,
 )
 from drinq.forms import (
@@ -35,6 +36,9 @@ from drinq.forms import (
     SessionSelectForm,
     TreatmentDesignSelectionForm,
     DesignParameterValueFormSet,
+    TechnologyPropertyValueFormSet,
+    TechnologyPropertyValueForm,
+    build_technology_property_initials,
     )
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
@@ -562,11 +566,19 @@ class DesignParameterInputView(generic.FormView):
                 technology=tech_obj).first()
             if cost_params:
                 plantproperty = cost_params.plantproperty.name if cost_params.plantproperty else None  # noqa, E501
+                technologyproperty = cost_params.technologyproperty.name if cost_params.technologyproperty else None  # noqa, E501
+                if technologyproperty is not None:
+                    technologyproperty_value = TreatmentPlantTechnologyPropertyValue.objects.filter(  # noqa, E501
+                        treatmentplant=self.get_treatment_plant(),
+                        technology=tech_obj,
+                        technologyproperty=cost_params.technologyproperty
+                    ).first()
                 cost_parameters[tech] = {
                     'a': cost_params.a,
                     'b': cost_params.b,
                     'c': cost_params.c,
                     'plant_property': plantproperty,
+                    'technology_property': technologyproperty,
                     'cost_function': cost_params.costfunction,
                 }
             else:
@@ -628,8 +640,9 @@ class DesignParameterInputView(generic.FormView):
 
         # Process results after saving
         # self.process_results(treatment_plant)
-        return redirect(
-            'design_parameter_results', plant_id=treatment_plant.id)
+        # After saving plant-wide design parameters, continue to
+        # technology-level properties step before running calculations.
+        return redirect('technology_properties', plant_id=treatment_plant.id)
 
     def form_invalid(self, formset):
         """Handle invalid form"""
@@ -701,6 +714,217 @@ def index(request: HttpResponse):
 
     # return HttpResponse("Hello, world. You're at the drinq index.")
     return render(request, 'drinq/index.html')
+
+
+class TechnologyPropertiesView(generic.FormView):
+    """Collect technology-level property values (those flagged as
+    design parameters). Persist them, run the performance calculator and
+    redirect to the results page.
+    """
+    template_name = 'drinq/form_technology-properties.html'
+    form_class = TechnologyPropertyValueFormSet
+
+    def get_treatment_plant(self):
+        return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
+
+    def get_form(self, form_class=None):
+        treatment_plant = self.get_treatment_plant()
+        queryset = TreatmentPlantTechnologyPropertyValue.objects.filter(
+            treatmentplant=treatment_plant)
+        initial = []
+        if not queryset.exists():
+            initial = build_technology_property_initials(treatment_plant)
+
+        # If there are no persisted rows, create a dynamic formset with
+        # `extra=len(initial)` so the provided initial entries are
+        # rendered as editable forms.
+        if not queryset.exists() and initial:
+            from django.forms import modelformset_factory
+            DynamicTechFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TechnologyPropertyValueForm,
+                extra=len(initial)
+            )
+            if self.request.method == 'POST':
+                return DynamicTechFormSet(self.request.POST, queryset=queryset, initial=initial)
+            return DynamicTechFormSet(queryset=queryset, initial=initial)
+
+        if self.request.method == 'POST':
+            return TechnologyPropertyValueFormSet(self.request.POST, queryset=queryset, initial=initial)
+        return TechnologyPropertyValueFormSet(queryset=queryset, initial=initial)
+
+    def form_valid(self, formset):
+        treatment_plant = self.get_treatment_plant()
+        if not formset.is_valid():
+            return self.form_invalid(formset)
+
+        saved = []
+        for form in formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data:
+                continue
+            if form.cleaned_data.get('DELETE', False):
+                if form.instance.pk:
+                    form.instance.delete()
+                continue
+            instance = form.save(commit=False)
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
+            instance.save()
+            saved.append(instance)
+
+        # Run performance calculations after tech properties saved
+        # gather technologies and stages
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).values_list('technology', flat=True)
+        technology_names = [Technology.objects.get(id=t).name for t in tech_ids]
+
+        stage_ids = StageTechnologies.objects.filter(
+            technology__in=tech_ids).values_list('stage', flat=True).distinct()
+        stage_names = [Stage.objects.get(id=s).name for s in stage_ids]
+
+        # build design parameter dict
+        design_parameters = {
+            dp.designparameter.name: dp.value
+            for dp in TreatmentplantDesignParameter.objects.filter(
+                treatmentplant=treatment_plant)
+        }
+
+        plant_calculator = dac.TreatmentPlantPerformanceCalculator(
+            treatmentplant_id=treatment_plant.id,
+            stages=stage_names,
+            technologies=technology_names,
+            design_parameters=design_parameters,
+        )
+
+        perf_indic = {}
+
+        # Step 1: calculate nominal flow
+        try:
+            perf_indic['nominal flow'] = plant_calculator.get_nominal_flow_m3hr()  # noqa, E501
+        except Exception:
+            perf_indic['nominal flow'] = None
+
+        # Step 2: initialize technology-dependent calculations
+        tech_calculator = dac.TechnologyPerformanceCalculator(
+            treatmentplant_id=treatment_plant.id,
+            stages=stage_names,
+            technologies=technology_names,
+            design_parameters=design_parameters,
+            tech_parameters={},
+        )
+
+        # TODO: first, collect the technology properties from the formset and 
+        # use these for:
+        #  1) calculating technology dependent variables (e.g., energy use, area, etc.)
+        #  2) calculating construction costs
+        for tech_id in tech_ids:
+            pass
+
+
+        # compute construction costs if possible (replicate existing helper)
+        constrcosts = {}
+        for tech_id in tech_ids:
+            try:
+                tcp = TechnologyConstructionCostParameter.objects.filter(
+                    technology_id=tech_id).first()
+                if tcp:
+                    if tcp.technologyproperty:
+                        techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
+                            treatmentplant=treatment_plant,
+                            technology_id=tech_id,
+                            technologyproperty=tcp.technologyproperty
+                        ).value
+                    constrcosts[Technology.objects.get(id=tech_id).name] = {
+                        'a': tcp.a, 'b': tcp.b, 'c': tcp.c,
+                        'technologyproperty': tcp.technologyproperty
+                        if tcp.technologyproperty else None,
+                        'technologyproperty_value': techprop_value
+                    }
+            except TechnologyConstructionCostParameter.DoesNotExist:
+                continue
+        try:
+            perf_indic['construction costs'] = plant_calculator.get_constructioncosts(
+                plant_properties=perf_indic, cost_parameters=constrcosts)
+            # Fix the Dummy technology error by checking the database
+        except Exception:
+            perf_indic['construction costs'] = None
+
+        # persist computed plant-wide properties
+        for prop_name, val in perf_indic.items():
+            if val is None:
+                continue
+            prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(name=prop_name)
+            TreatmentPlantPropertyValue.objects.update_or_create(
+                treatmentplant=treatment_plant,
+                property=prop_obj,
+                defaults={'value': str(val)}
+            )
+
+        return redirect('design_parameter_results', plant_id=treatment_plant.id)
+
+    def form_invalid(self, formset):
+        return self.render_to_response(self.get_context_data(formset=formset))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        treatment_plant = self.get_treatment_plant()
+        formset = context.get('form') or self.get_form()
+
+        # Build ordered technologies from TreatmentPlantLayout (by step)
+        layouts = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).order_by('step').select_related('technology')
+        tech_order = [lay.technology for lay in layouts]
+
+        # Map tech id to Technology instance
+        tech_map = {tech.id: tech for tech in tech_order}
+
+        # Group forms by technology id preserving order
+        from collections import OrderedDict
+        forms_by_tech = OrderedDict()
+        for tech in tech_order:
+            forms_by_tech[tech] = []
+
+        # For each form in the formset, determine its technology and attach
+        # the form along with the human-readable property name
+        from drinq.models import TechnologyProperty
+        for form in formset.forms:
+            # determine technology id from instance (saved) or initial
+            tech_id = None
+            if getattr(form.instance, 'technology', None):
+                tech_id = form.instance.technology.id
+            else:
+                tech_id = form.initial.get('technology')
+            prop_id = None
+            if getattr(form.instance, 'technologyproperty', None):
+                prop_id = form.instance.technologyproperty.id
+            else:
+                prop_id = form.initial.get('technologyproperty')
+            tech = tech_map.get(tech_id)
+            prop_name = None
+            prop_unit = None
+            prop_help = None
+            if prop_id:
+                try:
+                    prop = TechnologyProperty.objects.get(id=prop_id)
+                    prop_name = prop.name
+                    prop_unit = prop.unit
+                    prop_help = prop.description
+                except TechnologyProperty.DoesNotExist:
+                    prop_name = str(prop_id)
+            if tech is not None:
+                forms_by_tech[tech].append({
+                    'form': form,
+                    'prop_name': prop_name,
+                    'prop_unit': prop_unit,
+                    'prop_help': prop_help,
+                })
+
+        context['forms_by_tech'] = forms_by_tech
+        context['treatment_plant'] = treatment_plant
+        context['formset'] = formset
+        return context
 
 
 def db_stats(request: HttpResponse):

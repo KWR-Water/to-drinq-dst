@@ -69,6 +69,11 @@ urlpatterns = [
         views.DesignParameterResultsView.as_view(),
         name='design_parameter_results'
     ),
+    path(
+          'treatmentplant/<int:plant_id>/technology/',
+          views.TechnologyPropertiesView.as_view(),
+          name='technology_properties'
+     ),
     path('api/process_parameters/',
          DigestDesignParametersAPI.as_view(),
          name='api_process_parameters'),

@@ -74,8 +74,6 @@ class DigestingDesignParametersAPITest(TestCase):
                 str(self.largescale_cons.id): 2000.0,  # m3/day
                 str(self.leakage_factor.id): 0.15  # leakage factor (0 to 1)
             },
-            # "technologies": ["Technology1", "Technology2"],
-            # "stages": ["Stage1", "Stage2"]
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 200)

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<body class="bg-light">
+<div class="container mt-4">
+  <h1 class="mb-3">Technology Properties</h1>
+  <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong>.</p>
+
+  <div class="card shadow-sm p-3 bg-white">
+    <form method="post">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      {% for tech, items in forms_by_tech.items %}
+      <div class="mb-4">
+        <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th style="width:50%">Property</th>
+                <th style="width:15%">Value</th>
+                <th style="width:35%">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td class="align-middle">{{ item.prop_name }}</td>
+                <td>
+                  {# Render the value field only; keep hidden fields for binding #}
+                  {{ item.form.value }}
+                  {{ item.form.technology }}
+                  {{ item.form.technologyproperty }}
+                  {% if item.form.id %}{{ item.form.id }}{% endif %}
+                  {% if item.prop_help %}
+                    <div class="form-text text-muted small mt-1">{{ item.prop_help }}</div>
+                  {% endif %}
+                </td>
+                <td class="align-middle small text-muted">{% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-secondary">Back</a>
+        <button type="submit" class="btn btn-primary">Calculate results</button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+
+{% endblock %}

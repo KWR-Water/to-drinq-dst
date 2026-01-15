@@ -80,6 +80,37 @@ class CompoundSynonym(models.Model):
         return f'{self.synonym} ({self.cid})'
 
 
+class ChemicalAgent(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    slug = models.TextField(unique=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'chemicalagent'
+        verbose_name_plural = "chemical agents"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.id})"
+
+
+class ChemicalagentPrice(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    chemical_agent = models.ForeignKey(
+        ChemicalAgent, on_delete=models.CASCADE,
+        db_column='chemical_agent')
+    value = models.FloatField(blank=True, null=False)
+    unit_price = models.TextField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'chemicalagent_price'
+        verbose_name_plural = "chemical agent prices"
+
+    def __str__(self) -> str:
+        return f"{self.chemical_agent}: {self.value} {self.unit_price}"
+
+
 class MultiStepConfiguration(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True, max_length=500)
@@ -451,23 +482,6 @@ class Process(models.Model):
         return f"{self.name}"
 
 
-# class ProcessPerTechnology(models.Model):
-#     id = models.AutoField(primary_key=True, unique=True)
-#     # The composite primary key (process_id, technology_id) found, that is not supported. The first column is selected.
-#     process = models.OneToOneField(
-#         Process, models.DO_NOTHING, blank=True, null=True)
-#     technology = models.ForeignKey(
-#         'Technology', models.DO_NOTHING, blank=True, null=True)
-
-#     class Meta:
-#         # managed = False
-#         db_table = 'process_per_technology'
-#         verbose_name_plural = 'processes per technology'
-
-#     def __str__(self):
-#         return f"{self.technology} ({self.process})"
-
-
 class RemovalEfficiency(models.Model):
     cid = models.ForeignKey(Compound, models.DO_NOTHING,
                             db_column='cid', blank=True, null=True)
@@ -563,7 +577,7 @@ class TechnologyProperty(models.Model):
         return f"{self.name} [unit {self.unit}] (id: {self.id})"
 
 
-class TechnologyPropertyDefault(models.Model):
+class TechnologyPropertyJunction(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     technology = models.ForeignKey(
         'Technology', on_delete=models.CASCADE,
@@ -572,6 +586,9 @@ class TechnologyPropertyDefault(models.Model):
         'TechnologyProperty', on_delete=models.CASCADE,
         db_column='property')
     defaultvalue = models.FloatField(blank=True, null=False)
+    is_designparameter = models.BooleanField(
+        default=0, null=False,
+        db_column='is_designparameter')
 
     class Meta:
         # managed = False
@@ -596,7 +613,7 @@ class DesignTree(models.Model):
         return f"{self.name}"
 
 
-class TechnologyDecidingFactors(models.Model):
+class TechnologyDecidingFactorJunction(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     choice = models.ForeignKey(
         DecidingFactorChoice, on_delete=models.CASCADE,
@@ -638,6 +655,61 @@ class TechnologyConstructionCostParameter(models.Model):
 
     def __str__(self):
         return f"{self.id} [{self.technology}] ({self.a}, {self.b}, {self.c})"
+
+
+class TechnologyKPI(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(blank=True, null=False, db_column='name')
+    description = models.TextField(
+        blank=True, null=True, db_column='description')
+    unit = models.TextField(blank=True, null=False, db_column='unit')
+
+    class Meta:
+        # managed = False
+        db_table = 'technologykpi'
+        verbose_name_plural = "technology KPIs"
+
+    def __str__(self):
+        return f"{self.name} ({self.unit})"
+
+
+class TechnologyKPIJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, db_column='technology')
+    kpi = models.ForeignKey(
+        TechnologyKPI, on_delete=models.CASCADE, db_column='kpi')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_kpi_junction'
+        verbose_name_plural = "technology KPI junctions"
+
+    def __str__(self):
+        tech = Technology.objects.get(pk=self.technology)
+        kpi = TechnologyKPI.objects.get(pk=self.kpi)
+        return f"Technology: {tech.name}, KPI: {kpi.name}"
+
+
+class TreatmentPlantTechnologyKPIValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant, on_delete=models.CASCADE, db_column='treatmentplant')
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, db_column='technology')
+    kpi = models.ForeignKey(
+        TechnologyKPI, on_delete=models.CASCADE, db_column='kpi')
+    value = models.FloatField(blank=True, null=False)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_technologykpi_value'
+        verbose_name_plural = "treatment plant technology KPI values"
+
+    def __str__(self):
+        tech = Technology.objects.get(pk=self.technology)
+        kpi = TechnologyKPI.objects.get(pk=self.kpi)
+        return f"Treatment plant: {self.treatmentplant}, KPI: {kpi.name} of technology {tech}, value: {self.value}"  # noqa: E501
 
 
 class ConfiguredTechnologies(models.Model):
@@ -694,6 +766,25 @@ class TechnologyRelatedtechnology(models.Model):
         tech_name = Technology.objects.get(pk=self.technology).name
         relatedtech_name = Technology.objects.get(pk=self.related_technology).name
         return f"Technology: {tech_name}, related technology: {relatedtech_name}"
+
+
+class TechnologyChemicalagent(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technology')
+    chemical_agent = models.ForeignKey(
+        ChemicalAgent, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='chemical_agent')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_chemicalagent'
+
+    def __str__(self) -> str:
+        tech_name = Technology.objects.get(pk=self.technology).name
+        chemical_agent = ChemicalAgent.objects.get(pk=self.chemical_agent).name
+        return f"Technology: {tech_name}, chemical agent: {chemical_agent}"
 
 
 class Watercompany(models.Model):
