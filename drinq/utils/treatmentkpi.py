@@ -26,6 +26,13 @@ KPI_MAPPINGS = {
     'co2 emissions': 'co2_emissions__kg_co2_eq_per_m3',
 }
 
+# IMPORTANT PROPERTIES FOR COST CALCULATIONS
+# - volume (m3)
+# - filter area (m2)
+# - membrane area (m2)
+# - dosing flow rate (1e-3 m3/hr) []
+# - area (m2) [Strainer, Microstrainer, Chain-scraped sedimentation tank, Lamella clarifier, DAF, PAC, Pellet softening, sludge blanket filtr]  # noqa, E501
+
 # We import all the parameter names from a json file. This file SHOULD BE kept
 # in sync with the database table "technologyproperty"!
 with open("drinq/utils/treatmentpropertyname.json", "r") as file:
@@ -514,7 +521,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Strainer
+        return 0.0  # TODO: implement chemical dosing mass calculation
 
     def hydraulic_headloss__bar(self) -> float:
         # TODO: verify formula with Greg

@@ -5,7 +5,7 @@
 <body class="bg-light">
 <div class="container mt-4">
   <h1 class="mb-3">Technology Properties</h1>
-  <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong>.</p>
+  <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong> at the bottom of this page.</p>
 
   <div class="card shadow-sm p-3 bg-white">
     <form method="post">
@@ -19,26 +19,28 @@
           <table class="table table-bordered table-sm">
             <thead class="thead-light">
               <tr>
-                <th style="width:50%">Property</th>
-                <th style="width:15%">Value</th>
-                <th style="width:35%">Description</th>
+                <th style="width:30%">Property</th>
+                <th style="width:10%">Value</th>
+                <th style="width:60%">Description</th>
               </tr>
             </thead>
             <tbody>
               {% for item in items %}
               <tr>
-                <td class="align-middle">{{ item.prop_name }}</td>
+                <td class="align-top">{{ item.prop_name }}</td>
                 <td>
                   {# Render the value field only; keep hidden fields for binding #}
                   {{ item.form.value }}
+                  <div class="form-text text-muted small mt-1">
+                    {% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}
+                  </div>
+                </td>
+                <td class="align-top text-muted">
                   {{ item.form.technology }}
                   {{ item.form.technologyproperty }}
                   {% if item.form.id %}{{ item.form.id }}{% endif %}
-                  {% if item.prop_help %}
-                    <div class="form-text text-muted small mt-1">{{ item.prop_help }}</div>
-                  {% endif %}
+                  {% if item.prop_help %}{{ item.prop_help }}{% endif %}                  
                 </td>
-                <td class="align-middle small text-muted">{% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}</td>
               </tr>
               {% endfor %}
             </tbody>

@@ -1,6 +1,6 @@
 import numpy as np
 
-from drinq.api_treatmentkpi import (
+from drinq.utils.treatmentkpi import (
     Strainer,
     CascadeMixerCoagulationDosing, 
     CoagulationDynamicMixing,

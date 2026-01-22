@@ -1,6 +1,6 @@
 import unittest
 
-from drinq.api_treatmentkpi import (
+from drinq.utils.treatmentkpi import (
     TreatmentKPI,
     TreatmentDataclassMixin,
     CoagulationDynamicMixing,
