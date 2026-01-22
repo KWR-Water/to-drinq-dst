@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from drinq.utils.unit_conversions import (
     lppd_to_m3phr, bar_to_meters_of_water, meters_of_water_to_bar)
 from drinq.utils.physics_and_chemistry import (
@@ -44,8 +45,24 @@ def match_kpi(kpi_fullname: str) -> str:
     raise ValueError(f"KPI '{kpi_fullname}' not found in available KPIs.")
 
 
-class TreatmentKPI(ABC):
+@dataclass
+class TreatmentDataclassMixin:
+    """Dataclass mixin for treatment KPIs."""
+    parameters: dict
+    design_parameters: dict
+    performance_indicators: dict
+    wq_parameters: dict | None = None
+
+    def __post_init__(self):
+        self.parameters = self.parameters
+        self.wq_parameters = self.wq_parameters
+        self.design_parameters = self.design_parameters
+        self.performance_indicators = self.performance_indicators
+
+
+class TreatmentKPI(ABC, TreatmentDataclassMixin):
     """Abstract base class for treatment KPIs."""
+
     @abstractmethod
     def get_kpi(self, kpi_name: str) -> float:
         """Get the value of the specified KPI.
@@ -60,7 +77,8 @@ class TreatmentKPI(ABC):
 
     @abstractmethod
     def __repr__(self):
-        raise NotImplementedError("Subclasses should implement this method")
+        """Return a string representation of the current treatment KPI."""
+        return f"{self.__class__.__name__}()"
 
     @abstractmethod
     def get_kpi_dict(self) -> dict:
@@ -272,12 +290,33 @@ def calculate_water_demand_m3hr_for_population(
 
 
 class CoagulationDynamicMixing(TreatmentKPI):
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    """KPI calculations for a Coagulation with Dynamic Mixing treatment unit."""
+    tank_height: float
+    chem_tank_height: float
+    lanes: int
+    nominal_flow_m3hr: float
+    units_per_lane: int
+    conc_chem_mgL: float
+    solution_wwperc: float
+    density_chemical: float
+    retention_time_min: float
+    storage_time_days: float
+    efficiency_mixer: float
+    mixer_velocity_grad: float
+    water_viscosity: float
+    flow_per_lane: float
+    unit_volume_m3: float
+    unit_area_m2: float
+    tanks_area_m2: float
+    volume_chemical_day: float
+    chemicals_area_m2: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.performance_indicators
+
         self.tank_height = parameters[TPN['tank_height']]
         self.chem_tank_height = parameters[TPN['tank_height_chemical_storage']]
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -379,12 +418,22 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
 class CascadeMixerCoagulationDosing(TreatmentKPI):
     """KPI calculations for a Cascade treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    weir_height: float
+    tank_height: float
+    units_per_lane: int
+    weir_coefficient: float
+    headloss_coefficient: float
+    chem_dosing_solution_concentration_w_w: float
+    power_for_dosing_kw: float
+    target_chemical_concentration_mgL: float
+    power_efficiency_mixer: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.performance_indicators
+
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
         self.units_per_lane = design_parameters.get('units per lane', 1)
@@ -494,12 +543,22 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
 
 class Strainer(TreatmentKPI):
     """KPI calculations for a strainer or microstrainer treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    bar_spacing: float
+    bar_width: float
+    blockage_factor: float
+    open_area_friction: float
+    nominal_flow_m3perh: float
+    screen_velocity_mpersec: float
+    lanes: int
+    flow_per_lane_m3perh: float
+    headloss_coefficient: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.performance_indicators
+
         self.bar_spacing = parameters[TPN['bar_spacing']]
         self.bar_width = parameters[TPN['bar_width']]
         self.blockage_factor = parameters[TPN['blockage_factor']]
@@ -571,12 +630,23 @@ class Strainer(TreatmentKPI):
 
 class ChainScrapedSedimentation(TreatmentKPI):
     """KPI calculations for a Chain Scraped Sedimentation treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    lanes: int
+    units_per_lane: int
+    flow_m3perh: float
+    flow_m3persec: float
+    flow_per_lane_m3perh: float
+    retention_time_min: float
+    scraper_power_per_m2: float
+    total_suspended_solids: float
+    overflow_rate_m3_per_m2_per_h: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.performance_indicators
+        wq_parameters = self.wq_parameters
+
         self.lanes = design_parameters.get('number of lanes', 1)
         self.units_per_lane = design_parameters.get('units per lane', 1)
         self.flow_m3perh = performance_indicators.get(
@@ -586,7 +656,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
             self.lanes, self.flow_m3perh)
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.scraper_power_per_m2 = parameters[TPN['scraper_power_coefficient']]
-        self.total_suspended_solids = performance_indicators.get(
+        self.total_suspended_solids = wq_parameters.get(
             'total suspended solids (mg/l)', 0)
         self.overflow_rate_m3_per_m2_per_h = design_parameters['overflow rate (m3/m2/h)']
         self.unit_area_m2 = (self.flow_per_lane_m3perh /
@@ -596,6 +666,10 @@ class ChainScrapedSedimentation(TreatmentKPI):
             self.flow_m3perh * self.retention_time_min / 60) / (
                 self.lanes * self.units_per_lane)
         self.tank_height_m = self.unit_volume_m3 / self.unit_area_m2
+
+    def __repr__(self):
+        return f"ChainScrapedSedimentation(retention time (min)={self.retention_time_min}, " \
+                f"nominal flow (m3/hr)={self.flow_m3perh})"
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -645,12 +719,26 @@ class ChainScrapedSedimentation(TreatmentKPI):
 
 class ChlorineDisinfection(TreatmentKPI):
     """KPI calculations for a Chlorine Disinfection treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    tank_height_m: float
+    chemicals_tank_height_m: float
+    lanes: int
+    units_per_lane: int
+    nominal_flow_m3perh: float
+    flow_per_lane_m3perh: float
+    storage_time_days: float
+    power_of_dosing_kw: float
+    retention_time_min: float
+    target_residual_chlorine_mgL: float
+    chlorine_dosing_mgL: float
+    chlorine_solution_w_w: float
+    chlorine_concentration_mgL: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.performance_indicators
+
         self.units_per_lane = design_parameters.get('units per lane', 1)        
         self.lanes = design_parameters.get('number of lanes', 1)
         self.tank_height_m = parameters[

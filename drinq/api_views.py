@@ -262,11 +262,13 @@ class DigestDesignParametersAPI(APIView):
         # If technology property values are provided, validate and persist them
         tech_props_input = request.data.get('technology_properties')
         if tech_props_input:
-            from drinq.serializers import TreatmentPlantTechnologyPropertySerializer
+            from drinq.serializers import TreatmentPlantTechnologyPropertySerializer  # noqa E501
 
-            tech_serializer = TreatmentPlantTechnologyPropertySerializer(data=tech_props_input, many=True)
+            tech_serializer = TreatmentPlantTechnologyPropertySerializer(
+                data=tech_props_input, many=True)
             if not tech_serializer.is_valid():
-                return Response(tech_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    tech_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             for item in tech_serializer.validated_data:
                 tech_id = item.get('technology')
@@ -313,7 +315,7 @@ class DigestDesignParametersAPI(APIView):
             prp for prp in PLANT_PROPERTIES_TO_CALCULATE 
             if 'construction costs' in prp][0]
 
-        computed_plantwide[nominalflow_prop_name] = calculator.get_nominal_flow_m3hr()
+        computed_plantwide[nominalflow_prop_name] = calculator.get_nominal_flow_m3hr()  # noqa E501
         constrcost_pars = get_constrcost_parameters(
             technology_list=technologies.values_list('technology', flat=True))
         computed_plantwide[constrcost_prop_name] = calculator.get_constructioncosts(

@@ -1,0 +1,6 @@
+﻿id,name,description,unit
+1,temperature,temperature of water,degr. Celcius
+2,dissolved organic carbon,dissolved organic carbon,mg/liter
+3,turbidity,turbidity of solution,NTU
+4,total suspended solids,TSS (total suspended solids),
+5,dynamic viscosity,dynamic viscosity (N*s/m2),N*s/m^2

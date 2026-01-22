@@ -798,3 +798,65 @@ class Watercompany(models.Model):
     def __str__(self) -> str:
         return f"{self.name}"
 
+
+class WaterqualityParameter(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
+    unit = models.TextField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'waterqualityparameter'
+        verbose_name_plural = "water quality parameters"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.id})"
+
+
+class WaterqualityParameterTechnologyJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    waterqualityparameter = models.ForeignKey(
+        WaterqualityParameter,
+        on_delete=models.CASCADE,
+        db_column='waterqualityparameter', related_name='wqp_technologies')
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE,
+        db_column='technology', related_name='technology_wqps')
+    is_userdefined = models.BooleanField(
+        default=0, null=False,
+        db_column='is_userdefined')
+    default_value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'waterqualityparameter_technology'
+        verbose_name_plural = "water quality parameter technology junctions"
+
+    def __str__(self) -> str:
+        wqp = WaterqualityParameter.objects.get(pk=self.waterqualityparameter)
+        tech = Technology.objects.get(pk=self.technology)
+        return f"Water quality parameter: {wqp.name}, technology: {tech.name}, default value: {self.default_value}"  # noqa: E501
+
+
+class TreatmentPlantWaterQualityParameterValue(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant,
+        on_delete=models.CASCADE,
+        db_column='treatmentplant')
+    waterqualityparameter = models.ForeignKey(
+        WaterqualityParameter,
+        on_delete=models.CASCADE,
+        db_column='waterqualityparameter')
+    value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_wqparametervalue'
+        verbose_name_plural = "treatment plant water quality parameter values"
+
+    def __str__(self):
+        wqp = WaterqualityParameter.objects.get(
+            pk=self.waterqualityparameter)
+        return f"Treatment plant: {self.treatmentplant}, WQ parameter: {wqp.name}, value: {self.value}"  # noqa: E501

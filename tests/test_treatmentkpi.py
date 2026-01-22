@@ -1,9 +1,11 @@
 import unittest
 
 from drinq.api_treatmentkpi import (
-    TreatmentKPI, 
+    TreatmentKPI,
+    TreatmentDataclassMixin,
     CoagulationDynamicMixing,
     CascadeMixerCoagulationDosing,
+    ChainScrapedSedimentation,
     Strainer,
     ChlorineDisinfection,
     ChloramineDisinfection)
@@ -230,4 +232,109 @@ class TestChlorineDisinfection(unittest.TestCase):
         self.assertAlmostEqual(daily_mass_kg, 2.4, places=1)
 
     # TODO: Add more tests for ChlorineDisinfection methods
+
+
+class DummyTreatmentKPI(TreatmentKPI):
+    def get_kpi(self, kpi_name: str) -> float:
+        return 42.0
+    def __repr__(self):
+        return "DummyTreatmentKPI()"
+    def get_kpi_dict(self) -> dict:
+        return {"dummy": 42.0}
+    @property
+    def footprint_area__m2(self) -> float:
+        return 1.0
+    @property
+    def footprint_area_for_chemicals__m2(self) -> float:
+        return 2.0
+    @property
+    def daily_energy_consumption__kwh(self) -> float:
+        return 3.0
+    @property
+    def daily_mass_of_chemicals__kg(self) -> float:
+        return 4.0
+    @property
+    def hydraulic_headloss__bar(self) -> float:
+        return 5.0
+    @property
+    def power__kw(self) -> float:
+        return 6.0
+
+
+class TestTreatmentDataclassMixin(unittest.TestCase):
+    def test_post_init_assigns_attributes(self):
+        class Dummy(TreatmentDataclassMixin):
+            def __init__(
+                    self,
+                    parameters,
+                    design_parameters,
+                    performance_indicators,
+                    wq_parameters=None):
+                self.parameters = parameters
+                self.design_parameters = design_parameters
+                self.performance_indicators = performance_indicators
+                self.wq_parameters = wq_parameters
+                self.__post_init__()
+        params = {"a": 1}
+        design = {"b": 2}
+        perf = {"c": 3}
+        wq = {"d": 4}
+        dummy = Dummy(params, design, perf, wq)
+        self.assertEqual(dummy.parameters, params)
+        self.assertEqual(dummy.design_parameters, design)
+        self.assertEqual(dummy.performance_indicators, perf)
+        self.assertEqual(dummy.wq_parameters, wq)
+
+
+class TestChainScrapedSedimentation(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 4.0,
+            'retention time (min)': 60.0,
+            'scraper power coefficient': 0.1,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'units per lane': 3,
+            'overflow rate (m3/m2/h)': 5.0,
+        }
+        self.performance_indicators = {
+            'nominal flow rate (m3/hr)': 120.0,
+        }
+        self.wq_parameters = {
+            'total suspended solids (mg/l)': 150.0,
+        }
+
+    def test_init(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            performance_indicators=self.performance_indicators,
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertTrue(sedimentation.scraper_power_per_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
+        self.assertTrue(sedimentation.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
+        self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
+        self.assertTrue(sedimentation.flow_m3perh == self.performance_indicators['nominal flow rate (m3/hr)'])  # noqa, E501
+
+
+class TestTreatmentKPIAbstract(unittest.TestCase):
+    def setUp(self):
+        class IncompleteKPI(TreatmentKPI):
+            pass
+        with self.assertRaises(TypeError):
+            IncompleteKPI(
+                parameters={},
+                design_parameters={},
+                performance_indicators={},
+            )
+        self.IncompleteKPI = IncompleteKPI
+
+    def test_abstract_methods_raise(self):
+        with self.assertRaises(TypeError):
+            instance = object.__new__(self.IncompleteKPI)
+        # kpi = object.__new__(self.IncompleteKPI)
+        # with self.assertRaises(NotImplementedError):
+        #     instance.get_kpi("any")
+
 
