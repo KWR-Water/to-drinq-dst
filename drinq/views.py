@@ -8,7 +8,6 @@ from django.http import (
 from django.views import generic
 from django.forms import ValidationError
 from django.urls import reverse, reverse_lazy
-from accounts.models import CustomUser
 from drinq.models import (
     Compound,
     CompoundCas,
@@ -21,6 +20,9 @@ from drinq.models import (
     QuestionAnswer,
     MultiStepConfiguration,
     DesignParameter,
+    TechnologyKPI,
+    TechnologyProperty,
+    TechnologyPropertyJunction,
     TreatmentPlant,
     TreatmentPlantLayout,
     TreatmentplantDesignParameter,
@@ -43,6 +45,8 @@ from drinq.forms import (
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
 import drinq.api_calculation as dac
+# from drinq.api_views import TPPN  # Treatment Plant Property Names
+from drinq.utils.treatmentkpi import TPPN, TPN
 
 
 EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
@@ -666,10 +670,9 @@ class DesignParameterInputView(generic.FormView):
             )
 
         # Calculate and store plant properties
-        
         nominal_flow_value = plant_calculator.get_nominal_flow_m3hr()
         nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
-            name='nominal flow (m3/hr)')
+            name=TPPN["nominal_flow_rate_m3perh"])
         # TODO: area footprint, energy consumption, construction costs
         construction_costs = plant_calculator.get_constructioncosts(
             plant_properties={},
@@ -777,8 +780,10 @@ class TechnologyPropertiesView(generic.FormView):
         # Run performance calculations after tech properties saved
         # gather technologies and stages
         tech_ids = TreatmentPlantLayout.objects.filter(
-            treatmentplant=treatment_plant).values_list('technology', flat=True)
-        technology_names = [Technology.objects.get(id=t).name for t in tech_ids]
+            treatmentplant=treatment_plant).values_list(
+                'technology', flat=True)
+        technology_names = [
+            Technology.objects.get(id=t).name for t in tech_ids]
 
         stage_ids = StageTechnologies.objects.filter(
             technology__in=tech_ids).values_list('stage', flat=True).distinct()
@@ -799,29 +804,92 @@ class TechnologyPropertiesView(generic.FormView):
         )
 
         perf_indic = {}
+        wq_parameters = {tech: None for tech in technology_names}
 
         # Step 1: calculate nominal flow
+        # ------------------------------
         try:
-            perf_indic['nominal flow'] = plant_calculator.get_nominal_flow_m3hr()  # noqa, E501
+            perf_indic[TPPN['nominal_flow_rate_m3perh']] = plant_calculator.get_nominal_flow_m3hr()  # noqa, E501
         except Exception:
-            perf_indic['nominal flow'] = None
+            perf_indic[TPPN['nominal_flow_rate_m3perh']] = None
 
         # Step 2: initialize technology-dependent calculations
+        # ----------------------------------------------------
+        # The technology_properties dictionary contains the property values
+        # for each technology in the treatment plant.
+        tech_properties = {}
+        defaultval_tech_props = {}
+        digested_tech_prop_names = {}
+        all_tech_properties = TechnologyProperty.objects.all()
+        for tech_id in tech_ids:
+            technology = Technology.objects.get(id=tech_id)
+            tech_properties[technology.name] = {}
+            digested_tech_prop_names[technology.name] = []
+            defaultval_tech_props[technology.name] = {}
+            for def_tp in TechnologyPropertyJunction.objects.filter(
+                        technology=technology, is_designparameter=False):
+                if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
+                    defaultval_tech_props[technology.name].update(
+                        {
+                            def_tp.property.name: def_tp.default_value
+                        })
+            for isdigested_tp in TechnologyPropertyJunction.objects.filter(
+                        technology=technology, is_digested=True):
+                digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
+            for tp in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                        treatmentplant=treatment_plant,
+                        technology=Technology.objects.get(id=tech_id)
+                    ):
+                tech_properties[tp.technology.name].update(
+                    {tp.technologyproperty.name: tp.value})
+        # Merge the default values with the user-specified properties        
+        for tech_name in technology_names:
+            tech_properties[tech_name] = {
+                **defaultval_tech_props[tech_name],
+                **tech_properties[tech_name]
+            }
+        technology_kpis = [
+            tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
+
+        # Instantiate the Technology Performance Calculator
         tech_calculator = dac.TechnologyPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stage_names,
             technologies=technology_names,
             design_parameters=design_parameters,
-            tech_parameters={},
+            tech_parameters=tech_properties,
+            waterquality_parameters=wq_parameters,
+            plant_kpis=perf_indic,
+            tech_kpinames=technology_kpis,
+            digested_tech_parameter_list=digested_tech_prop_names,
         )
+        tech_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
+        tech_calculator.sum_kpis()  # TODO: debug / test
 
-        # TODO: first, collect the technology properties from the formset and 
-        # use these for:
-        #  1) calculating technology dependent variables (e.g., energy use, area, etc.)
-        #  2) calculating construction costs
-        for tech_id in tech_ids:
-            pass
-
+        # Save the digested technology properties back to the database
+        for tech_name in technology_names:
+            for prop_name in tech_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
+                try:
+                    prop_value = tech_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
+                    tech_obj = Technology.objects.get(name=tech_name)
+                    prop_obj = TechnologyProperty.objects.get(name=prop_name)
+                    TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech_obj,
+                        technologyproperty=prop_obj,
+                        defaults={'value': str(prop_value)}
+                    )
+                except TechnologyProperty.DoesNotExist:
+                    continue
+        
+        # Step 3: compute plant-wide properties
+        # --------------------------------------
+        # TODO: debug / test
+        plant_kpis = tech_calculator.summed_kpis
+        for kpi in plant_kpis.keys():
+            if kpi in TPPN.values():
+                perf_indic[kpi] = plant_kpis[kpi]
+        plant_calculator.plant_kpis = perf_indic  # overwrite with tech-calculated summed KPIs
 
         # compute construction costs if possible (replicate existing helper)
         constrcosts = {}
@@ -845,24 +913,26 @@ class TechnologyPropertiesView(generic.FormView):
             except TechnologyConstructionCostParameter.DoesNotExist:
                 continue
         try:
-            perf_indic['construction costs'] = plant_calculator.get_constructioncosts(
+            perf_indic[TPPN['construction_costs']] = plant_calculator.get_constructioncosts(
                 plant_properties=perf_indic, cost_parameters=constrcosts)
             # Fix the Dummy technology error by checking the database
         except Exception:
-            perf_indic['construction costs'] = None
+            perf_indic[TPPN['construction_costs']] = None
 
-        # persist computed plant-wide properties
+        # Step 4: update plant-wide properties (KPIs)
+        # --------------------------------------------
         for prop_name, val in perf_indic.items():
             if val is None:
                 continue
-            prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(name=prop_name)
+            prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(name=prop_name)  # noqa, E501
             TreatmentPlantPropertyValue.objects.update_or_create(
                 treatmentplant=treatment_plant,
                 property=prop_obj,
                 defaults={'value': str(val)}
             )
 
-        return redirect('design_parameter_results', plant_id=treatment_plant.id)
+        return redirect(
+            'design_parameter_results', plant_id=treatment_plant.id)
 
     def form_invalid(self, formset):
         return self.render_to_response(self.get_context_data(formset=formset))

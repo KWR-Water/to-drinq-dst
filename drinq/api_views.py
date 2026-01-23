@@ -24,11 +24,23 @@ from drinq.serializers import (
     TreatmentPlantPropertyValueSerializer,
 )
 from drinq.api_calculation import TreatmentPlantPerformanceCalculator
+import json
+
+with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
+    # NOTE: property names must match those in the
+    # TreatmentPlantProperty table!!
+    TPPN = json.load(file)
+
 
 PLANT_PROPERTIES_TO_CALCULATE = [
-    'nominal flow rate (m3/hr)',
-    'construction costs',
-    # Add more properties as needed
+    TPPN["nominal_flow_rate_m3perh"],
+    TPPN["area_footprint_m2"],
+    TPPN["volume_m3"],
+    TPPN["construction_costs_eurperm3"],
+    TPPN["investment_costs"],
+    TPPN["operation_and_maintenance_costs"],
+    TPPN["energy_consumption_kwh"],
+    TPPN["co2_equivalent_emissions_tonperyear"],
 ]
 
 
@@ -95,7 +107,7 @@ def get_technology_properties(
                         property=child_prop).first()
                     if child_default:
                         prop_name = child_prop.name
-                        default_value = child_default.defaultvalue
+                        default_value = child_default.default_value
                     else:
                         prop_name = child_prop.name
                         default_value = 0
@@ -104,7 +116,7 @@ def get_technology_properties(
                 technology=tech.technology,
                 property=prop.property).first()
             if prop_default:
-                default_value = prop_default.defaultvalue
+                default_value = prop_default.default_value
                 prop_name = prop.property.name
             else:
                 raise prop_default.DoesNotExist(
@@ -237,7 +249,7 @@ class DigestDesignParametersAPI(APIView):
                 'technology_name': tp.technology.name,
                 'technologyproperty_id': tp.property.id,
                 'technologyproperty_name': tp.property.name,
-                'default_value': tp.defaultvalue,
+                'default_value': tp.default_value,
                 'existing_value': existing_val.value if existing_val else None,
             })
 

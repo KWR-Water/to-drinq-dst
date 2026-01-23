@@ -1,7 +1,7 @@
 ﻿id,name,units,description,category,parent_property
 1,volume,m^3,volume of the asset,1,
-2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,
-3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,
+2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,8
+3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,8
 4,lower bound of filter area,m^2,lower bound of filter area specification,1,10
 5,upper bound of filter area,m^2,upper bound of filter area specification,1,10
 6,lower bound of membrane area,m^2,lower bound of membrane area specification,1,11
@@ -124,4 +124,3 @@
 123,head loss coefficient,,"k-factor, head loss coefficient or flow loss coefficient",1,
 124,scraper power coefficient,kW/m^2,scraper power per unit area (m2),1,
 125,power,kW,power of equipment or technology,1,
-,,,,,

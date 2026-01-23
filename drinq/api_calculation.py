@@ -1,6 +1,7 @@
 import numpy as np
 
 from drinq.utils.treatmentkpi import (
+    MicroStrainer,
     Strainer,
     CascadeMixerCoagulationDosing, 
     CoagulationDynamicMixing,
@@ -149,115 +150,154 @@ class TechnologyPerformanceCalculator:
     technologies: list[str]  # names of technologies
     tech_parameters: dict[str, dict[str, float | int]]  # tech: {parameter_id: value}
     design_parameters: dict[str, float | int]  # plant parameter_id: value
-    kpis: dict[str, float | int]
+    waterquality_parameters: dict[str, float | int]  # waterqual parameter_id: value
+    plant_kpis: dict[str, float | int]  # plant performance indicators
+    tech_kpinames: list[str]  # technology performance indicators
+    digested_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
 
     def __init__(
         self,
         treatmentplant_id: int, 
         technologies: list[str],
         stages: list[str],
-        tech_parameters: dict[str, dict[str, float | int]],
         design_parameters: dict[str, float | int],
-        performance_indicators: dict[str, float | int] = dict(),
+        plant_kpis: dict[str, float | int] = dict(),
+        tech_parameters: dict[str, dict[str, float | int]] = dict(),
+        waterquality_parameters: dict[str, dict[str, float | int]] = dict(),
+        tech_kpinames: list[str] = None,
+        digested_tech_parameter_list: dict[str, list[str]] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.tech_parameters = tech_parameters
         self.design_parameters = design_parameters
         self.technologies = technologies
+        self.waterquality_parameters = waterquality_parameters
         self.stages = stages
-        self.kpis = performance_indicators
+        self.plant_kpis = plant_kpis
+        self.tech_kpinames = tech_kpinames
+        if tech_kpinames is None:
+            self.tech_kpis = {
+                technology: dict() for technology in technologies}
+        else:
+            self.tech_kpis = {
+                technology: {kpi: None for kpi in tech_kpinames}
+                for technology in technologies}
+        self.digested_tech_parameter_list = digested_tech_parameter_list
+        self.summed_kpis = dict()
 
-    def calculate_footprint_area_m2(
+    def calculate_kpi(
         self,
     ):
         parameters = self.tech_parameters
         stages = self.stages
         technologies = self.technologies
+        design_parameters = self.design_parameters
+        wq_parameters = self.waterquality_parameters
+        plant_kpis = self.plant_kpis
+        tech_kpilist = {"kpi_list": self.tech_kpinames}
 
         footprint_area = None
         if technologies is None or stages is None:
             raise ValueError("Technologies and stages must be provided.")
         footprint_area = {tech: None for tech in technologies}
-
         for stage in stages:
-            match stage.lower():
-                case 'screening' | 'algae screening':
-                    for technology in technologies:
+            for technology in technologies:
+                digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
+                if len(digest_property_list) == 0:
+                    digest_property_list = None
+                tech_kwargs = {
+                    'parameters': parameters[technology],
+                    'plant_kpis': plant_kpis,
+                    'design_parameters': design_parameters,
+                    'wq_parameters': wq_parameters[technology],
+                    'digest_parameter_list': digest_property_list,
+                }
+                match stage.lower():
+                    case 'algae screening':
                         match technology.lower():
-                            case 'strainer' | 'micro strainer':
-                                strainer = Strainer(
-                                    parameters=parameters[technology],
-                                    performance_indicators=self.kpis,
-                                    design_parameters=self.design_parameters,
-                                )
-                                for kpi in self.kpis:
-                                    self.kpis[kpi] = strainer.get_kpi(kpi)
+                            case 'micro strainer':
+                                microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                                self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
+                            case 'strainer':
+                                strainer = Strainer(**tech_kwargs)
+                                self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                                self.tech_parameters[technology] = strainer.parameters  # noqa, E501
                             case _:
                                 pass
-                case 'coagulation':
-                    for technology in technologies:
+                    case 'coagulation':
                         match technology.lower():
                             case str(technology) if (
                                 'coagulant dosing' and 'dynamic mixing'
                                 ) in technology:
-                                coag_dynmixer = CoagulationDynamicMixing(
-                                    parameters=parameters[technology],
-                                    performance_indicators=self.kpis,
-                                    design_parameters=self.design_parameters,
-                                )
-                                for kpi in self.kpis:
-                                    self.kpis[kpi] = coag_dynmixer.get_kpi(kpi)
+                                coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             case _:
                                 pass
-                case 'omp removal':
-                    for technology in technologies:
+                    case 'omp removal':
                         match technology.lower():
                             case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
-                                pars = parameters[technology]
-                                recovery_rate = pars.get('recovery rate (%)', 50)
-                                membranes_per_vessel = pars.get('membranes per vessel', 8)
-                                pressvessel_orientation = pars.get('pressure vessel orientation', 0)  # noqa, E501
-
-                                flow_per_unit = calculate_flow_per_unit(
-                                    units=pars.get('units per lane', 1),
-                                    flow_per_lane=flow_per_lane)
-                                permeate_flow_m3hr = (
-                                    flow_per_unit * (recovery_rate / 100))
-                                membranes_per_unit = permeate_flow_m3hr * 41.7 / (
-                                    recovery_rate)
-                                
-                                vessels_per_unit = membranes_per_unit / (
-                                    membranes_per_vessel)
-                                
-                                footprint_area_ = (
-                                    nominal_flow_m3hr /
-                                    surface_loading_rate)
-                                footprint_area[technology] = footprint_area_
+                                membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
                             case _:
                                 pass
 
         if footprint_area is None:
             raise ValueError("Not possible to calculate footprint area (m2).")
         return footprint_area
-    
+
+    def sum_kpis(
+        self,
+        allowed_kpis: list[str] = None,
+    ) -> dict[str, float | int]:
+        """Sum KPI values across all technologies.
+
+        Returns:
+            dict[str, float | int]: summed KPI values
+        """
+        summed_kpis = {}
+        if allowed_kpis is None:
+            allowed_kpis = [
+                'area',
+                'mass',
+                'energy consumption',
+                'power',
+                'head loss',
+                'emissions',
+            ]
+        for _, kpis in self.tech_kpis.items():
+            for kpi_name, kpi_value in kpis.items():
+                if kpi_name not in allowed_kpis:
+                    continue
+                if kpi_value is not None:
+                    if kpi_name in summed_kpis:
+                        summed_kpis[kpi_name] += kpi_value
+                    else:
+                        summed_kpis[kpi_name] = kpi_value
+        self.summed_kpis = summed_kpis
+        # return summed_kpis
+
 
 class TreatmentPlantPerformanceCalculator:
     treatmentplant_id: int
     stages: list[str]  # names of stages
     technologies: list[str]  # names of technologies
     design_parameters: dict[str, float | int]  # parameter_id: value in m3/day
+    plant_kpis: dict[str, float | int]  # plant performance indicators
 
     def __init__(
         self,
         treatmentplant_id: int, 
         design_parameters: dict[str, float | int],
         technologies: list[str] = None,
-        stages: list[str] = None
+        stages: list[str] = None,
+        plant_kpis: dict[str, float | int] = None
     ):
         self.treatmentplant_id = treatmentplant_id
         self.design_parameters = design_parameters
         self.technologies = technologies
         self.stages = stages
+        self.plant_kpis = plant_kpis
 
     def get_nominal_flow_m3hr(
         self,
@@ -336,36 +376,37 @@ class TreatmentPlantPerformanceCalculator:
         costs = 1000 * round(abs(costs)/1000.0, 2)
         return costs
 
-    def get_filterarea(
-        self,
-        filter_technology,
-        units_per_lane: int = 1,
-        nominal_flow: float | None = None,
-    ):
+    # TODO: this will be moved to the specific class of the filter technologies
+    # def get_filterarea(
+    #     self,
+    #     filter_technology,
+    #     units_per_lane: int = 1,
+    #     nominal_flow: float | None = None,
+    # ):
 
-        # Input parameters
-        parameters = self.design_parameters
-        lanes = parameters.get('number of lanes', 1)
-        filter_area, filter_area_per_unit = None, None
-        if nominal_flow is None:
-            nominal_flow = self.get_nominal_flow_m3hr()
+    #     # Input parameters
+    #     parameters = self.design_parameters
+    #     lanes = parameters.get('number of lanes', 1)
+    #     filter_area, filter_area_per_unit = None, None
+    #     if nominal_flow is None:
+    #         nominal_flow = self.get_nominal_flow_m3hr()
 
-        # Calculate surface loading rate based on filter technology
-        match filter_technology:
-            case str(tech) if ('single medium' or 'granular activated carbon') in tech:  # noqa, E501
-                surface_loading_rate = 10
-            case str(tech) if 'dual media' in tech:
-                surface_loading_rate = 15  # m3/h/m2 average filtration rate for a dual media filtration  # noqa, E501
-            case str(tech) if 'moving bed' in tech:
-                surface_loading_rate = 8.5  # m3/h/m2 average filtration rate for moving bed filtration  # noqa, E501
-            case _:
-                surface_loading_rate = None
+    #     # Calculate surface loading rate based on filter technology
+    #     match filter_technology:
+    #         case str(tech) if ('single medium' or 'granular activated carbon') in tech:  # noqa, E501
+    #             surface_loading_rate = 10
+    #         case str(tech) if 'dual media' in tech:
+    #             surface_loading_rate = 15  # m3/h/m2 average filtration rate for a dual media filtration  # noqa, E501
+    #         case str(tech) if 'moving bed' in tech:
+    #             surface_loading_rate = 8.5  # m3/h/m2 average filtration rate for moving bed filtration  # noqa, E501
+    #         case _:
+    #             surface_loading_rate = None
 
-        # Calculate filter area
-        if surface_loading_rate is not None:
-            filter_area = nominal_flow / surface_loading_rate
-            filter_area_per_lane = filter_area / lanes
-            filter_area_per_unit = filter_area_per_lane / units_per_lane
+    #     # Calculate filter area
+    #     if surface_loading_rate is not None:
+    #         filter_area = nominal_flow / surface_loading_rate
+    #         filter_area_per_lane = filter_area / lanes
+    #         filter_area_per_unit = filter_area_per_lane / units_per_lane
 
-        return filter_area, filter_area_per_unit
+    #     return filter_area, filter_area_per_unit
 

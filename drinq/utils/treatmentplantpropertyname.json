@@ -1,0 +1,10 @@
+{
+    "nominal_flow_rate_m3perh": "nominal flow rate (m3/hr)",
+    "area_footprint_m2": "area footprint (m2)",
+    "volume_m3": "volume (m3)",
+    "construction_costs_eurperm3": "construction costs (EUR/m3)",
+    "investment_costs": "investment costs",
+    "operation_and_maintenance_costs": "operation and maintenance costs",
+    "energy_consumption_kwh": "energy consumption (kWh)",
+    "co2_equivalent_emissions_tonperyear": "CO2 equivalent emissions (ton/year)"
+}

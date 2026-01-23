@@ -2,7 +2,8 @@ id,name,description,unit
 1,footprint area,"footprint area per treatment step, in m2",m^2
 2,daily mass of chemicals,mass of chemicals in kg per day,kg/day
 3,footprint area for chemicals,footprint area of chemical storage in m2,m^2
-4,chemical agent dose,"dosing of chemical agent, in mg/liter",10^-3 kg/m3
+4,chemical solution concentration,"chemical agent concentration in dosing solution, in mg/liter",10^-3 kg/m^3
 5,head loss,hydraulic head loss,bar
 6,power,"power, in kW",kW
 7,daily power consumption,daily power consumption in kWh,kWh
+8,CO2 emissions,CO2 (equivalent) emissions in kg per m3 water produced,kg/m^3

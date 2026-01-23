@@ -585,10 +585,14 @@ class TechnologyPropertyJunction(models.Model):
     property = models.ForeignKey(
         'TechnologyProperty', on_delete=models.CASCADE,
         db_column='property')
-    defaultvalue = models.FloatField(blank=True, null=False)
+    default_value = models.FloatField(
+        blank=True, null=False, db_column='defaultvalue')
     is_designparameter = models.BooleanField(
         default=0, null=False,
         db_column='is_designparameter')
+    is_digested = models.BooleanField(
+        default=0, null=False,
+        db_column='is_digested')
 
     class Meta:
         # managed = False
@@ -596,7 +600,7 @@ class TechnologyPropertyJunction(models.Model):
         verbose_name_plural = "technology properties and their default values"
 
     def __str__(self):
-        return f"{self.technology}: {self.property} ({self.defaultvalue})"
+        return f"{self.technology}: {self.property} ({self.default_value})"
 
 
 class DesignTree(models.Model):
@@ -699,7 +703,7 @@ class TreatmentPlantTechnologyKPIValue(models.Model):
         Technology, on_delete=models.CASCADE, db_column='technology')
     kpi = models.ForeignKey(
         TechnologyKPI, on_delete=models.CASCADE, db_column='kpi')
-    value = models.FloatField(blank=True, null=False)
+    value = models.FloatField(blank=True, null=False, db_column='value')
 
     class Meta:
         # managed = False

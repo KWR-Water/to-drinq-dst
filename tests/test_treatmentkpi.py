@@ -8,7 +8,9 @@ from drinq.utils.treatmentkpi import (
     ChainScrapedSedimentation,
     Strainer,
     ChlorineDisinfection,
-    ChloramineDisinfection)
+    ChloramineDisinfection,
+    calculate_chemical_storage_area__m2
+    )
 
 
 class TestCoagulationDynamicMixing(unittest.TestCase):
@@ -28,7 +30,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             'number of lanes': 2,
             'units per lane': 3,
         }
-        self.performance_indicators = {
+        self.plant_kpis = {
             'nominal flow rate (m3/hr)': 100.0,
         }
 
@@ -36,20 +38,20 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         self.assertTrue(mixer.tank_height == self.parameters['tank height'])
         self.assertTrue(mixer.retention_time_min == self.parameters[
             'retention time (min)'])
         self.assertTrue(mixer.lanes == self.design_parameters['number of lanes'])
-        self.assertTrue(mixer.nominal_flow_m3hr == self.performance_indicators[
+        self.assertTrue(mixer.nominal_flow_m3hr == self.plant_kpis[
             'nominal flow rate (m3/hr)'])
 
     def test_get_kpi(self):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         result = mixer.get_kpi('footprint area')
         self.assertEqual(
@@ -62,7 +64,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         area = mixer.footprint_area__m2()
         self.assertAlmostEqual(area, 15.0, places=1)
@@ -71,7 +73,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         headloss = mixer.hydraulic_headloss__bar()
         self.assertAlmostEqual(headloss, 5.01, places=2)
@@ -80,7 +82,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         energy = mixer.daily_energy_consumption__kwh()
         self.assertAlmostEqual(energy, 1501.7, places=1)
@@ -89,7 +91,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         kpi_results = mixer.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
@@ -119,7 +121,7 @@ class TestCascadeMixerCoagulationDosing(unittest.TestCase):
             'units per lane': 4,
             'storage time of chemicals (days)': 30,
         }
-        self.performance_indicators = {
+        self.plant_kpis = {
             'nominal flow rate (m3/hr)': 150.0,
             }
 
@@ -127,12 +129,12 @@ class TestCascadeMixerCoagulationDosing(unittest.TestCase):
         cascade_mixer = CascadeMixerCoagulationDosing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         self.assertTrue(cascade_mixer.tank_height == self.parameters['tank height'])  # noqa, E501
         self.assertTrue(cascade_mixer.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(cascade_mixer.lanes == self.design_parameters['number of lanes'])  # noqa, E501
-        self.assertTrue(cascade_mixer.nominal_flow_m3hr == self.performance_indicators['nominal flow rate (m3/hr)'])  # noqa, E501
+        self.assertTrue(cascade_mixer.nominal_flow_m3hr == self.plant_kpis['nominal flow rate (m3/hr)'])  # noqa, E501
 
 
 class TestStrainer(unittest.TestCase):
@@ -147,7 +149,7 @@ class TestStrainer(unittest.TestCase):
         self.design_parameters = {
             'number of lanes': 2,
         }
-        self.performance_indicators = {
+        self.plant_kpis = {
             'nominal flow rate (m3/hr)': 250.0,
         }
 
@@ -155,17 +157,17 @@ class TestStrainer(unittest.TestCase):
         strainer = Strainer(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         self.assertTrue(strainer.bar_width == self.parameters['bar width'])  # noqa, E501
         self.assertTrue(strainer.bar_spacing == self.parameters['bar spacing'])  # noqa, E501
-        self.assertTrue(strainer.nominal_flow_m3perh == self.performance_indicators['nominal flow rate (m3/hr)'])  # noqa, E501
+        self.assertTrue(strainer.nominal_flow_m3perh == self.plant_kpis['nominal flow rate (m3/hr)'])  # noqa, E501
 
     def test_kpi_dict(self):
         strainer = Strainer(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         kpi_results = strainer.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
@@ -177,19 +179,21 @@ class TestStrainer(unittest.TestCase):
         strainer = Strainer(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         area = strainer.footprint_area__m2()
+        # TODO: fix the footprint area calculation, the expected value seems off
         self.assertAlmostEqual(area, 7.893, places=2)
 
     def test_daily_energy_consumption(self):
         strainer = Strainer(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         energy = strainer.daily_energy_consumption__kwh()
         self.assertAlmostEqual(energy, 0.4167, places=2)
+
 
 class TestChlorineDisinfection(unittest.TestCase):
     def setUp(self):
@@ -207,7 +211,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             'units per lane': 5,
             'chemical storage time (days)': 20,
         }
-        self.performance_indicators = {
+        self.plant_kpis = {
             'nominal flow rate (m3/hr)': 200.0,
         }
 
@@ -215,18 +219,18 @@ class TestChlorineDisinfection(unittest.TestCase):
         chlorine_disinfection = ChlorineDisinfection(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
-        self.assertTrue(chlorine_disinfection.tank_height_m == self.parameters['tank height'])
+        self.assertTrue(chlorine_disinfection.tank_height_m == self.parameters['tank height'])  # noqa, E501
         self.assertTrue(chlorine_disinfection.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(chlorine_disinfection.units_per_lane == self.design_parameters['units per lane'])  # noqa, E501
-        self.assertTrue(chlorine_disinfection.nominal_flow_m3perh == self.performance_indicators['nominal flow rate (m3/hr)'])  # noqa, E501
+        self.assertTrue(chlorine_disinfection.nominal_flow_m3perh == self.plant_kpis['nominal flow rate (m3/hr)'])  # noqa, E501
 
     def test_daily_mass_chemicals(self):
         chlorine_disinfection = ChlorineDisinfection(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
         )
         daily_mass_kg = chlorine_disinfection.daily_mass_of_chemicals__kg()
         self.assertAlmostEqual(daily_mass_kg, 2.4, places=1)
@@ -237,10 +241,13 @@ class TestChlorineDisinfection(unittest.TestCase):
 class DummyTreatmentKPI(TreatmentKPI):
     def get_kpi(self, kpi_name: str) -> float:
         return 42.0
+
     def __repr__(self):
         return "DummyTreatmentKPI()"
+
     def get_kpi_dict(self) -> dict:
         return {"dummy": 42.0}
+
     @property
     def footprint_area__m2(self) -> float:
         return 1.0
@@ -272,7 +279,7 @@ class TestTreatmentDataclassMixin(unittest.TestCase):
                     wq_parameters=None):
                 self.parameters = parameters
                 self.design_parameters = design_parameters
-                self.performance_indicators = performance_indicators
+                self.plant_kpis = performance_indicators
                 self.wq_parameters = wq_parameters
                 self.__post_init__()
         params = {"a": 1}
@@ -282,7 +289,7 @@ class TestTreatmentDataclassMixin(unittest.TestCase):
         dummy = Dummy(params, design, perf, wq)
         self.assertEqual(dummy.parameters, params)
         self.assertEqual(dummy.design_parameters, design)
-        self.assertEqual(dummy.performance_indicators, perf)
+        self.assertEqual(dummy.plant_kpis, perf)
         self.assertEqual(dummy.wq_parameters, wq)
 
 
@@ -298,7 +305,7 @@ class TestChainScrapedSedimentation(unittest.TestCase):
             'units per lane': 3,
             'overflow rate (m3/m2/h)': 5.0,
         }
-        self.performance_indicators = {
+        self.plant_kpis = {
             'nominal flow rate (m3/hr)': 120.0,
         }
         self.wq_parameters = {
@@ -309,13 +316,13 @@ class TestChainScrapedSedimentation(unittest.TestCase):
         sedimentation = ChainScrapedSedimentation(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
-            performance_indicators=self.performance_indicators,
+            plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
         )
         self.assertTrue(sedimentation.scraper_power_per_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
         self.assertTrue(sedimentation.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
-        self.assertTrue(sedimentation.flow_m3perh == self.performance_indicators['nominal flow rate (m3/hr)'])  # noqa, E501
+        self.assertTrue(sedimentation.flow_m3perh == self.plant_kpis['nominal flow rate (m3/hr)'])  # noqa, E501
 
 
 class TestTreatmentKPIAbstract(unittest.TestCase):
@@ -336,5 +343,63 @@ class TestTreatmentKPIAbstract(unittest.TestCase):
         # kpi = object.__new__(self.IncompleteKPI)
         # with self.assertRaises(NotImplementedError):
         #     instance.get_kpi("any")
+
+
+class TestCalculateChemicalStorageArea(unittest.TestCase):
+    def test_basic_calculation(self):
+        # daily_volume = 2 m3/day, storage_time = 10 days, tank_height = 2 m
+        # Expected area = (2 * 10) / 2 = 10 m2
+        area = calculate_chemical_storage_area__m2(
+            daily_volume_m3perday=2.0,
+            storage_time_days=10,
+            tank_height_m=2.0
+        )
+        self.assertAlmostEqual(area, 10.0)
+
+    def test_with_space_factor(self):
+        # daily_volume = 1 m3/day, storage_time = 5 days, tank_height = 1 m, space_factor = 1.5
+        # Expected area = 1.5 * (1 * 5) / 1 = 7.5 m2
+        area = calculate_chemical_storage_area__m2(
+            daily_volume_m3perday=1.0,
+            storage_time_days=5,
+            tank_height_m=1.0,
+            space_factor=1.5
+        )
+        self.assertAlmostEqual(area, 7.5)
+
+    def test_zero_tank_height_raises(self):
+        with self.assertRaises(ValueError):
+            calculate_chemical_storage_area__m2(
+                daily_volume_m3perday=1.0,
+                storage_time_days=5,
+                tank_height_m=0.0
+            )
+
+    def test_negative_tank_height_raises(self):
+        with self.assertRaises(ValueError):
+            calculate_chemical_storage_area__m2(
+                daily_volume_m3perday=1.0,
+                storage_time_days=5,
+                tank_height_m=-2.0
+            )
+
+    def test_zero_daily_volume(self):
+        # Should return 0 area if daily volume is 0
+        area = calculate_chemical_storage_area__m2(
+            daily_volume_m3perday=0.0,
+            storage_time_days=10,
+            tank_height_m=2.0
+        )
+        self.assertEqual(area, 0.0)
+
+    def test_zero_storage_time(self):
+        # Should return 0 area if storage time is 0
+        area = calculate_chemical_storage_area__m2(
+            daily_volume_m3perday=2.0,
+            storage_time_days=0.0,
+            tank_height_m=2.0
+        )
+        self.assertEqual(area, 0.0)
+
 
 

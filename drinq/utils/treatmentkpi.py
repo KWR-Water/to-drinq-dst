@@ -16,12 +16,16 @@ from drinq.utils.physics_and_chemistry import (
 
 import json
 
-KPI_MAPPINGS = {
+
+# NOTE: The keys of these mappings SHOULD BE in sync with
+# the database table "technologykpi"!
+TECH_KPI_MAPPINGS = {
     'footprint area': 'footprint_area__m2',
     'footprint area for chemicals': 'footprint_area_for_chemicals__m2',
     'daily energy consumption': 'daily_energy_consumption__kwh',
     'daily mass of chemicals': 'daily_mass_of_chemicals__kg',
-    'hydraulic headloss': 'hydraulic_headloss__bar',
+    'chemical solution concentration': 'chemical_solution_concentration__mg_per_l',  # noqa, E501
+    'head loss': 'hydraulic_headloss__bar',
     'power': 'power__kw',
     'co2 emissions': 'co2_emissions__kg_co2_eq_per_m3',
 }
@@ -33,38 +37,69 @@ KPI_MAPPINGS = {
 # - dosing flow rate (1e-3 m3/hr) []
 # - area (m2) [Strainer, Microstrainer, Chain-scraped sedimentation tank, Lamella clarifier, DAF, PAC, Pellet softening, sludge blanket filtr]  # noqa, E501
 
-# We import all the parameter names from a json file. This file SHOULD BE kept
+# NOTE We import all the parameter names from a json file. This file SHOULD BE kept
 # in sync with the database table "technologyproperty"!
 with open("drinq/utils/treatmentpropertyname.json", "r") as file:
     TPN = json.load(file)
+with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
+    TPPN = json.load(file)
 
 
-def match_kpi(kpi_fullname: str) -> str:
+def match_tech_kpi(kpi_fullname: str) -> str:
     """Match user-provided KPI name to available KPIs.
 
     Args:
         kpi_name (str): The name of the KPI to match. This names should 
         correspond to the KPIs defined in table "technologykpi".
     """
-    KPI_reverse_mappings = {v: k for k, v in KPI_MAPPINGS.items()}
+    KPI_reverse_mappings = {v: k for k, v in TECH_KPI_MAPPINGS.items()}
     if kpi_fullname.lower() in KPI_reverse_mappings.keys():
         return KPI_reverse_mappings[kpi_fullname.lower()]
     raise ValueError(f"KPI '{kpi_fullname}' not found in available KPIs.")
 
 
+def get_value_of_dictionary_with_lower_key_str(
+        dictionary: dict[str, str],
+        value: str,
+        ) -> str:
+    """Get value from dictionary with case-insensitive key matching.
+
+    Args:
+        dictionary (dict): Dictionary to search.
+        key (str): Key to search for.
+    Returns:
+        value: Value associated with the matched key.
+    """
+    if value.lower() not in dictionary.keys():
+        raise ValueError(f"Value '{value}' does not exist.")
+    return dictionary.get(value.lower(), None)
+
+
 @dataclass
 class TreatmentDataclassMixin:
-    """Dataclass mixin for treatment KPIs."""
+    """Dataclass mixin for treatment KPIs.
+    
+    Args:
+        parameters (dict): Dictionary of technology parameters.
+        design_parameters (dict): Dictionary of design parameters.
+        plant_kpis (dict): Dictionary of plant performance indicators.
+        digest_parameter_list (list[str], optional): List of parameter names 
+            which are digested for cost or other calculations. Defaults to None.
+    """
     parameters: dict
     design_parameters: dict
-    performance_indicators: dict
+    plant_kpis: dict
     wq_parameters: dict | None = None
+    digest_parameter_list: list[str] | None = None
 
     def __post_init__(self):
         self.parameters = self.parameters
         self.wq_parameters = self.wq_parameters
         self.design_parameters = self.design_parameters
-        self.performance_indicators = self.performance_indicators
+        self.plant_kpis = self.plant_kpis
+        if len(self.digest_parameter_list) == 0:
+            self.digest_parameter_list = None
+        self.digest_parameter_list = self.digest_parameter_list
 
 
 class TreatmentKPI(ABC, TreatmentDataclassMixin):
@@ -113,12 +148,22 @@ class TreatmentKPI(ABC, TreatmentDataclassMixin):
 
     @property
     @abstractmethod
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        raise NotImplementedError("Subclasses should implement this method")
+
+    @property
+    @abstractmethod
     def hydraulic_headloss__bar(self) -> float:
         raise NotImplementedError("Subclasses should implement this method")
 
     @property
     @abstractmethod
     def power__kw(self) -> float:
+        raise NotImplementedError("Subclasses should implement this method")
+
+    @property
+    @abstractmethod
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         raise NotImplementedError("Subclasses should implement this method")
 
 
@@ -261,6 +306,30 @@ def calculate_ammonia_concentration_mgL(
     return target_chlorine_mgL / chlorine_to_ammonia_ratio
 
 
+def calculate_footprint_area_strainer_screens__m2(
+        flow_m3hr: float,
+        screen_velocity_mpersec: float,
+        area_factor: float = 1.1,
+) -> float:
+    # Original formula from Greg:
+    # effective_area_m2 = (
+    #     self.nominal_flow_m3perh * 0.000012) / self.screen_velocity_mpersec
+    # TODO: check with Greg the 0.000012 and the 1.1 factor
+    flow_m3persec = flow_m3hr / 3600
+    effective_area_water_m2 = flow_m3persec / screen_velocity_mpersec
+    return area_factor * effective_area_water_m2
+
+
+def calculate_hydraulic_headloss_strainer_screens__bar(
+        headloss_coefficient: float,
+        screen_velocity_mpersec: float,
+) -> float:
+    # TODO: check with Greg the formula
+    headloss_bar = headloss_coefficient * (
+        screen_velocity_mpersec ** 2) / (2 * 9.81 * METER_PER_BAR)
+    return headloss_bar
+
+
 def calculate_membrane_vessel_area__m2(
         pressure_vessel_orientation: int,
         membranes_per_vessel: int,
@@ -322,7 +391,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.performance_indicators
+        performance_indicators = self.plant_kpis
 
         self.tank_height = parameters[TPN['tank_height']]
         self.chem_tank_height = parameters[TPN['tank_height_chemical_storage']]
@@ -374,17 +443,18 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         return np.ceil(self.tanks_area_m2 + self.chemicals_area_m2)
@@ -399,6 +469,9 @@ class CoagulationDynamicMixing(TreatmentKPI):
             units_per_lane=self.units_per_lane,
         )
         return dosing_per_lane * self.lanes
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return self.conc_chem_mgL
 
     def hydraulic_headloss__bar(self) -> float:
         return 1 + (0.001 * self.tanks_area_m2) + self.tank_height
@@ -417,7 +490,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         return power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
@@ -439,7 +512,8 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.performance_indicators
+        performance_indicators = self.plant_kpis
+        digest_parameter_list = self.digest_parameter_list
 
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
@@ -484,17 +558,18 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         cascade_area_m2 = (self.unit_volume_m3 / self.tank_height
@@ -522,6 +597,9 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
 
     def daily_mass_of_chemicals__kg(self) -> float:
         return 0.0  # TODO: implement chemical dosing mass calculation
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # TODO: implement chemical dosing concentration calculation
 
     def hydraulic_headloss__bar(self) -> float:
         # TODO: verify formula with Greg
@@ -544,8 +622,95 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         power_kw = power_watts / 1000  # Convert watts to kW
         return power_kw
 
-    # def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-    #     pass  # Placeholder for CO2 emissions calculation
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
+        pass  # Placeholder for CO2 emissions calculation
+
+
+class MicroStrainer(TreatmentKPI):
+    """KPI calculations for a strainer or microstrainer treatment unit."""
+    open_area_factor: float
+    nominal_flow_m3perh: float
+    screen_velocity_mpersec: float
+    lanes: int
+    flow_per_lane_m3perh: float
+    headloss_coefficient: float
+    area: float  # equal to footprint area, used for cost calculations
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        performance_indicators = self.plant_kpis
+
+        self.nominal_flow_m3perh = performance_indicators.get(
+            'nominal flow rate (m3/hr)', None)
+        self.screen_velocity_mpersec = parameters[TPN['velocity_bar_screen']]
+        self.lanes = design_parameters.get('number of lanes', 1)
+        self.flow_per_lane_m3perh = calculate_flow_per_lane(
+            self.lanes, self.nominal_flow_m3perh)
+        self.headloss_coefficient = parameters[TPN['head_loss_coefficient']]
+        self.open_area_factor = parameters[TPN['open_area_factor']]
+        self.area = 0.0  # Initialize area, will be calculated later
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area = self.footprint_area__m2()
+            self.parameters[tech_property] = self.area  # overwrite area
+
+    def __repr__(self):
+        return f"Micro strainer(nominal flow (m3/hr)={self.nominal_flow_m3perh})"
+
+    def get_kpi(self, kpi: str) -> float:
+        """Get the value for a KPI"""
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
+        if function_name is not None:
+            return getattr(self, function_name)()
+        else:
+            raise ValueError(
+                f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
+
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
+
+    def footprint_area__m2(self) -> float:
+        effective_area = calculate_footprint_area_strainer_screens__m2(
+            flow_m3hr=self.nominal_flow_m3perh,
+            screen_velocity_mpersec=self.screen_velocity_mpersec,
+        )
+        fp_area = effective_area / self.open_area_factor
+        self.area = fp_area  # Store area for cost calculations
+        return fp_area
+
+    def footprint_area_for_chemicals__m2(self) -> float:
+        return 0.0  # No chemicals used in Strainer
+
+    def hydraulic_headloss__bar(self) -> float:
+        return calculate_hydraulic_headloss_strainer_screens__bar(
+            headloss_coefficient=self.headloss_coefficient,
+            screen_velocity_mpersec=self.screen_velocity_mpersec)
+
+    def power__kw(self) -> float:
+        # TODO: check the formula with Greg
+        headloss_m = bar_to_meters_of_water(self.hydraulic_headloss__bar())
+        flow_per_lane_m3persec = self.flow_per_lane_m3perh / 3600
+        power_watts = (
+            DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * headloss_m *
+            flow_per_lane_m3persec * self.lanes)
+        return power_watts / 1000  # Convert watts to kW
+
+    def daily_energy_consumption__kwh(self) -> float:
+        return self.power__kw() * 24  # Assuming continuous operation
+
+    def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0  # No chemicals used in Micro strainer
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # No chemicals used in Micro strainer
+
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
+        pass  # Placeholder for CO2 emissions calculation
 
 
 class Strainer(TreatmentKPI):
@@ -564,7 +729,7 @@ class Strainer(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.performance_indicators
+        performance_indicators = self.plant_kpis
 
         self.bar_spacing = parameters[TPN['bar_spacing']]
         self.bar_width = parameters[TPN['bar_width']]
@@ -587,34 +752,32 @@ class Strainer(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
-        # TODO: check with Greg the 0.000012 and the 1.1 factor
-        flow_per_sec = self.nominal_flow_m3perh / 3600
-        # Original formula from Greg:
-        # effective_area_m2 = (
-        #     self.nominal_flow_m3perh * 0.000012) / self.screen_velocity_mpersec
-        effective_area_water_m2 = flow_per_sec / self.screen_velocity_mpersec
-        return 1.1 * effective_area_water_m2 / self.open_area_friction
+        return calculate_footprint_area_strainer_screens__m2(
+            flow_m3hr=self.nominal_flow_m3perh,
+            screen_velocity_mpersec=self.screen_velocity_mpersec,
+        )
 
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Strainer
 
     def hydraulic_headloss__bar(self) -> float:
-        return self.headloss_coefficient * (
-            self.screen_velocity_mpersec ** 2) / (
-                2 * 9.81 * METER_PER_BAR)  # Convert to bar
+        return calculate_hydraulic_headloss_strainer_screens__bar(
+            headloss_coefficient=self.headloss_coefficient,
+            screen_velocity_mpersec=self.screen_velocity_mpersec)
 
     def power__kw(self) -> float:
         # TODO: check the formula with Greg
@@ -627,10 +790,13 @@ class Strainer(TreatmentKPI):
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
-    
+
     def daily_mass_of_chemicals__kg(self) -> float:
         return 0.0  # No chemicals used in Strainer
-    
+
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # No chemicals used in Strainer
+
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
@@ -651,7 +817,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.performance_indicators
+        performance_indicators = self.plant_kpis
         wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -680,17 +846,18 @@ class ChainScrapedSedimentation(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         return np.ceil(self.unit_area_m2 * self.units_per_lane * self.lanes)
@@ -699,6 +866,9 @@ class ChainScrapedSedimentation(TreatmentKPI):
         return 0.0  # No chemicals used in Chain Scraped Sedimentation
 
     def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0  # No chemicals used in Chain Scraped Sedimentation
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Chain Scraped Sedimentation
 
     def hydraulic_headloss__bar(self) -> float:
@@ -744,7 +914,7 @@ class ChlorineDisinfection(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.performance_indicators
+        plant_kpis = self.plant_kpis
 
         self.units_per_lane = design_parameters.get('units per lane', 1)        
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -754,7 +924,7 @@ class ChlorineDisinfection(TreatmentKPI):
             TPN['tank_height_chemical_storage']]
         self.storage_time_days = design_parameters.get(
             TPN['storage_time_of_chemicals_days'], 30)
-        self.nominal_flow_m3perh = performance_indicators.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             'nominal flow rate (m3/hr)', None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
@@ -781,17 +951,18 @@ class ChlorineDisinfection(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         unit_volume_m3 = calculate_unit_volume_m3(
@@ -821,6 +992,9 @@ class ChlorineDisinfection(TreatmentKPI):
         )
         return dosing_per_lane * self.lanes * 1
 
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return self.chlorine_concentration_mgL
+
     def hydraulic_headloss__bar(self) -> float:
         return 0.2  # Assumed constant headloss for chlorine disinfection
 
@@ -839,12 +1013,12 @@ class ChloramineDisinfection(TreatmentKPI):
     def __init__(
             self,
             parameters: dict,
-            performance_indicators: dict,
+            plant_kpis: dict,
             design_parameters: dict,
     ):
         self.chlorine_disinfection = ChlorineDisinfection(
             parameters,
-            performance_indicators,
+            plant_kpis,
             design_parameters,
         )
         self.ammonia_dosing_mgL = self.chlorine_disinfection.chlorine_dosing_mgL / 5  # noqa, E501
@@ -855,7 +1029,7 @@ class ChloramineDisinfection(TreatmentKPI):
         )
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, performance_indicators.get('nominal flow rate (m3/hr)', None))
+            self.lanes, plant_kpis.get('nominal flow rate (m3/hr)', None))
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.units_per_lane = design_parameters.get('number of units per lane', 1)
         self.number_of_units = self.units_per_lane * self.lanes
@@ -869,17 +1043,18 @@ class ChloramineDisinfection(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         unit_volume_m3 = calculate_unit_volume_m3(
@@ -909,7 +1084,10 @@ class ChloramineDisinfection(TreatmentKPI):
             units_per_lane=self.units_per_lane,
         )
         return mass_chlorine_kgday + mass_ammonia_kgday
-    
+
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return self.ammonia_concentration_mgL
+
     def hydraulic_headloss__bar(self) -> float:
         return self.chlorine_disinfection.hydraulic_headloss__bar()
 
@@ -971,9 +1149,8 @@ class MembraneFiltration(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
@@ -981,7 +1158,9 @@ class MembraneFiltration(TreatmentKPI):
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
     def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}        
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         # including 20% extra space for piping and access
@@ -991,6 +1170,9 @@ class MembraneFiltration(TreatmentKPI):
         return 0.0  # No chemicals used in Membrane Filtration
 
     def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0  # No chemicals used in Membrane Filtration
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Membrane Filtration
 
     def hydraulic_headloss__bar(self) -> float:
@@ -1033,17 +1215,18 @@ class IntakePump(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}        
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         # TODO: add formula with Greg
@@ -1053,6 +1236,9 @@ class IntakePump(TreatmentKPI):
         return 0.0  # No chemicals used in Intake Pump
 
     def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0  # No chemicals used in Intake Pump
+
+    def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Intake Pump
 
     def hydraulic_headloss__bar(self) -> float:
@@ -1090,7 +1276,7 @@ class IntakePump(TreatmentKPI):
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
-   
+
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
@@ -1119,17 +1305,18 @@ class CleanWaterStorageTank(TreatmentKPI):
         
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        if kpi not in KPI_MAPPINGS.keys():
-            raise ValueError(f"KPI '{kpi}' not implemented.")
-        function_name = KPI_MAPPINGS.get(kpi, None)
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
-        return {kpi: self.get_kpi(kpi=kpi) for kpi in KPI_MAPPINGS.keys()}
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
         return np.ceil(self.unit_area_m2 * self.units_per_lane * self.lanes)
@@ -1140,9 +1327,12 @@ class CleanWaterStorageTank(TreatmentKPI):
     def daily_mass_of_chemicals__kg(self) -> float:
         return 0.0  # No chemicals used in Clean Water Storage Tank
 
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # No chemicals used in Clean Water Storage Tank
+
     def hydraulic_headloss__bar(self) -> float:
         return 0.1  # TODO: modify with Greg
-        
+
     def power__kw(self) -> float:
         return 0.0  # No power used in Clean Water Storage Tank
 
@@ -1152,3 +1342,64 @@ class CleanWaterStorageTank(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         return 0.0  # Placeholder for CO2 emissions calculation
 
+
+class RapidSandSingleMediumFiltration(TreatmentKPI):
+    """KPI calculations for a Rapid Sand Filtration treatment unit."""
+    # TODO: (Greg) check the Excel file and fix/modify equations!!
+    def __init__(
+            self,
+            parameters: dict,
+            performance_indicators: dict,
+            design_parameters: dict,
+    ):
+        self.flow_m3perh = performance_indicators.get(
+            'nominal flow rate (m3/hr)', None)
+        self.lanes = design_parameters.get('number of lanes', 1)
+        self.flow_per_lane_m3perh = calculate_flow_per_lane(
+            self.lanes, self.flow_m3perh)
+        self.filtration_rate_m3_per_m2_per_h = parameters[
+            TPN['filtration_rate_m3_per_m2_per_h']]
+        self.unit_area_m2 = (
+            self.flow_per_lane_m3perh /
+            self.filtration_rate_m3_per_m2_per_h)
+        self.unit_depth_m = parameters[TPN['filter_bed_depth_m']]
+        self.unit_volume_m3 = self.unit_area_m2 * self.unit_depth_m
+
+    def get_kpi(self, kpi: str) -> float:
+        """Get the value for a KPI"""
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
+        if function_name is not None:
+            return getattr(self, function_name)
+        else:
+            raise ValueError(
+                f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
+
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
+
+    def footprint_area__m2(self) -> float:
+        return np.ceil(self.unit_area_m2 * self.lanes)
+
+    def footprint_area_for_chemicals__m2(self) -> float:
+        return 0.0  # No chemicals used in Rapid Sand Filtration
+
+    def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0  # No chemicals used in Rapid Sand Filtration
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # No chemicals used in Rapid Sand Filtration
+
+    def hydraulic_headloss__bar(self) -> float:
+        return 1.0  # TODO: verify with Greg
+
+    def power__kw(self) -> float:
+        return -99.0  # TODO: Greg to provide formula
+
+    def daily_energy_consumption__kwh(self) -> float:
+        return self.power__kw() * 24  # Assuming continuous operation
+    
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
+        pass  # Placeholder for CO2 emissions calculation

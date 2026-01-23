@@ -319,6 +319,6 @@ def build_technology_property_initials(treatmentplant):
         initials.append({
             'technology': td.technology.id,
             'technologyproperty': td.property.id,
-            'value': existing.value if existing else td.defaultvalue,
+            'value': existing.value if existing else td.default_value,
         })
     return initials
