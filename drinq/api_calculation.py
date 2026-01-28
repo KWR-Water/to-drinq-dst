@@ -262,12 +262,16 @@ class TechnologyPerformanceCalculator:
                         match technology.lower():
                             case str(technology) if (
                                 'coagulant dosing' and 'dynamic mixing'
-                                ) in technology:
+                            ) in technology:
                                 coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
 
-                            case _:
-                                pass
+                            case str(technology) if (
+                                'cascade' and 'coagulant dosing'
+                            ) in technology:
+                                cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
+
                     case 'submerged rapid sand filtration':
                         match technology.lower():
                             case str(technology) if ((
