@@ -26,22 +26,23 @@
             </thead>
             <tbody>
               {% for item in items %}
-              <tr>
-                <td class="align-top">{{ item.prop_name }}</td>
-                <td>
-                  {# Render the value field only; keep hidden fields for binding #}
-                  {{ item.form.value }}
-                  <div class="form-text text-muted small mt-1">
-                    {% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}
-                  </div>
-                </td>
-                <td class="align-top text-muted">
-                  {{ item.form.technology }}
-                  {{ item.form.technologyproperty }}
-                  {% if item.form.id %}{{ item.form.id }}{% endif %}
-                  {% if item.prop_help %}{{ item.prop_help }}{% endif %}                  
-                </td>
-              </tr>
+                {% if not item.is_digested %}
+                <tr>
+                  <td class="align-top">{{ item.prop_name }}</td>
+                  <td>
+                    <input type="number" step="any" name="{{ item.form.value.html_name }}" class="form-control form-control-sm tech-property-value" value="{{ item.form.value.value|default_if_none:item.form.value.initial|default:0 }}">
+                    {{ item.form.technology }}
+                    {{ item.form.technologyproperty }}
+                    {% if item.form.id %}{{ item.form.id }}{% endif %}
+                    <div class="form-text text-muted small mt-1">
+                      {% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}
+                    </div>
+                  </td>
+                  <td class="align-top text-muted">
+                    {% if item.prop_help %}{{ item.prop_help }}{% endif %}
+                  </td>
+                </tr>
+                {% endif %}
               {% endfor %}
             </tbody>
           </table>

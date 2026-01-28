@@ -34,13 +34,13 @@ with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
 
 PLANT_PROPERTIES_TO_CALCULATE = [
     TPPN["nominal_flow_rate_m3perh"],
-    TPPN["area_footprint_m2"],
+    TPPN["footprint_area_m2"],
     TPPN["volume_m3"],
     TPPN["construction_costs_eurperm3"],
     TPPN["investment_costs"],
-    TPPN["operation_and_maintenance_costs"],
-    TPPN["energy_consumption_kwh"],
-    TPPN["co2_equivalent_emissions_tonperyear"],
+    TPPN["operation_and_maintenance_costs_eurperyr"],
+    TPPN["energy_consumption_kwhperm3"],
+    TPPN["co2_equivalent_emissions_kgperm3"],
 ]
 
 
@@ -327,11 +327,10 @@ class DigestDesignParametersAPI(APIView):
             prp for prp in PLANT_PROPERTIES_TO_CALCULATE 
             if 'construction costs' in prp][0]
 
-        computed_plantwide[nominalflow_prop_name] = calculator.get_nominal_flow_m3hr()  # noqa E501
+        computed_plantwide[nominalflow_prop_name] = calculator.nominal_flow_m3perhr  # noqa E501
         constrcost_pars = get_constrcost_parameters(
             technology_list=technologies.values_list('technology', flat=True))
-        computed_plantwide[constrcost_prop_name] = calculator.get_constructioncosts(
-            plant_properties=computed_plantwide,
+        computed_plantwide[constrcost_prop_name] = calculator.set_constructioncosts(
             cost_parameters=constrcost_pars,
         )
 
@@ -340,7 +339,7 @@ class DigestDesignParametersAPI(APIView):
         for prop_name, val in computed_plantwide.items():
             prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(
                 name=prop_name)
-            prop_value_obj, _ = TreatmentPlantPropertyValue.objects.update_or_create(
+            prop_value_obj, _ = TreatmentPlantPropertyValue.objects.update_or_create(  # noqa E501
                 treatmentplant=plant,
                 property=prop_obj,
                 defaults={'value': str(val)}

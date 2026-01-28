@@ -1,4 +1,7 @@
 import numpy as np
+import re
+import logging
+from dataclasses import dataclass
 
 from drinq.utils.treatmentkpi import (
     MicroStrainer,
@@ -12,6 +15,31 @@ from drinq.utils.treatmentkpi import (
     calculate_water_demand_m3hr_for_population,
     calculate_flow_per_unit
 )
+# NOTE: TECHKPI names should match those in the database!
+TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY = 'daily energy consumption'
+TECHKPI_FOOTPRINT_AREA_M2 = 'footprint area'
+TECHKPI_MASS_OF_CHEMICALS = 'mass of chemicals'
+TECHKPI_POWER_KW = 'power'
+TECHKPI_HEADLOSS_BAR = 'head loss'
+TECHKPI_CO2_EMISSIONS_KGPERM3 = 'co2 emissions'
+
+TODRINQ_KPINAMES_TOSUM = [
+    TECHKPI_FOOTPRINT_AREA_M2,
+    TECHKPI_MASS_OF_CHEMICALS,
+    TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
+    TECHKPI_POWER_KW,
+    TECHKPI_HEADLOSS_BAR,
+    TECHKPI_CO2_EMISSIONS_KGPERM3,
+]
+KPI_NOMINAL_FLOW_M3PERH = 'nominal flow rate (m3perh)'
+KPI_ENERGY_CONSUMPTION_KWHRPERDAY = 'energy consumption (kwhrperday)'
+KPI_ENERGY_CONSUMPTION_KWHRPERM3 = 'energy consumption (kwhrperm3)'
+KPI_FOOTPRINT_AREA_M2 = 'footprint area (m2)'
+KPI_CONSTRUCTION_COSTS_EUR = 'construction costs (eur)'
+KPI_INVESTMENT_COSTS = 'investment costs'
+KPI_OPER_AND_MAINT_COSTS = 'operational and maintenance costs'
+
+logger = logging.getLogger(__name__)
 
 # ***Calculate daily nominal flow in m3/day***
 # See for variance and standard deviation calculation:
@@ -203,8 +231,8 @@ class TechnologyPerformanceCalculator:
         for stage in stages:
             for technology in technologies:
                 digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
-                if len(digest_property_list) == 0:
-                    digest_property_list = None
+                if digest_property_list is None:
+                    digest_property_list = []
                 tech_kwargs = {
                     'parameters': parameters[technology],
                     'plant_kpis': plant_kpis,
@@ -257,25 +285,146 @@ class TechnologyPerformanceCalculator:
         """
         summed_kpis = {}
         if allowed_kpis is None:
-            allowed_kpis = [
-                'area',
-                'mass',
-                'energy consumption',
-                'power',
-                'head loss',
-                'emissions',
-            ]
+            allowed_kpis = TODRINQ_KPINAMES_TOSUM
         for _, kpis in self.tech_kpis.items():
             for kpi_name, kpi_value in kpis.items():
-                if kpi_name not in allowed_kpis:
-                    continue
-                if kpi_value is not None:
-                    if kpi_name in summed_kpis:
-                        summed_kpis[kpi_name] += kpi_value
-                    else:
-                        summed_kpis[kpi_name] = kpi_value
+                for kpi in allowed_kpis:
+                    if re.search(kpi, kpi_name.lower()) is None:
+                        continue
+                    if kpi_value is not None:
+                        if kpi_name in summed_kpis:
+                            summed_kpis[kpi_name] += kpi_value
+                        else:
+                            summed_kpis[kpi_name] = kpi_value
         self.summed_kpis = summed_kpis
         # return summed_kpis
+
+
+@dataclass
+class PlantKPI:
+    name: str
+    value: float | int | None
+    name_in_dbtable: str | None = None
+
+    def __post_init__(self):
+        if self.name_in_dbtable is None:
+            self.name_in_dbtable = self.name.lower().replace(" ", "_")
+
+    def to_db_kpi_dict(self) -> dict[str, float | int | None]:
+        return {
+            self.name_in_dbtable: self.value,
+        }
+
+    def to_dict(self) -> dict[str, float | int | None]:
+        return {
+            self.name: self.value
+        }
+
+    def __repr__(self):
+        return f"Treatment Plant KPI {self.name}): {self.value:.2f}"
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
+
+
+class NominalFlowKPI(PlantKPI):
+    name: str = KPI_NOMINAL_FLOW_M3PERH
+    value: float | int | None = None
+
+    def calculate_value(
+        self,
+        population_persons: int,
+        avg_consumption_lppd: float,
+        leakage_factor: float,
+        peak_demand_factor: float,
+        largescaleconsumption_m3pd: float = 0.,
+    ) -> float:
+        flow_population = calculate_water_demand_m3hr_for_population(
+            population_persons=population_persons,
+            avg_consumption_lppd=avg_consumption_lppd)
+        expected_flow = flow_population + largescaleconsumption_m3pd/24
+        self.value = expected_flow * (1 + leakage_factor) * peak_demand_factor
+        return self.value
+
+
+class FootprintAreaM2KPI(PlantKPI):
+    name: str = TECHKPI_FOOTPRINT_AREA_M2
+    value: float | int | None
+
+
+class EnergyConsumptionPerDayKPI(PlantKPI):
+    name: str = KPI_ENERGY_CONSUMPTION_KWHRPERDAY
+    value: float | int | None
+
+
+class EnergyConsumptionPerM3KPI(PlantKPI):
+    name: str = 'energy consumption (kwhrperm3)'
+    value: float | int | None
+
+    def calculate_value(
+        self,
+        energy_consumption_kwhperday: float,
+        nominal_flow_m3perhr: float,
+    ) -> float:
+        if nominal_flow_m3perhr == 0:
+            raise ValueError("Nominal flow (m3perh) cannot be zero.")
+        nominal_flow_m3perday = nominal_flow_m3perhr * 24
+        self.value = energy_consumption_kwhperday / nominal_flow_m3perday
+        return self.value
+
+
+class PowerKWKPI(PlantKPI):
+    name: str = TECHKPI_POWER_KW
+    value: float | int | None
+
+
+class HeadLossBarKPI(PlantKPI):
+    name: str = TECHKPI_HEADLOSS_BAR
+    value: float | int | None
+
+
+class MassOfChemicalsDailyKPI(PlantKPI):
+    name: str = TECHKPI_MASS_OF_CHEMICALS
+    value: float | int | None
+
+
+class CO2EmissionsPerM3KPI(PlantKPI):
+    name: str = TECHKPI_CO2_EMISSIONS_KGPERM3
+    value: float | int | None
+
+
+class OperAndMaintenanceCostsKPI(PlantKPI):
+    name: str = KPI_OPER_AND_MAINT_COSTS
+    value: float | int | None
+
+
+class ConstructionCostsKPI(PlantKPI):
+    name: str = KPI_CONSTRUCTION_COSTS_EUR
+    value: float | int | None
+
+
+class InvestmentCostsKPI(PlantKPI):
+    name: str = KPI_INVESTMENT_COSTS
+    value: float | int | None
+
+
+class FootprintAreaKPI(PlantKPI):
+    name: str = KPI_FOOTPRINT_AREA_M2
+    value: float | int | None
+
+
+@dataclass
+class PlantKPICollection:
+    kpis: dict[str, PlantKPI]
+
+    def __init__(self, kpis: list[PlantKPI]):
+        self.kpis = {kpi.name: kpi for kpi in kpis}
+
+    def to_db_kpi_dict(self) -> dict[str, float | int | None]:
+        db_kpi_dict = {}
+        for kpi in self.kpis.values():
+            db_kpi_dict.update(kpi.to_db_kpi_dict())
+        return db_kpi_dict
 
 
 class TreatmentPlantPerformanceCalculator:
@@ -283,7 +432,14 @@ class TreatmentPlantPerformanceCalculator:
     stages: list[str]  # names of stages
     technologies: list[str]  # names of technologies
     design_parameters: dict[str, float | int]  # parameter_id: value in m3/day
-    plant_kpis: dict[str, float | int]  # plant performance indicators
+    plant_kpis: dict[str, float | int | None]  # plant performance indicators
+    db_kpi_mapping: dict[str, str | None]  # database KPI names
+
+    nominal_flow_m3perhr: NominalFlowKPI
+    energyconsumption_kwhrperday: EnergyConsumptionPerDayKPI
+    energyconsumption_kwhrperm3: EnergyConsumptionPerM3KPI
+    constructioncosts_eur: ConstructionCostsKPI
+    investmentcosts_eur: InvestmentCostsKPI
 
     def __init__(
         self,
@@ -291,17 +447,102 @@ class TreatmentPlantPerformanceCalculator:
         design_parameters: dict[str, float | int],
         technologies: list[str] = None,
         stages: list[str] = None,
-        plant_kpis: dict[str, float | int] = None
+        plant_kpis: dict[str, float | int] = None,
+        db_kpi_mapping: dict[str, str | None] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.design_parameters = design_parameters
         self.technologies = technologies
         self.stages = stages
+        self.db_kpi_mapping = db_kpi_mapping
+        self.kpi_attr_mapping = {
+            'nominal_flow_m3perhr': KPI_NOMINAL_FLOW_M3PERH,
+            'footprint_area_m2': KPI_FOOTPRINT_AREA_M2,
+            'energyconsumption_kwhrperday': KPI_ENERGY_CONSUMPTION_KWHRPERDAY,
+            'energyconsumption_kwhrperm3': KPI_ENERGY_CONSUMPTION_KWHRPERM3,
+            'constructioncosts_eur': KPI_CONSTRUCTION_COSTS_EUR,
+            'investmentcosts_eur': KPI_INVESTMENT_COSTS,
+            'head_loss_bar': TECHKPI_HEADLOSS_BAR,
+            'mass_of_chemicals_daily_kg': TECHKPI_MASS_OF_CHEMICALS,
+            'power_kw': TECHKPI_POWER_KW,
+            'co2_emissions_kgperm3': TECHKPI_CO2_EMISSIONS_KGPERM3,
+            'oper_and_maintenancecosts_eurperyear': KPI_OPER_AND_MAINT_COSTS,
+        }
+
+        # intermediate and final KPI results
+        self.nominal_flow_m3perhr = NominalFlowKPI(
+            name=KPI_NOMINAL_FLOW_M3PERH, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_NOMINAL_FLOW_M3PERH, None))
+        self.footprint_area_m2 = FootprintAreaM2KPI(
+            name=KPI_FOOTPRINT_AREA_M2, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_FOOTPRINT_AREA_M2, None)
+        )
+        self.energyconsumption_kwhrperday = EnergyConsumptionPerDayKPI(
+            name=KPI_ENERGY_CONSUMPTION_KWHRPERDAY, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_ENERGY_CONSUMPTION_KWHRPERDAY, None)
+            )
+        self.energyconsumption_kwhrperm3 = EnergyConsumptionPerM3KPI(
+            name=KPI_ENERGY_CONSUMPTION_KWHRPERM3,
+            value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_ENERGY_CONSUMPTION_KWHRPERM3, None)
+        )
+        self.constructioncosts_eur = ConstructionCostsKPI(
+            name=KPI_CONSTRUCTION_COSTS_EUR,
+            value=None, name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_CONSTRUCTION_COSTS_EUR, None)
+        )
+        self.investmentcosts_eur = InvestmentCostsKPI(
+            name=KPI_INVESTMENT_COSTS, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(KPI_INVESTMENT_COSTS, None)
+            )  # total investment costs in EUR
+        self.head_loss_bar = HeadLossBarKPI(
+            name=TECHKPI_HEADLOSS_BAR, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(TECHKPI_HEADLOSS_BAR, None)
+        )
+        self.mass_of_chemicals_daily_kg = MassOfChemicalsDailyKPI(
+            name=TECHKPI_MASS_OF_CHEMICALS, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                TECHKPI_MASS_OF_CHEMICALS, None)
+        )
+        self.power_kw = PowerKWKPI(
+            name=TECHKPI_POWER_KW, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(TECHKPI_POWER_KW, None)
+        )
+        self.co2_emissions_kgperm3 = CO2EmissionsPerM3KPI(
+            name=TECHKPI_CO2_EMISSIONS_KGPERM3, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                TECHKPI_CO2_EMISSIONS_KGPERM3, None)
+        )
+        self.oper_and_maintenancecosts_eurperyear = OperAndMaintenanceCostsKPI(
+            name=KPI_OPER_AND_MAINT_COSTS, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_OPER_AND_MAINT_COSTS, None)
+        )
         self.plant_kpis = plant_kpis
 
-    def get_nominal_flow_m3hr(
+    def update_nominal_flow_m3perhr(
         self,
     ):
+        """
+        Calculates and sets the nominal flow rate in cubic meters per hour (m3/hr) based on design parameters.
+
+        This method retrieves required parameters from `self.design_parameters`, including population size,
+        average consumption per person per day, large-scale consumption, leakage factor, and peak demand factor.
+        It validates the presence of essential parameters and raises a ValueError if any are missing.
+        The nominal flow rate is then calculated using these parameters and stored in `self.nominal_flow_m3perhr`.
+
+        Returns:
+            The updated `self.nominal_flow_m3perhr` object after calculation.
+
+        Raises:
+            ValueError: If any of the required parameters ('population persons', 'average consumption (lppd)',
+            'leakage factor', or 'peak demand factor') are missing from `self.design_parameters`.
+        """        
+        nominal_flow_m3perhr = self.nominal_flow_m3perhr
         parameters = self.design_parameters
         population_persons = parameters.get('population persons', None)
         avg_consumption_lppd = parameters.get(
@@ -316,15 +557,29 @@ class TreatmentPlantPerformanceCalculator:
             raise ValueError(
                 "Population persons, peak demand factor, average consumption "
                 " and leakage factor must be provided.")
-        flow_population = calculate_water_demand_m3hr_for_population(
+        new_value = nominal_flow_m3perhr.calculate_value(
             population_persons=int(population_persons),
-            avg_consumption_lppd=avg_consumption_lppd)
-        expected_flow = flow_population + largescaleconsumption_m3pd/24
-        return expected_flow * (1 + leakage_factor) * peak_demand_factor
+            avg_consumption_lppd=avg_consumption_lppd,
+            leakage_factor=leakage_factor,
+            peak_demand_factor=peak_demand_factor,
+            largescaleconsumption_m3pd=largescaleconsumption_m3pd,
+        )
+        return new_value
 
-    def get_constructioncosts(
+    def update_plant_kpis(self):
+        """Update plant KPI values based on current calculations."""
+        db_kpi_mapping = self.db_kpi_mapping
+        self.plant_kpis = {
+            db_kpi_mapping[kpi_name]: getattr(self, kpi_attr).value
+            for kpi_attr, kpi_name in self.kpi_attr_mapping.items()
+            if (
+                getattr(self, kpi_attr).value is not None and
+                getattr(self, kpi_attr).name_in_dbtable is not None and
+                kpi_name in db_kpi_mapping)
+        }
+
+    def set_constructioncosts(
         self,
-        plant_properties: dict[str, float] = None,
         cost_parameters: dict[str, dict] = None,
     ) -> float:
         """Purpose: Calculate costs based on design parameters.
@@ -343,13 +598,11 @@ class TreatmentPlantPerformanceCalculator:
         """
         if cost_parameters is None:
             raise ValueError("Cost parameters must be provided.")
-        if plant_properties is None:
-            raise ValueError("Plant properties must be provided.")
         # parameters = self.design_parameters
         # plc_costs = parameters.get('PLC costs (EUR)', 0.)
         # personnel_costs = parameters.get('personnel costs (EUR)', 0.)
 
-        costs = 0.
+        costs = self.constructioncosts_eur.value or 0.0
         if self.technologies:
             for technology in self.technologies:
                 x_value = 0.
@@ -360,9 +613,9 @@ class TreatmentPlantPerformanceCalculator:
                         constrcost_params.get('b', 0.),
                         constrcost_params.get('c', 0.),
                     )
-                    plant_property = constrcost_params.get('plantproperty', None)  # noqa, E501
-                    technology_property = constrcost_params.get(
-                        'technologyproperty', None)
+                    # plant_property = constrcost_params.get('plantproperty', None)  # noqa, E501
+                    # technology_property = constrcost_params.get(
+                    #     'technologyproperty', None)
                     plantproperty_value = constrcost_params.get(
                         'plantproperty_value', 0)
                     technologyproperty_value = constrcost_params.get(
@@ -373,8 +626,29 @@ class TreatmentPlantPerformanceCalculator:
                         x_value = technologyproperty_value
                     constr_costs = a*x_value**2 + b*x_value + c
                     costs += constr_costs
+                else:
+                    logger.warning(
+                        f"Construction cost parameters not found for "
+                        f"technology: {technology}")
+                    continue
         costs = 1000 * round(abs(costs)/1000.0, 2)
-        return costs
+        self.constructioncosts_eur.value = costs
+
+    def get_energyconsumption_per_m3(
+        self,
+    ) -> float:
+        energy_consumption_kwhperday = self.energyconsumption_kwhrperday.value
+        nominal_flow_m3perday = self.nominal_flow_m3perhr.value * 24
+        if (
+            energy_consumption_kwhperday is None
+            or nominal_flow_m3perday is None
+        ):
+            raise ValueError(
+                "Total energy consumption and nominal flow must be provided.")
+        energy_consumption_per_m3 = (
+            energy_consumption_kwhperday / nominal_flow_m3perday)
+        return energy_consumption_per_m3
+    
 
     # TODO: this will be moved to the specific class of the filter technologies
     # def get_filterarea(

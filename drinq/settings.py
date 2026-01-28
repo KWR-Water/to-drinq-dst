@@ -152,3 +152,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # PUBCHEM REST API REQUEST SETTING
 TIME_BETWEEN_PUBCHEM_REQUESTS = 0.3
+
+LOGGING = {
+    "version": 1,  # the dictConfig format version
+    "disable_existing_loggers": False,  # retain the default loggers
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "general.log",
+        },
+    },
+    "loggers": {
+        "drinq": {  # use 'drinq' logger
+            "handlers": ["file"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+    },
+}

@@ -190,19 +190,6 @@ class TreatmentDesignSelectionForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 4}),
         }
 
-    # def __init__(self, **kwargs):
-    #     initial = kwargs.pop('initial', None)
-    #     option = initial.get('option', None) if initial else None
-    #     # slug = initial.get('slug', None) if initial else None
-    #     instance = kwargs.get('instance', None)
-    #     if option is None and instance is not None:
-    #         option = instance.option
-    #     # if slug is None and instance is not None:
-    #     #     slug = instance.slug
-    #     super(TreatmentDesignSelectionForm, self).__init__(**kwargs)
-    #     if option is not None:
-    #         self.fields['option'].initial = option
-
     def clean_name(self) -> str | None:
         cleaned_data = super(TreatmentDesignSelectionForm, self).clean()
         if 'name' in cleaned_data.keys():
@@ -307,10 +294,16 @@ def build_technology_property_initials(treatmentplant):
     defaults = TechnologyPropertyJunction.objects.filter(
         technology__in=tech_ids,
         is_designparameter=1,
+        is_digested=0,  # only include non-digestion params
     ).select_related('technology', 'property')
 
     initials = []
+    # Only include properties with is_digested=0, even if they exist in the DB
     for td in defaults:
+        # Defensive: skip if is_digested is True (shouldn't be in defaults,
+        # but just in case)
+        if getattr(td, 'is_digested', False):
+            continue
         existing = TreatmentPlantTechnologyPropertyValue.objects.filter(
             treatmentplant=treatmentplant,
             technology=td.technology,
