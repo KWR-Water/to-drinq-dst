@@ -20,7 +20,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             'tank height chemical storage': 3.0,
             'target concentration of dosing chemical (mg/l)': 20.0,
             'chemical dosing solution concentration (w/w%)': 10.0,
-            'mass density of chemical (g/cm3)': 1.2,
+            'mass density of chemical': 1.2,
             'retention time (min)': 30.0,
             'storage time of chemicals (days)': 15,
             'mixer velocity gradient': 100.0,
@@ -39,6 +39,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=None,
         )
         self.assertTrue(mixer.tank_height == self.parameters['tank height'])
         self.assertTrue(mixer.retention_time_min == self.parameters[
@@ -56,7 +57,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         result = mixer.get_kpi('footprint area')
         self.assertEqual(
             result, mixer.footprint_area__m2())
-        result = mixer.get_kpi('hydraulic headloss')
+        result = mixer.get_kpi('head loss')
         self.assertEqual(
             result, mixer.hydraulic_headloss__bar())
 
@@ -69,11 +70,12 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         area = mixer.footprint_area__m2()
         self.assertAlmostEqual(area, 15.0, places=1)
 
-    def test_hydraulic_headloss(self):
+    def test_pressure_head(self):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=None,
         )
         headloss = mixer.hydraulic_headloss__bar()
         self.assertAlmostEqual(headloss, 5.01, places=2)
@@ -92,10 +94,11 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=None,
         )
         kpi_results = mixer.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
-        self.assertIn('hydraulic headloss', kpi_results)
+        self.assertIn('head loss', kpi_results)
         self.assertIn('daily energy consumption', kpi_results)
         self.assertIn('co2 emissions', kpi_results)
 

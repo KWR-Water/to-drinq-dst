@@ -1,0 +1,12 @@
+id,chemicalagent,co2_emissionfactor,emissionfactor_unit
+1,1,10.2,kg CO2-eq./kg
+2,2,0.06,kg CO2-eq./kg
+3,3,1.18,kg CO2-eq./kg
+4,4,1.13,kg CO2-eq./kg
+5,5,0.5,kg CO2-eq./kg
+6,6,0.58,kg CO2-eq./kg
+7,7,0.87,kg CO2-eq./kg
+8,8,0.82,kg CO2-eq./kg
+9,9,0.56,kg CO2-eq./kg
+10,10,0.27,kg CO2-eq./kg
+11,11,3.24,kg CO2-eq./kg

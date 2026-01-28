@@ -13,7 +13,8 @@ from drinq.utils.physics_and_chemistry import (
     reynolds_number_pipe,
     calculate_pressure_drop_pipe
     )
-
+from drinq.utils.financial_costs import (
+    construction_costs_total)
 import json
 
 
@@ -99,8 +100,9 @@ class TreatmentDataclassMixin:
         self.wq_parameters = self.wq_parameters
         self.design_parameters = self.design_parameters
         self.plant_kpis = self.plant_kpis
-        if len(self.digest_parameter_list) == 0:
-            self.digest_parameter_list = None
+        if self.digest_parameter_list is not None:
+            if len(self.digest_parameter_list) == 0:
+                self.digest_parameter_list = None
         self.digest_parameter_list = self.digest_parameter_list
 
 

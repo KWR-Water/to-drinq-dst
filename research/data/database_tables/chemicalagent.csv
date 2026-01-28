@@ -1,12 +1,13 @@
-﻿id;name;slug
-1;PAC (Sachtoclar) (100%);pac
-2;CaCO3 (100%);caco3
-3;Cl2 (100%);cl2
-4;H2O2 (100%);h2o2
-5;FeCl3 6H2O (100%);fecl3
-6;Al2(SO4)3 .18H2O (100%);al2so4
-7;Ca(OH)2 (100%);caoh2
-8;NaOH (100%);naoh
-9;Na2CO3 (100%);na2co3
-10;NACl (100%);nacl
-11
+id,name,slug
+1,PAC (Sachtoclar) (100%),pac
+2,CaCO3 (100%),caco3
+3,Cl2 (100%),cl2
+4,H2O2 (100%),h2o2
+5,FeCl3 6H2O (100%),fecl3
+6,Al2(SO4)3 .18H2O (100%),al2so4
+7,Ca(OH)2 (100%),caoh2
+8,NaOH (100%),naoh
+9,Na2CO3 (100%),na2co3
+10,NACl (100%),nacl
+11,natural sand,natural_sand
+12,ozone,o3
