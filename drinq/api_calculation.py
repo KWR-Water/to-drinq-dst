@@ -11,6 +11,9 @@ from drinq.utils.treatmentkpi import (
     ChlorineDisinfection,
     ChloramineDisinfection,
     ChainScrapedSedimentation,
+    RapidSandDoubleMediumFiltration,
+    RapidSandSingleMediumFiltration,
+    RapidSandPressurizedVesselFiltration,
     MembraneFiltration,
     calculate_water_demand_m3hr_for_population,
     calculate_flow_per_unit
@@ -247,10 +250,12 @@ class TechnologyPerformanceCalculator:
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
+
                             case 'strainer':
                                 strainer = Strainer(**tech_kwargs)
                                 self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = strainer.parameters  # noqa, E501
+
                             case _:
                                 pass
                     case 'coagulation':
@@ -260,8 +265,31 @@ class TechnologyPerformanceCalculator:
                                 ) in technology:
                                 coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
+
                             case _:
                                 pass
+                    case 'submerged rapid sand filtration':
+                        match technology.lower():
+                            case str(technology) if ((
+                                'rapid sand filtration'
+                            ) and ('submerged') and ('single')
+                            ) in technology.lower():
+                                rsf = RapidSandSingleMediumFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
+
+                            case str(technology) if ((
+                                'rapid sand filtration'
+                            ) and ('submerged') and ('double')
+                            ) in technology.lower():  # noqa, E501
+                                rsf = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
+
+                            case str(technology) if ((
+                                'rapid sand filtration') and ('pressurized')
+                                ) in technology.lower():
+                                rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
+
                     case 'omp removal':
                         match technology.lower():
                             case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501

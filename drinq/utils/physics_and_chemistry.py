@@ -7,8 +7,8 @@ WATER_VISCOSITY_N_S_PER_M2 = 0.0010005  # N*s/m^2
 
 
 def dynamic_viscosity_water_pa_s(temperature: float) -> float:
-    """Calculate the dynamic viscosity of water as a function of temperature using
-    the Vogel-Fulcher-Tammann approximation.
+    """Calculate the dynamic viscosity of water as a function of temperature 
+    using the Vogel-Fulcher-Tammann approximation.
 
     Args:
         temperature (float): Temperature in degrees
