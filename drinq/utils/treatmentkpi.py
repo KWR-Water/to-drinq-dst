@@ -1201,7 +1201,7 @@ class ChloramineDisinfection(TreatmentKPI):
     target_residual_chlorine_mgL: float
     chlorine_dosing_mgL: float
     chlorine_solution_w_w: float
-    chlorine_concentration_mgL: float    
+    chlorine_concentration_mgL: float
     chlorine_disinfection: ChlorineDisinfection
     ammonia_dosing_mgperltr: float
     ammonia_concentration_mgperltr: float
