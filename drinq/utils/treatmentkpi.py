@@ -266,7 +266,8 @@ def calculate_dosing_flow_rate__m3perhr(
     """Calculate dosing flow rate in m3/hr.
 
     Args:
-        volume_dosing_m3perday_perunit (float): dosing volume in m3/day per unit
+        volume_dosing_m3perday_perunit (float): dosing volume in 
+            m3/day/unit
         units_per_lane (int): number of units per lane
         lanes (int): number of lanes
     Returns:
@@ -306,8 +307,10 @@ def calculate_chlorine_concentration_mgL(
     """Calculate chlorine dosing concentration in mg/L.
 
     Args:
-        residual_chlorine_mgL (float): target residual chlorine concentration in mg/L
-        dosing_solution_concentration_w_w (float): chlorine solution concentration in w/w%
+        residual_chlorine_mgL (float): target residual chlorine concentration 
+            in mg/L
+        dosing_solution_concentration_w_w (float): chlorine solution 
+            concentration in w/w%
     """
     if dosing_solution_concentration_w_w <= 0:
         raise ValueError("Dosing solution concentration must be greater than zero.")    
@@ -408,24 +411,24 @@ def calculate_hydraulic_headloss_rapid_sand_filters_m(
     sand_media_grain_size: float,
     anthracite_porosity: float,
     anthracite_media_grain_size: float,
-    filtration_rate_m3_per_m2_per_h: float,
+    filtration_rate_m3_m2_h: float,
     sand_bed_height_m: float,
     anthracite_bed_height_m: float,
     tank_height: float,
-    ) -> float:
+) -> float:
     headloss_sand = calculate_headloss_over_filtration_media(
         water_viscosity=water_viscosity,
         water_density_kg_per_m3=water_density_kg_per_m3,
         porosity=sand_porosity,
         grain_size=sand_media_grain_size,
-        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_per_m2_per_h,
+        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_m2_h,
         filter_bed_height_m=sand_bed_height_m)
     headloss_anthr = calculate_headloss_over_filtration_media(
         water_viscosity=water_viscosity,
         water_density_kg_per_m3=water_density_kg_per_m3,
         porosity=anthracite_porosity,
         grain_size=anthracite_media_grain_size,
-        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_per_m2_per_h,
+        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_m2_h,
         filter_bed_height_m=anthracite_bed_height_m)
     headloss_m = headloss_sand + headloss_anthr + tank_height
     return meters_of_water_to_bar(headloss_m)
@@ -452,7 +455,7 @@ def calculate_backwash_headloss_m(
     sand_bed_height_m: float | None,
     anthracite_bed_height_m: float | None,
     tank_height: float,
-    ) -> float:
+) -> float:
     h_sand = calculate_backwash_headloss_filter(
         density_filter_media_kg_per_m3=sand_density_kg_per_m3,
         water_density_kg_per_m3=water_density_kg_per_m3,
@@ -465,84 +468,86 @@ def calculate_backwash_headloss_m(
         porosity=anthracite_porosity,
         filter_bed_height_m=anthracite_bed_height_m
     )
-        
-    return 1.1 *(h_sand + h_anthracite + tank_height) #aditional tank height and 10% safety factor.
+    return 1.1 * (
+        h_sand + h_anthracite + tank_height)  # 10% safety factor.
 
 
-def pressurisedvesselcalc_m_m2(
-    flow_per_unit_m3hr: float
-)-> float:
+def pressurisedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
     V = flow_per_unit_m3hr
-    data = {
-      'Height (m)': [1.22, 1.22, 1.22, 1.5, 1.5, 1.5, 1.5, 1.8, 2.0, 2.0, 2.0, 2.5],
-      'Diameter (mm)': [500, 600, 800, 900, 1000, 1200, 1400, 1600, 1800, 2500, 2800, 3200],
-      'Filtration flow (m3/h)': [(0.001, 3), (3, 5), (5, 8),(8, 10), (10, 12),(12, 17), (17, 24),(24, 30), (30, 47),(47, 68),(68, 92), (92, 120)]}
-    # Create DataFrame
-    df = pd.DataFrame(data)
-    selected_filter = df[(df['Filtration flow (m3/h)'].apply(lambda x: x[0]) < V) &
-                         (df['Filtration flow (m3/h)'].apply(lambda x: x[1]) >= V)]
-    if selected_filter.empty:
-         print("No suitable vessel found for the given flow rate.")
-    selected_filter = selected_filter.iloc[0]
-    Fl = selected_filter['Filtration flow (m3/h)']
-    H = selected_filter["Height (m)"]
-    D = selected_filter["Diameter (mm)"]
-    Dm = D/1000  # diameter in meters
-    unit_depth_m = np.ceil(1.1 * H)
-    unit_area_m2 = np.ceil(3.14*(Dm**2)/4)
-    return unit_depth_m, unit_area_m2   
+    heights = np.array([1.22, 1.22, 1.22, 1.5, 1.5, 1.5, 1.5, 1.8, 2.0, 2.0, 2.0, 2.5])
+    diameters_mm = np.array([500, 600, 800, 900, 1000, 1200, 1400, 1600, 1800, 2500, 2800, 3200])
+    filtration_flows = np.array([
+        (0.001, 3), (3, 5), (5, 8), (8, 10), (10, 12), (12, 17), (17, 24), (24, 30),
+        (30, 47), (47, 68), (68, 92), (92, 120)
+    ])
+    lower_bounds = filtration_flows[:, 0]
+    upper_bounds = filtration_flows[:, 1]
+    mask = (lower_bounds < V) & (upper_bounds >= V)
+    if not np.any(mask):
+        print("No suitable vessel found for the given flow rate.")
+        return None, None
+    idx = np.argmax(mask)  # first match
+    H = heights[idx]
+    D = diameters_mm[idx]
+    Dm = D / 1000  # diameter in meters
+    unit_depth_m = int(np.ceil(1.1 * H))
+    unit_area_m2 = int(np.ceil(np.pi * (Dm ** 2) / 4))
+    return unit_depth_m, unit_area_m2
 
-def movingbedvesselcalc_m_m2(
-    flow_per_unit_m3hr: float)-> float:
+
+def movingbedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
     V = flow_per_unit_m3hr
-    data = {
-        'Height (m)': [3.9, 4.7, 5.20, 5.7, 5.55, 6.05, 6.55, 5.5, 6.0],
-        'Diameter (m)': [1.4, 2.0, 2.0, 2.0, 2.5, 2.5, 2.5, 2.8, 2.8],
-        'Net filtration area  (m2)': [1.54, 3.14, 3.14, 3.14, 4.9, 4.9, 4.9, 6.15, 6.15],
-        'Sand bed height (m)': [1.0, 1.0, 1.5, 2.0, 1.0, 1.5, 2.0, 1.0, 1.5],
-        'Filtration flow (m3/h)': [(0.001, 6), (6, 14.8), (14.8, 16.4),(16.4, 17.9), (17.9, 27.3),(27.3, 29.7), (29.7, 32.2),(32.2, 33.9), (33.9, 37)],
-        'Installed Power (kW)': [3.0, 5.5, 5.5, 5.5, 9.2, 9.2, 9.2, 11, 11]}
-    # Create DataFrame
-    df = pd.DataFrame(data)
-    selected_filter = df[(df['Filtration flow (m3/h)'].apply(lambda x: x[0]) < V) &
-                         (df['Filtration flow (m3/h)'].apply(lambda x: x[1]) >= V)]
-    if selected_filter.empty:
-         print("No suitable vessel found for the given flow rate.")
-    selected_filter = selected_filter.iloc[0]
-    Fl = selected_filter['Filtration flow (m3/h)']
-    H = selected_filter["Height (m)"]
-    D = selected_filter["Diameter (mm)"]
-    Punit = selected_filter["Installed Power (kW)"]
-    Dm = D/1000  # diameter in meters
-    unit_depth_m = mh.ceil(1.1 * H)
-    unit_area_m2 = mh.ceil(3.14*(Dm**2)/4)
-    unit_kW = mh.ceil(Punit)
-    return unit_depth_m, unit_area_m2       
+    heights = np.array([3.9, 4.7, 5.20, 5.7, 5.55, 6.05, 6.55, 5.5, 6.0])
+    diameters_m = np.array([1.4, 2.0, 2.0, 2.0, 2.5, 2.5, 2.5, 2.8, 2.8])
+    net_filtration_areas = np.array(
+        [1.54, 3.14, 3.14, 3.14, 4.9, 4.9, 4.9, 6.15, 6.15])
+    sand_bed_heights = np.array([1.0, 1.0, 1.5, 2.0, 1.0, 1.5, 2.0, 1.0, 1.5])
+    filtration_flows = np.array([
+        (0.001, 6), (6, 14.8), (14.8, 16.4), (16.4, 17.9), (17.9, 27.3),
+        (27.3, 29.7), (29.7, 32.2), (32.2, 33.9), (33.9, 37)
+    ])
+    installed_powers = np.array([3.0, 5.5, 5.5, 5.5, 9.2, 9.2, 9.2, 11, 11])
+    lower_bounds = filtration_flows[:, 0]
+    upper_bounds = filtration_flows[:, 1]
+    mask = (lower_bounds < V) & (upper_bounds >= V)
+    if not np.any(mask):
+        print("No suitable vessel found for the given flow rate.")
+        return None, None, None
+    idx = np.argmax(mask)  # first match
+    H = heights[idx]
+    D = diameters_m[idx]
+    power_of_unit = installed_powers[idx]
+    unit_depth_m = int(np.ceil(1.1 * H))
+    unit_area_m2 = int(np.ceil(np.pi * (D ** 2) / 4))
+    unit_kwatt = int(np.ceil(power_of_unit))
+    return unit_depth_m, unit_area_m2, unit_kwatt
+
 
 def reactor_dimensions(
-    flow_per_unit_m3hr:float,
-    v_up_target:float) -> float:
+    flow_per_unit_m3hr: float,
+    upflow_velocity_target: float) -> float:
+    # TODO/fix missing args (h_static_m, eps_...)
     """Calculates diameter and height based on fluidization physics."""
-    area_req = self.flow_per_unit_m3hr / self.v_up_target
+    area_req = flow_per_unit_m3hr / upflow_velocity_target
     diameter = np.sqrt((4 * area_req) / np.pi)
         
-    # Richardson-Zaki Bed Expansion
-    h_expanded = self.h_static_m * ((1 - self.eps_static) / (1 - self.eps_expanded))
+    # Richardson-Zaki approach for bed expansion
+    h_expanded = h_static_m * ((1 - eps_static) / (1 - eps_expanded))
     total_height = h_expanded * 1.5  # 50% freeboard
-        
     return  diameter, total_height, area_req
 
+
 def daily_mass_balance__kg(
-    nominal_flow_m3perh:float,
-    delta_c:float,
-    lime_purity_factor:float) -> float:
+    nominal_flow_m3perh: float,
+    delta_c: float,
+    lime_purity_factor: float) -> float:
     """Calculates chemicals in and pellets out per day."""
     hardness_removed_kg = (delta_c * nominal_flow_m3perh * 24) / 1000.0
     lime_req_kgperday = hardness_removed_kg * lime_purity_factor
     seed_req_kg = hardness_removed_kg * 0.10  # 10% seed ratio
     pellets_out_kg = hardness_removed_kg + seed_req_kg
     
-    return hardness_removed_kg, lime_req_kgperday,seed_req_kg, pellets_out_kg
+    return hardness_removed_kg, lime_req_kgperday, seed_req_kg, pellets_out_kg
             
 class CoagulationDynamicMixing(TreatmentKPI):
     """KPI calculations for a Coagulation with Dynamic Mixing treatment unit."""
@@ -1671,7 +1676,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             sand_media_grain_size=self.sand_media_grain_size,
             anthracite_porosity=self.sand_porosity,
             anthracite_media_grain_size=self.sand_media_grain_size, #dummy number
-            filtration_rate_m3_per_m2_per_h=self.filtration_rate_m3_per_m2_per_h,
+            filtration_rate_m3_m2_h=self.filtration_rate_m3_per_m2_per_h,
             sand_bed_depth_m=self.sand_bed_depth_m,
             anthracite_bed_depth_m=self.anthracite_bed_depth_m,# calculated as zero as anthracite depth = 0m
             tank_height=unit_depth_m) 
@@ -1716,7 +1721,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
-    unit_depth_m: float
+    unit_height_m: float
     tanks_area_m2: float
     backwash_pump_flow_m3_per_h:float
     backwash_pump_head_m:float
@@ -1767,8 +1772,9 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             TPN['sand_bed_depth_m']] 
         self.anthracite_bed_depth_m = parameters[
             TPN['anthracite_bed_depth_m']]
-        self.unit_depth_m = self.sand_bed_depth_m + self.anthracite_bed_depth_m  + 1 # additional height above the filter
-        self.unit_volume_m3 = self.unit_area_m2 * self.unit_depth_m
+        self.unit_height_m = (
+            self.sand_bed_depth_m + self.anthracite_bed_depth_m  + 1)  # additional height above the filter
+        self.unit_volume_m3 = self.unit_area_m2 * self.unit_height_m
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
@@ -1785,7 +1791,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
                 antracite_density_kg_per_m3=self.anthracite_density_kg_per_m3,
                 sand_bed_depth_m=self.sand_bed_depth_m,
                 anthracite_bed_depth_m=self.anthracite_bed_depth_m,
-                tank_height=self.unit_depth_m)
+                tank_height=self.unit_height_m)
                 )
         self.backwash_water_area_m2 = (
             backwash_pump_flow_m3_per_h * self.backwash_duration_min
@@ -1834,10 +1840,10 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             sand_media_grain_size=self.sand_media_grain_size,
             anthracite_porosity=self.sand_porosity,
             anthracite_media_grain_size=self.anthracite_media_grain_size,
-            filtration_rate_m3_per_m2_per_h=self.filtration_rate_m3_per_m2_per_h,
+            filtration_rate_m3_m2_h=self.filtration_rate_m3_per_m2_per_h,
             sand_bed_depth_m=self.sand_bed_depth_m,
             anthracite_bed_depth_m=self.anthracite_bed_depth_m,
-            tank_height=unit_depth_m) 
+            tank_height=self.unit_height_m)
             
     def power__kw(self) -> float:
         power_watts = (
@@ -2154,7 +2160,7 @@ class GranularActivatedCarbon(TreatmentKPI):
             * (self.superficial_velocity**2 * self.unit_depth_m)
             / (GRAVITY_M_PER_S2 * self.effective_particle_diameter)
         )
-        return  meters_of_water_to_bar (headloss)
+        return meters_of_water_to_bar(headloss)
             
     def power__kw(self) -> float:
         power_kw = 0
@@ -2487,7 +2493,7 @@ class PelletSoftening(TreatmentKPI):
         self.storage_days = parameters.get(TPN['storage_time_days'], 30)
         self.unit_diam_m,self.unit_depth_m, self.unit_area_m2 = reactor_dimensions(
             flow_per_unit_m3hr = self.flow_per_unit_m3hr,
-            v_up_target=self.v_up_target_m/h)
+            upflow_velocity_target=self.target_upflow_velocity_mperh)
         self.hardness_removed_kg, self.lime_req_kgperday, self.seed_req_kg, self.pellets_out_kg = daily_mass_balance__kg(         
             flow_per_unit_m3hr = self.flow_per_unit_m3hr,
             delta_c=self.delta_c,

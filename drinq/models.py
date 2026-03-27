@@ -827,9 +827,12 @@ class WaterqualityParameterTechnologyJunction(models.Model):
     technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE,
         db_column='technology', related_name='technology_wqps')
-    is_userdefined = models.BooleanField(
+    is_inputparameter = models.BooleanField(
         default=0, null=False,
-        db_column='is_userdefined')
+        db_column='is_inputparameter')
+    is_targetparameter = models.BooleanField(
+        default=0, null=False,
+        db_column='is_targetparameter')
     default_value = models.FloatField(blank=True, null=True)
 
     class Meta:
