@@ -80,8 +80,8 @@
 79,upper bound number of UV lamps,,upper bound number of UV lamps,2,115
 80,lower bound projected irradiated area,m^2,lower bound projected irradiated area,1,
 81,energy intensity,kWh/m^3,energy intensity of UV lamps energy consumption,2,
-82,lower bound of energy intensity ,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,
-83,upper bound of energy intensity ,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,
+82,lower bound of energy intensity,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,
+83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,
 84,bar spacing,m,space between bar screens or grid screens (m),1,103
 85,lower bound NF flow recovery rate,,lower bound NF flow recovery rate,1,116
 86,upper bound NF flow recovery rate,,upper bound NF flow recovery rate,1,116
@@ -144,7 +144,7 @@
 143,chemical dosage factor,%,percentage of chemical required per kg of a parameter,1,
 144,pellet porosity static,m,pellets at initial condition of the processing,2,
 145,pellet porosity expanded,,pellets at final condition of the processing,3,
-146,resin porosity ,,resin porosity (m3/m3),3,
+146,resin porosity,,resin porosity (m3/m3),3,
 147,resin bead diameter,m,diameter of the resin material,2,
 148,NaCl density,kg/m^3,density of sodium chloride,4,
 149,NaCl to hardness ratio,,ratio of sodium chloride to hardness concentration (eqs.),4,
@@ -152,5 +152,8 @@
 151,resin volume exchange,eq/l,total exchange capacity of IEX,1,
 152,final pellet porosity,,pellets at end of lifetime,3,
 153,PAC dosage concentration,mg/l,dosage of PAC (mg/L),4,
-154,slurry tank height,m,Height of slurry tank,1,
+154,slurry tank height,m,height of slurry tank,1,
 155,velocity target,m/h,target velocity,1,
+156,PAC bulk density,kg/m^3,PAC bulk density (kg/m3),1
+157,PAC slurry concentration,w/w%,PAC slurry concentration (w/w%),1
+

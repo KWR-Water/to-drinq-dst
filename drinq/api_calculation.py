@@ -11,6 +11,9 @@ from drinq.utils.treatmentkpi import (
     ChlorineDisinfection,
     ChloramineDisinfection,
     ChainScrapedSedimentation,
+    GranularActivatedCarbonFiltration,
+    PowderedActivatedCarbonFiltration,
+    PelletSoftening,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
@@ -271,7 +274,6 @@ class TechnologyPerformanceCalculator:
                             ) in technology:
                                 cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
-
                     case 'submerged rapid sand filtration':
                         match technology.lower():
                             case str(technology) if ((
@@ -290,7 +292,7 @@ class TechnologyPerformanceCalculator:
 
                             case str(technology) if ((
                                 'rapid sand filtration') and ('pressurized')
-                                ) in technology.lower():
+                            ) in technology.lower():
                                 rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
 
@@ -299,8 +301,21 @@ class TechnologyPerformanceCalculator:
                             case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
                                 membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
-                            case _:
-                                pass
+                            case str(technology) if ('granular activated carbon') in technology.lower():  # noqa, E501
+                                gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = gac_filtration.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('powdered activated carbon') in technology.lower():  # noqa, E501
+                                pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
+
+                    case 'softening':
+                        match technology.lower():
+                            case str(technology) if ('pellet softening') in technology.lower():
+                                pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('cation exchange') in technology.lower():
+                                pass  # Placeholder for cation exchange technology
+
 
         if footprint_area is None:
             raise ValueError("Not possible to calculate footprint area (m2).")
