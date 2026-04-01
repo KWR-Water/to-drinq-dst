@@ -16,3 +16,39 @@ Traceback (most recent call last):
     constrcost_params = cost_parameters[technology]
                         ~~~~~~~~~~~~~~~^^^^^^^^^^^^
 KeyError: 'Rapid sand filtration, submerged, single medium'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=18 and technologyproperty=filter area [unit m^2] (id: 10)
+Failed to calculate construction costs
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1006, in form_valid
+    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 641, in set_constructioncosts
+    constrcost_params = cost_parameters[technology]
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'Rapid sand filtration, submerged, single medium'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=18 and technologyproperty=filter area [unit m^2] (id: 10)
+Failed to calculate construction costs
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1006, in form_valid
+    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 736, in set_constructioncosts
+    constrcost_params = cost_parameters[technology]
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'Cascade coagulation with aluminium chloride'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=18 and technologyproperty=filter area [unit m^2] (id: 10)
+Failed to calculate construction costs
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1006, in form_valid
+    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 736, in set_constructioncosts
+    constrcost_params = cost_parameters[technology]
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'Cascade coagulation with aluminium chloride'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=18 and technologyproperty=filter area [unit m^2] (id: 10)
+Failed to calculate construction costs
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1006, in form_valid
+    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 736, in set_constructioncosts
+    constrcost_params = cost_parameters[technology]
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'Cascade coagulation with aluminium chloride'

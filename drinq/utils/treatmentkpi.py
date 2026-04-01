@@ -1228,7 +1228,23 @@ class ChlorineDisinfection(TreatmentKPI):
 
 class ChloramineDisinfection(TreatmentKPI):
     """KPI calculations for a Chloramine Disinfection treatment unit."""
-    
+    tank_height_m: float
+    chemicals_tank_height_m: float
+    lanes: int
+    units_per_lane: int
+    flow_m3perh: float
+    flow_per_lane_m3perh: float
+    storage_time_days: float
+    power_of_dosing_kw: float
+    retention_time_min: float
+    target_residual_chlorine_mgL: float
+    chlorine_dosing_mgL: float
+    chlorine_solution_w_w: float
+    chlorine_concentration_mgL: float
+    chlorine_disinfection: ChlorineDisinfection
+    ammonia_dosing_mgperltr: float
+    ammonia_concentration_mgperltr: float
+
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
