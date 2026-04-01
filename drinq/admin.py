@@ -1,7 +1,9 @@
 from django.contrib import admin
 from .models import (
     Compound, CompoundCas, CompoundSynonym, Technology, Process,
-    Stage, Goal, RemovalEfficiency, GoalPerTechnology, DecidingFactor
+    Stage, Goal, RemovalEfficiency, GoalPerTechnology, DecidingFactor,
+    TechnologyChemicalagent, TechnologyProperty,
+    Watercompany, WaterqualityParameter,
     )
 
 # Register your models here.
@@ -15,12 +17,15 @@ slug_field_mapping = {
     CompoundCas.__name__: ('cas'),
     CompoundSynonym.__name__: None,
     Technology.__name__: ('name'),
+    TechnologyProperty.__name__: ('name'),
     Process.__name__: ('name'),
     Stage.__name__: '(name)',
     Goal.__name__: '(goal)',
     RemovalEfficiency.__name__: None,
     GoalPerTechnology.__name__: None,
     DecidingFactor.__name__: None,
+    WaterqualityParameter.__name__: ('name'),
+    Watercompany.__name__: ('name'),
 }
 
 for model_class in model_classes:

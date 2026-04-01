@@ -1,7 +1,7 @@
-﻿id,name,units,description,category,parent_property
+﻿id,name,unit,description,category,parent_property
 1,volume,m^3,volume of the asset,1,
-2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,8
-3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,8
+2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,
+3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,
 4,lower bound of filter area,m^2,lower bound of filter area specification,1,10
 5,upper bound of filter area,m^2,upper bound of filter area specification,1,10
 6,lower bound of membrane area,m^2,lower bound of membrane area specification,1,11
@@ -20,21 +20,21 @@
 19,tank height,m,height of tank or pressure vessel (meter),1,
 20,tank height chemical storage,m,height of storage tank for chemical(s) (meter),1,
 21,mixer velocity gradient,s^-1,velocity gradiënt of mixer (usually denoted as G),1,
-22,mass density of chemical,g/cm^3,mass density of chemical,1,
+22,mass density of chemical,g/cm^3,mass density of chemical (g/cm3),1,
 23,storage time of chemicals (days),days,storage time of chemicals (days),1,
 24,water viscosity,N * sec/m^2,dynamic water viscosity,1,
 25,power efficiency of mixer(s),,"power efficiency of mixer(s), a value between 0 and 1",3,
-26,chemical dosing solution concentration (w/w%),(w/w)%,concentration of chemical in dosing solution (in w/w%),4,
+26,chemical dosing solution concentration (w/w%),%,concentration of chemical in dosing solution (in w/w%),4,
 27,target residual concentration (mg/l),g/m^3,nominal (design) value for residuals of chemical agents per unit water volume,4,
 28,UV dose,mJ/cm^2,nominal design value for low pressure UV dose (typically between 30 and 70 mJ/cm2),3,
-29,UV power intensity,mW/cm^2,nominal design value for UV power intensity (typically between 30 and 40 mW/cm2),3,
-30,dynamic mixer unit department volume,m^2,volume of the asset's  unit department,1,1
+29,UV power intensity,,nominal design value for UV power intensity (typically between 30 and 40 mW/cm2),3,
+30,dynamic mixer unit department volume,m^2,volume of the asset's unit department,1,
 31,lower bound surface overflow rate,m^3/m^2/hour,lower bound of surface overflow rate (m3/m2/hr),1,110
 32,upper bound surface overflow rate,m^3/m^2/hour,upper bound of surface overflow rate (m3/m2/hr),1,110
-33,lower bound retention time,minutes,lower bound retention time (min.),1,
-34,upper bound retention time,minutes,upper bound retention time (min.),1,
-35,lower bound tank depth,m,lower bound tank depth (m),1,
-36,upper bound tank depth,m,upper bound tank depth (m),1,
+33,lower bound retention time,minutes,lower bound retention time (min.),1,18
+34,upper bound retention time,minutes,upper bound retention time (min.),1,18
+35,lower bound tank height,m,lower bound tank height (m),1,19
+36,upper bound tank height,m,upper bound tank height (m),1,19
 37,upper bound solids loading rate,kg/m2/day,upper bound of solids loading rate,1,101
 38,lower bound plate angle,,lower bound of plate angle,1,102
 39,upper bound plate angle,,upper bound plate angle,1,102
@@ -42,15 +42,15 @@
 41,recirculation ratio,,water recirculation in DAF process,1,
 42,plate spacing,m,space between plates in lamella clarifiers,1,103
 43,upper bound weir_loading,m3/m/day,upper bound of lamella weird loading,1,
-44,backwash tank depth,m,backwash tank depth,1,
-45,upper bound sand media depth,m,upper bound rapid sand filtration media depth,1,104
-46,lower bound sand media depth,m,lower bound rapid sand filtration media depth,1,104
-47,lower bound sand grain size,mm,upper bound sand media grain size,1,105
-48,upper bound sand grain size,mm,lower bound sand media grain size,1,105
-49,upper bound anthracite media depth,m,upper bound rapid anthracite filtration media depth,1,104
-50,lower bound anthracite media depth,m,lower bound rapid anthracite filtration media depth,1,104
-51,lower bound anthracite grain size,mm,upper bound anthracite media grain size,1,105
-52,upper bound anthracite grain size,mm,lower bound anthracite media grain size,1,105
+44,backwash tank height,m,backwash tank height,1,19
+45,upper bound sand filter bed height,m,upper bound rapid sand filtration media height,1,135
+46,lower bound sand filter bed height,m,lower bound rapid sand filtration media height,1,135
+47,lower bound sand grain size,mm,upper bound sand media grain size,1,133
+48,upper bound sand grain size,mm,lower bound sand media grain size,1,133
+49,upper bound anthracite media height,m,upper bound rapid anthracite filtration media height,1,136
+50,lower bound anthracite media height,m,lower bound rapid anthracite filtration media height,1,136
+51,lower bound anthracite grain size,mm,upper bound anthracite media grain size,1,134
+52,upper bound anthracite grain size,mm,lower bound anthracite media grain size,1,134
 53,lower bound pipe diameter,m,lower bound inlet pipe diameter,1,106
 54,upper bound pipe diameter,m,upper bound pipe diameter,1,106
 55,lower bound pipe length,m,lower bound inlet pipe length,1,107
@@ -58,7 +58,7 @@
 57,lower bound pipe roughness,,lower bound pipe roughness,1,
 58,upper bound pipe roughness,,upper bound pipe roughness,1,
 59,lower bound lever difference,m,lower bound lever difference,1,
-60,upper bound level difference,m,upper bound  level difference,1,
+60,upper bound level difference,m,upper bound level difference,1,
 61,power efficiency of pump(s),%,"power efficiency of pumps, a value between 0 and 1",3,
 62,motor efficiency of pump(s),%,"motor efficiency of pumps, a value between 0 and 1",3,
 63,lower bound screen velocity,m/s,lower bound screen velocity,1,109
@@ -69,7 +69,7 @@
 68,upper bound bar width,m,upper bound bar width,1,103
 69,lower bound bar space,m,lower bound bar space,1,103
 70,upper bound bar space,m,upper bound bar space,1,103
-71,empty bed contact time,minutes,empty bed contact time (min.),1,
+71,empty bed contact time (min),minutes,empty bed contact time (min.),1,
 72,lower bound gac particle diameter,mm,lower bound gac particle diameter,1,105
 73,upper bound gac particle diameter,mm,upper bound gac particle diameter,1,105
 74,lower bound powder activated carbon,mg/l,lower bound powder activated carbon,4,108
@@ -78,22 +78,22 @@
 77,upper bound UV fraction,,upper bound UV fraction,1,
 78,lower bound number of UV lamps,,lower bound number of UV lamps,2,115
 79,upper bound number of UV lamps,,upper bound number of UV lamps,2,115
-80,lower bound projected irradiated area,m^2,lower bound projected irradiated area,1,117
-81,upper bound projected irradiated area,m^2,upper bound projected irradiated area,1,117
-82,lamp loss factor (LLF),,lamp loss factor (LLF),2,
-83,lamp reflector factor,,lamp reflector factor,2,
-84,bar spacing,m,space between bar screens or grid screens (m),1,
+80,lower bound projected irradiated area,m^2,lower bound projected irradiated area,1,
+81,energy intensity,kWh/m^3,energy intensity of UV lamps energy consumption,2,
+82,lower bound of energy intensity,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,
+83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,
+84,bar spacing,m,space between bar screens or grid screens (m),1,103
 85,lower bound NF flow recovery rate,,lower bound NF flow recovery rate,1,116
 86,upper bound NF flow recovery rate,,upper bound NF flow recovery rate,1,116
 87,lower bound RO flow recovery rate,,lower bound RO flow recovery rate,1,116
 88,upper bound RO flow recovery rate,,upper bound RO flow recovery rate,1,116
-89,NF design flux,L/m2/h,nominal design flux for nanofiltration (typically between 15 and 30  L/m2.h),1,112
-90,RO design flux,L/m2/h,nominal design flux for reverse osmosis (typically between 10 and 20  L/m2.h),1,112
-91,membrane resistance coefficient,1/m,total membrane resistance coefficient (1/m),,
+89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,89
+90,another dummy parameter,,another dummy parameter,1,
+91,membrane resistance coefficient,1/m,total membrane resistance coefficient (1/m),1,
 92,lower bound of membranes per vessel,,lower bound of membranes per vessel,1,113
 93,upper bound of membranes per vessel,,upper bound of membranes per vessel,1,113
 94,operating pressure (bar),bar,pressure head required for membrane filtration,1,114
-95,membrane dummy parameter,,dummy parameter,1,114
+95,membrane dummy parameter,,dummy parameter,1,
 96,retention time (hr),hr,"retention time of water, in hours",1,
 97,area,m^2,area of the asset,1,
 98,energy emission factor,ton/kWh,emission factor for carbon dioxide emissions when energy is consumed,5,
@@ -102,15 +102,15 @@
 101,mass loading rate,kg/m2/day,,1,
 102,plate angle,degree angle,angle of plate (degree angle),1,
 103,length,m,"length, width or spacing",1,
-104,filter medium depth,m,depth of (submerged) filter bed,1,
+104,single medium filter bed height,m,height of (submerged) filter bed,1,
 105,grain diameter,mm,grain or particle diameter (mm),4,
 106,pipe diameter,m,diameter of pipe,1,
 107,pipe length,m,length of pipe,1,
 108,concentration of suspended solids,mg/l,"concentration of suspended solids, e.g. activated carbon",1,
-109,velocity bar screen,m/s?,velocity of e.g. bar screens,1,
-110,surface overflow rate,,volume of water flowing through a sedimentation tank per unit of surface area,1,
+109,velocity bar screen,m/s,velocity of e.g. bar screens (m/s),1,
+110,surface overflow rate,m^3/m^2/hour,volume of water flowing through a sedimentation tank per unit of surface area,1,
 111,pipe roughness coefficient,10^-3 m,pipe roughness coefficient,1,
-112,membrane flux,L/m2/h,membrane flux expressed in LMH (liter per square meter per hour).,1,
+112,dummy parameter,,,1,
 113,membranes per vessel,,membranes per pressure vessel,1,
 114,pressure head,bar,nominal design value for pressure head,1,
 115,number of UV lamps,,number of UV lamps,1,
@@ -124,3 +124,36 @@
 123,head loss coefficient,,"k-factor, head loss coefficient or flow loss coefficient",1,
 124,scraper power coefficient,kW/m^2,scraper power per unit area (m2),1,
 125,power,kW,power of equipment or technology,1,
+126,filtration rate,m^3/m^2/hour,filtration rate (m3/m2/hr),1,
+127,sand porosity,,porosity of sand media,1,
+128,anthracite porosity,,porosity of anthracite media,1,
+129,sand density,kg/m^3,density of sand,1,
+130,anthracite density,kg/m^3,density of anthracite,1,
+131,backwash duration,minutes,backwash duration (min.),1,
+132,backwash filtration rate,m^3/m^2/hour,backwash filtration rate (m3/m2/h),1,
+133,sand media grain size,mm,sand media grain size,1,
+134,anthracite media grain size,mm,anthracite media grain size,1,
+135,sand filter bed height,m,sand filter bed height,1,
+136,anthracite filter bed height,m,anthracite filter bed height,1,
+137,energy consumption per kg ozone,kwH/kg,energy consumption per kg of product (ozone) produced,3,
+138,power density,W/m3,scraper power per unit volume (m3),3,
+139,PAC porosity,,porosity of powedered activated carbon,4,
+140,mass density of pellets,kg/m^3,mass density of pellets for softening (g/cm3),4,
+141,mass density of air,g/cm^3,mass density of air (g/cm3),1,
+142,mass density of TSS,g/cm^3,mass density of total suspended solids (g/cm3),1,
+143,chemical dosage factor,%,percentage of chemical required per kg of a parameter,1,
+144,pellet porosity static,m,pellets at initial condition of the processing,2,
+145,pellet porosity expanded,,pellets at final condition of the processing,3,
+146,resin porosity,,resin porosity (m3/m3),3,
+147,resin bead diameter,m,diameter of the resin material,2,
+148,NaCl density,kg/m^3,density of sodium chloride,4,
+149,NaCl to hardness ratio,,ratio of sodium chloride to hardness concentration (eqs.),4,
+150,regeneration duration,hr,regeneration period (hr),2,
+151,resin volume exchange,eq/l,total exchange capacity of IEX,1,
+152,final pellet porosity,,pellets at end of lifetime,3,
+153,PAC dosage concentration,mg/l,dosage of PAC (mg/L),4,
+154,slurry tank height,m,height of slurry tank,1,
+155,velocity target,m/h,target velocity,1,
+156,PAC bulk density,kg/m^3,PAC bulk density (kg/m3),1
+157,PAC slurry concentration,w/w%,PAC slurry concentration (w/w%),1
+

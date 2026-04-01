@@ -69,7 +69,7 @@ def energy_costs_perm3(
 
 
 def energy_costs_peryear(
-        energy_costs_perm3: float,
+        energy_costs_per_m3: float,
         yearly_water_production_m3: float):
     """
     Calculate the total energy costs per year.
@@ -81,7 +81,7 @@ def energy_costs_peryear(
     Returns:
     float: The total energy costs per year.
     """
-    return energy_costs_perm3 * yearly_water_production_m3
+    return energy_costs_per_m3 * yearly_water_production_m3
 
 
 def operation_maintenance_costs_peryear(
