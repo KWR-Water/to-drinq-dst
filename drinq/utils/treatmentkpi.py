@@ -12,9 +12,9 @@ from drinq.utils.physics_and_chemistry import (
     reynolds_number_pipe,
     calculate_pressure_drop_pipe
 )
-from drinq.utils.financial_costs import (
-    # TODO: add CAPEX, OPEX etc.
-)
+# from drinq.utils.financial_costs import (
+#     # TODO: add CAPEX, OPEX etc.
+# )
 import json
 
 
@@ -39,8 +39,8 @@ TECH_KPI_MAPPINGS = {
 # - area (m2) [Strainer, Microstrainer, Chain-scraped sedimentation tank, Lamella clarifier, DAF, PAC, Pellet softening, sludge blanket filtr]  # noqa, E501
 
 """
-NOTE: We import all the parameter names from a json file. This file SHOULD BE kept
-in sync with the database table "technologyproperty"!
+NOTE: We import all the parameter names from a json file. This file SHOULD BE 
+kept in sync with the database table "technologyproperty"!
 """
 with open("drinq/utils/treatmentpropertyname.json", "r") as file:
     TPN = json.load(file)
@@ -83,7 +83,7 @@ def get_value_of_dictionary_with_lower_key_str(
 @dataclass
 class TreatmentDataclassMixin:
     """Dataclass mixin for treatment KPIs.
-    
+
     Args:
         parameters (dict): Dictionary of technology parameters.
         design_parameters (dict): Dictionary of design parameters.
@@ -95,7 +95,6 @@ class TreatmentDataclassMixin:
     design_parameters: dict
     plant_kpis: dict
     wq_parameters: dict | None = None
-
     digest_parameter_list: list[str] | None = None
 
     def __post_init__(self):
@@ -547,7 +546,7 @@ def reactor_dimensions(
     h_static_m: float,
     porosity_static: float,
     porosity_expanded: float
-    ) -> float:
+) -> float:
     # TODO/fix missing args (h_static_m, eps_...)
     """Calculates diameter and height based on fluidization physics."""
     area_req = flow_per_unit_m3hr / upflow_velocity_target
@@ -562,7 +561,8 @@ def reactor_dimensions(
 def daily_mass_balance__kg(
     nominal_flow_m3perh: float,
     delta_c: float,
-    lime_mass_fraction: float) -> float:
+    lime_mass_fraction: float,
+) -> float:
     """Calculates chemicals in and pellets out per day."""
 
     hardness_removed_kg = (delta_c * nominal_flow_m3perh * 24) / 1000.0
@@ -1660,7 +1660,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             self.backwash_pump_flow_m3_per_h * self.backwash_duration_min
             /(60 * self.backwash_tank_depth_m))
         self.backwash_pump_area_m2 = (
-            2 * ( 3 * self.backwash_pump_flow_m3_per_h / 3600))  # rule of thumb of Apump=3*Qpump (in m/s)
+            2 * (3 * self.backwash_pump_flow_m3_per_h / 3600))  # rule of thumb of Apump=3*Qpump (in m/s)
         self.backwash_area_m2 = (
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
 
@@ -2741,7 +2741,7 @@ class CationicIEX(TreatmentKPI):
         waste_storage_vol = v_resin_total * regens_per_day * bv_waste_factor * (8/24) # Storage for 8 hours of waste production to even out flow
         area_waste_tank = waste_storage_vol / 3.0 # 3m deep tank
         
-        return np.ceil((area_tanks + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25)
+        return np.ceil((area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25)
 
     def hydraulic_headloss__bar(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
@@ -2958,10 +2958,11 @@ class AirFlotationDAF(TreatmentKPI):
     def power__kw(self) -> float:
         """Calculates power for compressor and recirculation pumps."""
         air_req_sec = self.air_mass__kg() / 86400.0
-        p_compressor = (air_req_sec * self.pressure_difference_kpa) / self.powereff_compressor
-        
+        p_compressor = (
+            air_req_sec *
+            self.pressure_difference_kpa) / self.powereff_compressor
         q_recirc = (self.recirculation_ratio * self.nominal_flow_m3perh) / 3600.0
-        p_recirculation = (q_recirc * self.pressure_difference_kpa) / 0.75 # 0.75 assumed pump eff
+        p_recirculation = (q_recirc * self.pressure_difference_kpa) / 0.75  # 0.75 assumed pump eff
         
         return p_compressor + p_recirculation
 
