@@ -35,7 +35,7 @@ TECH_KPI_MAPPINGS = {
 # - volume (m3)
 # - filter area (m2)
 # - membrane area (m2)
-# - dosing flow rate (1e-3 m3/hr) [Coagulation with dynamic mixing]
+# - dosing flow rate (1e-3 m3/hr) []
 # - area (m2) [Strainer, Microstrainer, Chain-scraped sedimentation tank, Lamella clarifier, DAF, PAC, Pellet softening, sludge blanket filtr]  # noqa, E501
 
 """
@@ -46,8 +46,6 @@ with open("drinq/utils/treatmentpropertyname.json", "r") as file:
     TPN = json.load(file)
 with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
     TPPN = json.load(file)
-
-NOMINAL_FLOW_RATE_NAME = TPPN['nominal_flow_rate_m3perh']
 
 
 def match_tech_kpi(kpi_fullname: str) -> str:
@@ -102,9 +100,8 @@ class TreatmentDataclassMixin:
         self.wq_parameters = self.wq_parameters
         self.design_parameters = self.design_parameters
         self.plant_kpis = self.plant_kpis
-        if self.digest_parameter_list is not None:
-            if len(self.digest_parameter_list) == 0:
-                self.digest_parameter_list = None
+        if len(self.digest_parameter_list) == 0:
+            self.digest_parameter_list = None
         self.digest_parameter_list = self.digest_parameter_list
 
 
@@ -581,7 +578,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
     units_per_lane: int
     conc_chem_mgL: float
     solution_wwperc: float
-    density_chemical_gpercm3: float
+    density_chemical: float
     retention_time_min: float
     storage_time_days: float
     efficiency_mixer: float
@@ -593,7 +590,6 @@ class CoagulationDynamicMixing(TreatmentKPI):
     tanks_area_m2: float
     volume_chemical_day: float
     chemicals_area_m2: float
-    dosing_flow_rate_literhr: float  # needed for cost calculations
 
     def __post_init__(self):
         super().__post_init__()
@@ -611,9 +607,8 @@ class CoagulationDynamicMixing(TreatmentKPI):
             TPN['target_concentration_of_dosing_chemical_mg_l']]
         self.solution_wwperc = parameters[
             TPN['chemical_dosing_solution_concentration_w_w_percent']]
-        # TODO: verify with Greg if fixed mass density of FeCl3 is correct
-        self.density_chemical_gpercm3 = parameters[
-             TPN['mass_density_of_chemical_g_cm3']]
+        self.density_chemical = parameters[
+            TPN['mass_density_of_chemical_g_cm3']] * 1000  # g/cm3 to kg/m3
         self.retention_time_min = parameters[
             TPN['retention_time_min']]
         self.storage_time_days = parameters[
@@ -639,13 +634,6 @@ class CoagulationDynamicMixing(TreatmentKPI):
             units_per_lane=1,
             solution_concentration_w_w_percent=self.solution_wwperc,
         ) * self.lanes  # m3/day
-        # Update the dosing rate
-        self.dosing_flow_rate_literhr = calculate_dosing_flow_rate__m3perhr(
-            volume_dosing_m3perday_perunit=self.volume_chemical_day,
-            units_per_lane=1,
-            lanes=1,
-        ) * 1000
-        self.parameters[TPN['nominal_dosing_flow_rate']] = self.dosing_flow_rate_literhr  # noqa, E501
         self.chemicals_area_m2 = calculate_chemical_storage_area__m2(
             daily_volume_m3perday=self.volume_chemical_day,
             storage_time_days=self.storage_time_days,
@@ -699,9 +687,8 @@ class CoagulationDynamicMixing(TreatmentKPI):
                 (1/self.efficiency_mixer) * self.mixer_velocity_grad**2
              ) * self.water_viscosity * self.unit_volume_m3) / 1000
         # TODO: check formula with Greg, i.e. why factor 5? 5 Pumps?
-        density_chemical = self.density_chemical_gpercm3 * 1000  # to kg/m3
         power_pump_kw = (
-            density_chemical * GRAVITY_M_PER_S2 *
+            self.density_chemical * GRAVITY_M_PER_S2 *
             self.volume_chemical_day * 5) / (
                 seconds_per_day * self.efficiency_mixer) / 1000
         return power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
@@ -1143,7 +1130,7 @@ class ChlorineDisinfection(TreatmentKPI):
         self.storage_time_days = design_parameters.get(
             TPN['storage_time_of_chemicals_days'], 30)
         self.nominal_flow_m3perh = plant_kpis.get(
-            NOMINAL_FLOW_RATE_NAME, None)
+            'nominal flow rate (m3/hr)', None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.power_of_dosing_kw = parameters[
