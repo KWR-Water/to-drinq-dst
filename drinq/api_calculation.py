@@ -11,6 +11,9 @@ from drinq.utils.treatmentkpi import (
     ChlorineDisinfection,
     ChloramineDisinfection,
     ChainScrapedSedimentation,
+    GranularActivatedCarbonFiltration,
+    PowderedActivatedCarbonFiltration,
+    PelletSoftening,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
@@ -18,6 +21,16 @@ from drinq.utils.treatmentkpi import (
     calculate_water_demand_m3hr_for_population,
     calculate_flow_per_unit
 )
+from drinq.utils.financial_costs import (
+    construction_costs_total,
+    total_investment_costs_peryear,
+    energy_costs_perm3,
+    energy_costs_peryear,
+    operation_maintenance_costs_peryear,
+    chemical_costs_peryear,
+    levelized_cost_of_water
+)
+
 # NOTE: TECHKPI names should match those in the database!
 TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY = 'daily energy consumption'
 TECHKPI_FOOTPRINT_AREA_M2 = 'footprint area'
@@ -271,7 +284,6 @@ class TechnologyPerformanceCalculator:
                             ) in technology:
                                 cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
-
                     case 'submerged rapid sand filtration':
                         match technology.lower():
                             case str(technology) if ((
@@ -290,7 +302,7 @@ class TechnologyPerformanceCalculator:
 
                             case str(technology) if ((
                                 'rapid sand filtration') and ('pressurized')
-                                ) in technology.lower():
+                            ) in technology.lower():
                                 rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
 
@@ -299,8 +311,21 @@ class TechnologyPerformanceCalculator:
                             case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
                                 membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
-                            case _:
-                                pass
+                            case str(technology) if ('granular activated carbon') in technology.lower():  # noqa, E501
+                                gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = gac_filtration.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('powdered activated carbon') in technology.lower():  # noqa, E501
+                                pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
+
+                    case 'softening':
+                        match technology.lower():
+                            case str(technology) if ('pellet softening') in technology.lower():
+                                pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('cation exchange') in technology.lower():
+                                pass  # Placeholder for cation exchange technology
+
 
         if footprint_area is None:
             raise ValueError("Not possible to calculate footprint area (m2).")
@@ -425,19 +450,104 @@ class CO2EmissionsPerM3KPI(PlantKPI):
     value: float | int | None
 
 
+class EnergyCostsPerYearKPI(PlantKPI):
+    name: str = 'energy costs (eur/year)'
+    value: float | int | None
+
+    def calculate_value(
+        self,
+        energy_costs_per_m3: float,
+        yearly_water_production_m3: float,
+    ) -> float:
+        self.value = energy_costs_peryear(
+            energy_costs_per_m3=energy_costs_per_m3,
+            yearly_water_production_m3=yearly_water_production_m3,
+        )
+        return self.value
+
+
 class OperAndMaintenanceCostsKPI(PlantKPI):
     name: str = KPI_OPER_AND_MAINT_COSTS
     value: float | int | None
+    """
+    Calculate the operational and maintenance costs per year.
+    """
+
+    def calculate_value(
+        self,
+        construction_costs: float,
+        oper_maintenance_percentage: float,
+    ) -> float:
+        self.value = operation_maintenance_costs_peryear(
+            construction_costs,
+            oper_maintenance_percentage,
+        )
+        return self.value
 
 
 class ConstructionCostsKPI(PlantKPI):
     name: str = KPI_CONSTRUCTION_COSTS_EUR
     value: float | int | None
 
+    def calculate_value(
+        self,
+        construction_costs: float,
+        construction_costs_percentage: float = 20,
+        tail_costs_percentage: float = 5,
+        general_facilities_costs_percentage: float = 5,
+    ) -> float:
+        self.value = construction_costs_total(
+            construction_costs,
+            construction_costs_percentage,
+            tail_costs_percentage,
+            general_facilities_costs_percentage,
+        )
+        return self.value
 
-class InvestmentCostsKPI(PlantKPI):
+
+class InvestmentCostsYearKPI(PlantKPI):
     name: str = KPI_INVESTMENT_COSTS
     value: float | int | None
+
+    def calculate_value(
+        self,
+        construction_costs_total: float,
+        operation_maintenance_percentage: float,
+        energy_cost_per_year: float,
+        personnel_costs_per_year: float,
+        chemical_costs_per_year: float,
+        interest_rate: float,
+        lifespan_years: int,
+    ) -> float:
+        # for the depreciation, the lifespan_years is used
+        self.value = total_investment_costs_peryear(
+            construction_costs_total=construction_costs_total,
+            interest_rate=interest_rate,
+            lifespan_years=lifespan_years,
+            oper_maintenance_percentage=operation_maintenance_percentage,
+            energy_costs_peryr=energy_cost_per_year,
+            personnel_costs_peryr=personnel_costs_per_year,
+            chemical_costs_peryr=chemical_costs_per_year,
+        )
+        return self.value
+
+
+class LevelizedCostOfWaterKPI(PlantKPI):
+    name: str = 'levelized cost of water (eur/m3)'
+    value: float | int | None
+
+    def calculate_value(
+        self,
+        total_investment_costs_peryear: float,
+        yearly_water_production_m3: float,
+    ) -> float:
+        if yearly_water_production_m3 == 0:
+            raise ValueError("Yearly water production (m3) cannot be zero.")
+        self.value = levelized_cost_of_water(
+            total_investment_costs_peryear,
+            yearly_water_production_m3,
+        )
+        return self.value
 
 
 class FootprintAreaKPI(PlantKPI):
@@ -471,7 +581,7 @@ class TreatmentPlantPerformanceCalculator:
     energyconsumption_kwhrperday: EnergyConsumptionPerDayKPI
     energyconsumption_kwhrperm3: EnergyConsumptionPerM3KPI
     constructioncosts_eur: ConstructionCostsKPI
-    investmentcosts_eur: InvestmentCostsKPI
+    investmentcosts_eur: InvestmentCostsYearKPI
 
     def __init__(
         self,
@@ -527,7 +637,7 @@ class TreatmentPlantPerformanceCalculator:
             value=None, name_in_dbtable=self.db_kpi_mapping.get(
                 KPI_CONSTRUCTION_COSTS_EUR, None)
         )
-        self.investmentcosts_eur = InvestmentCostsKPI(
+        self.investmentcosts_eur = InvestmentCostsYearKPI(
             name=KPI_INVESTMENT_COSTS, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(KPI_INVESTMENT_COSTS, None)
             )  # total investment costs in EUR

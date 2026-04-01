@@ -33,6 +33,8 @@ from drinq.models import (
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
     TechnologyConstructionCostParameter,
+    WaterqualityParameter,
+    WaterQualityParameterTechnologyPropertyJunction,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -867,8 +869,28 @@ class TechnologyPropertiesView(generic.FormView):
         for tech_id in tech_ids:
             technology = Technology.objects.get(id=tech_id)
             tech_properties[technology.name] = {}
+            wq_parameters[technology.name] = {
+                'input_parameter': {}, 'target_parameter': {}}
             digested_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
+            for wq_input in WaterQualityParameterTechnologyPropertyJunction.objects.filter(  # noqa, E501
+                        technology=technology,
+                        is_inputparameter=True,
+                        is_targetparameter=False):
+                wq_parameters[technology.name]['input_parameter'].update(
+                    {
+                        wq_input.waterqualityparameter.name: wq_input.default_value  # noqa, E501
+                    })
+            for wq_target in WaterQualityParameterTechnologyPropertyJunction.objects.filter(  # noqa, E501
+                        technology=technology,
+                        is_inputparameter=False,
+                        is_targetparameter=True):
+                wq_parameters[technology.name]['target_parameter'].update(
+                    {
+                        wq_target.waterqualityparameter.name: wq_target.default_value  # noqa, E501
+                    })
+
+            # Technology property default value lookup
             for def_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_designparameter=False):
                 if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
@@ -885,7 +907,7 @@ class TechnologyPropertiesView(generic.FormView):
                     ):
                 tech_properties[tp.technology.name].update(
                     {tp.technologyproperty.name: tp.value})
-        # Merge the default values with the user-specified properties        
+        # Merge the default values with the user-specified properties
         for tech_name in technology_names:
             tech_properties[tech_name] = {
                 **defaultval_tech_props[tech_name],
