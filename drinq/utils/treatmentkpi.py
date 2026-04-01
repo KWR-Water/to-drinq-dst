@@ -8,13 +8,13 @@ from drinq.utils.physics_and_chemistry import (
     WATER_VISCOSITY_N_S_PER_M2,
     GRAVITY_M_PER_S2,
     METER_PER_BAR,
-    dynamic_viscosity_water_pa_s,
     friction_factor_pipe,
     reynolds_number_pipe,
     calculate_pressure_drop_pipe
-    )
+)
 from drinq.utils.financial_costs import (
-    construction_costs_total)
+    # TODO: add CAPEX, OPEX etc.
+)
 import json
 
 
@@ -38,8 +38,10 @@ TECH_KPI_MAPPINGS = {
 # - dosing flow rate (1e-3 m3/hr) [Coagulation with dynamic mixing]
 # - area (m2) [Strainer, Microstrainer, Chain-scraped sedimentation tank, Lamella clarifier, DAF, PAC, Pellet softening, sludge blanket filtr]  # noqa, E501
 
-# NOTE We import all the parameter names from a json file. This file SHOULD BE kept
-# in sync with the database table "technologyproperty"!
+"""
+NOTE: We import all the parameter names from a json file. This file SHOULD BE kept
+in sync with the database table "technologyproperty"!
+"""
 with open("drinq/utils/treatmentpropertyname.json", "r") as file:
     TPN = json.load(file)
 with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
@@ -52,7 +54,7 @@ def match_tech_kpi(kpi_fullname: str) -> str:
     """Match user-provided KPI name to available KPIs.
 
     Args:
-        kpi_name (str): The name of the KPI to match. This names should 
+        kpi_name (str): The name of the KPI to match. This name should
         correspond to the KPIs defined in table "technologykpi".
     """
     KPI_reverse_mappings = {v: k for k, v in TECH_KPI_MAPPINGS.items()}
@@ -93,6 +95,7 @@ class TreatmentDataclassMixin:
     design_parameters: dict
     plant_kpis: dict
     wq_parameters: dict | None = None
+
     digest_parameter_list: list[str] | None = None
 
     def __post_init__(self):
@@ -223,7 +226,7 @@ def calculate_dosing_mass__perday_perunit(
         units_per_lane (int): number of units per lane
     """
     if units_per_lane <= 0:
-        raise ValueError("Units per lane must be greater than zero.")    
+        raise ValueError("Units per lane must be greater than zero.")
     # 24 hr/day * g/m3 * m3/hr / 1e3 g/kg --> kg/day (1 mg/L = 1 g/m3)
     return 24 * concentration_mgL * flow_per_lane_m3hr / 1e3 / units_per_lane
 
@@ -246,7 +249,7 @@ def calculate_dosing_volume__m3perday_perunit(
         float: dosing volume in m3/day per unit
     """
     if solution_concentration_w_w_percent <= 0:
-        raise ValueError("Solution concentration must be greater than zero.")    
+        raise ValueError("Solution concentration must be greater than zero.")
     mass_dosing_kgday_perunit = calculate_dosing_mass__perday_perunit(
         concentration_mgL=concentration_mgL,
         flow_per_lane_m3hr=flow_per_lane_m3hr,
@@ -313,7 +316,9 @@ def calculate_chlorine_concentration_mgL(
             concentration in w/w%
     """
     if dosing_solution_concentration_w_w <= 0:
-        raise ValueError("Dosing solution concentration must be greater than zero.")    
+        raise ValueError(
+            "Dosing solution concentration must be greater than zero."
+        )
     return residual_chlorine_mgL * 6 / dosing_solution_concentration_w_w
 
 
@@ -326,7 +331,9 @@ def calculate_ammonia_concentration_mgL(
         chlorine_to_ammonia_ratio (float): chlorine to ammonia mass ratio
     """
     if chlorine_to_ammonia_ratio <= 0:
-        raise ValueError("Chlorine to ammonia ratio must be greater than zero.")
+        raise ValueError(
+            "Chlorine to ammonia ratio must be greater than zero."
+        )
     return target_chlorine_mgL / chlorine_to_ammonia_ratio
 
 
@@ -377,13 +384,17 @@ def calculate_headloss_over_filtration_media(
     water_density_kg_per_m3: float,
     porosity: float,
     grain_size: float,
-    filtration_rate_m3_per_m2_per_h: float,
+    hydraulic_loading_rate_m3m2h: float,
     filter_bed_height_m: float
 ) -> float:
     """Calculates head loss over a filter bed during normal operation"""
-    headloss_medium = (180 * water_viscosity / (9.81 * water_density_kg_per_m3)) * (
-        (1 - porosity)**2 / porosity**3) * ((filtration_rate_m3_per_m2_per_h / 3600
-        ) * filter_bed_height_m) / (grain_size / 1000)**2
+    headloss_medium = (
+        180 * water_viscosity / (9.81 * water_density_kg_per_m3)
+    ) * (
+        (1 - porosity) ** 2 / porosity ** 3
+    ) * (
+        (hydraulic_loading_rate_m3m2h / 3600) * filter_bed_height_m
+    ) / (grain_size / 1000) ** 2
     return headloss_medium
 
 
@@ -411,7 +422,7 @@ def calculate_hydraulic_headloss_rapid_sand_filters_m(
     sand_media_grain_size: float,
     anthracite_porosity: float,
     anthracite_media_grain_size: float,
-    filtration_rate_m3_m2_h: float,
+    hydraulic_loading_rate_m3m2h: float,
     sand_bed_height_m: float,
     anthracite_bed_height_m: float,
     tank_height: float,
@@ -421,14 +432,14 @@ def calculate_hydraulic_headloss_rapid_sand_filters_m(
         water_density_kg_per_m3=water_density_kg_per_m3,
         porosity=sand_porosity,
         grain_size=sand_media_grain_size,
-        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_m2_h,
+        hydraulic_loading_rate_m3m2h=hydraulic_loading_rate_m3m2h,
         filter_bed_height_m=sand_bed_height_m)
     headloss_anthr = calculate_headloss_over_filtration_media(
         water_viscosity=water_viscosity,
         water_density_kg_per_m3=water_density_kg_per_m3,
         porosity=anthracite_porosity,
         grain_size=anthracite_media_grain_size,
-        filtration_rate_m3_per_m2_per_h=filtration_rate_m3_m2_h,
+        hydraulic_loading_rate_m3m2h=hydraulic_loading_rate_m3m2h,
         filter_bed_height_m=anthracite_bed_height_m)
     headloss_m = headloss_sand + headloss_anthr + tank_height
     return meters_of_water_to_bar(headloss_m)
@@ -440,9 +451,12 @@ def calculate_backwash_headloss_filter(
     porosity: float,
     filter_bed_height_m: float,
 ) -> float:
-    bw_headloss = ((
-        density_filter_media_kg_per_m3 - water_density_kg_per_m3) / water_density_kg_per_m3 * (
-            1 - porosity*1.1) * filter_bed_height_m)
+    bw_headloss = (
+        (density_filter_media_kg_per_m3 - water_density_kg_per_m3)
+        / water_density_kg_per_m3
+        * (1 - porosity * 1.1)
+        * filter_bed_height_m
+    )
     return bw_headloss
 
 
@@ -474,11 +488,15 @@ def calculate_backwash_headloss_m(
 
 def pressurisedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
     V = flow_per_unit_m3hr
-    heights = np.array([1.22, 1.22, 1.22, 1.5, 1.5, 1.5, 1.5, 1.8, 2.0, 2.0, 2.0, 2.5])
-    diameters_mm = np.array([500, 600, 800, 900, 1000, 1200, 1400, 1600, 1800, 2500, 2800, 3200])
+    heights = np.array([
+        1.22, 1.22, 1.22, 1.5, 1.5, 1.5, 1.5, 1.8, 2.0, 2.0, 2.0, 2.5
+    ])
+    diameters_mm = np.array([
+        500, 600, 800, 900, 1000, 1200, 1400, 1600, 1800, 2500, 2800, 3200
+    ])
     filtration_flows = np.array([
-        (0.001, 3), (3, 5), (5, 8), (8, 10), (10, 12), (12, 17), (17, 24), (24, 30),
-        (30, 47), (47, 68), (68, 92), (92, 120)
+        (0.001, 3), (3, 5), (5, 8), (8, 10), (10, 12), (12, 17), (17, 24),
+        (24, 30), (30, 47), (47, 68), (68, 92), (92, 120)
     ])
     lower_bounds = filtration_flows[:, 0]
     upper_bounds = filtration_flows[:, 1]
@@ -500,8 +518,8 @@ def movingbedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
     heights = np.array([3.9, 4.7, 5.20, 5.7, 5.55, 6.05, 6.55, 5.5, 6.0])
     diameters_m = np.array([1.4, 2.0, 2.0, 2.0, 2.5, 2.5, 2.5, 2.8, 2.8])
     net_filtration_areas = np.array(
-        [1.54, 3.14, 3.14, 3.14, 4.9, 4.9, 4.9, 6.15, 6.15])
-    sand_bed_heights = np.array([1.0, 1.0, 1.5, 2.0, 1.0, 1.5, 2.0, 1.0, 1.5])
+        [1.54, 3.14, 3.14, 3.14, 4.9, 4.9, 4.9, 6.15, 6.15])  # TODO: Unused variable
+    sand_bed_heights = np.array([1.0, 1.0, 1.5, 2.0, 1.0, 1.5, 2.0, 1.0, 1.5])  # TODO: Unused variable
     filtration_flows = np.array([
         (0.001, 6), (6, 14.8), (14.8, 16.4), (16.4, 17.9), (17.9, 27.3),
         (27.3, 29.7), (29.7, 32.2), (32.2, 33.9), (33.9, 37)
@@ -525,30 +543,35 @@ def movingbedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
 
 def reactor_dimensions(
     flow_per_unit_m3hr: float,
-    upflow_velocity_target: float) -> float:
+    upflow_velocity_target: float,
+    h_static_m: float,
+    porosity_static: float,
+    porosity_expanded: float
+    ) -> float:
     # TODO/fix missing args (h_static_m, eps_...)
     """Calculates diameter and height based on fluidization physics."""
     area_req = flow_per_unit_m3hr / upflow_velocity_target
     diameter = np.sqrt((4 * area_req) / np.pi)
         
     # Richardson-Zaki approach for bed expansion
-    h_expanded = h_static_m * ((1 - eps_static) / (1 - eps_expanded))
+    h_expanded = h_static_m * ((1 - porosity_static) / (1 - porosity_expanded))
     total_height = h_expanded * 1.5  # 50% freeboard
-    return  diameter, total_height, area_req
+    return diameter, total_height, area_req
 
 
 def daily_mass_balance__kg(
     nominal_flow_m3perh: float,
     delta_c: float,
-    lime_purity_factor: float) -> float:
+    lime_mass_fraction: float) -> float:
     """Calculates chemicals in and pellets out per day."""
+
     hardness_removed_kg = (delta_c * nominal_flow_m3perh * 24) / 1000.0
-    lime_req_kgperday = hardness_removed_kg * lime_purity_factor
+    lime_req_kgperday = hardness_removed_kg * lime_mass_fraction
     seed_req_kg = hardness_removed_kg * 0.10  # 10% seed ratio
-    pellets_out_kg = hardness_removed_kg + seed_req_kg
-    
+    pellets_out_kg = hardness_removed_kg + seed_req_kg    
     return hardness_removed_kg, lime_req_kgperday, seed_req_kg, pellets_out_kg
-            
+
+
 class CoagulationDynamicMixing(TreatmentKPI):
     """KPI calculations for a Coagulation with Dynamic Mixing treatment unit."""
     tank_height: float
@@ -576,12 +599,12 @@ class CoagulationDynamicMixing(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.plant_kpis
+        plant_kpis = self.plant_kpis
 
         self.tank_height = parameters[TPN['tank_height']]
         self.chem_tank_height = parameters[TPN['tank_height_chemical_storage']]
         self.lanes = design_parameters.get('number of lanes', 1)
-        self.nominal_flow_m3hr = performance_indicators.get(
+        self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = design_parameters.get('units per lane', 1)
         self.conc_chem_mgL = parameters[
@@ -662,7 +685,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
             units_per_lane=self.units_per_lane,
         )
         return dosing_per_lane * self.lanes
-    
+
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return self.conc_chem_mgL
 
@@ -706,8 +729,8 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.plant_kpis
-        digest_parameter_list = self.digest_parameter_list
+        plant_kpis = self.plant_kpis
+        digest_parameter_list = self.digest_parameter_list  # TODO: Unused variable
 
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
@@ -725,7 +748,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.lanes = design_parameters.get('number of lanes', 1)
-        self.nominal_flow_m3hr = performance_indicators.get(
+        self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3hr)
@@ -834,9 +857,9 @@ class MicroStrainer(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.plant_kpis
+        plant_kpis = self.plant_kpis
 
-        self.nominal_flow_m3perh = performance_indicators.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.screen_velocity_mpersec = parameters[TPN['velocity_bar_screen']]
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -923,7 +946,7 @@ class Strainer(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.plant_kpis
+        plant_kpis = self.plant_kpis
 
         self.bar_spacing = parameters[TPN['bar_spacing']]
         self.bar_width = parameters[TPN['bar_width']]
@@ -931,7 +954,7 @@ class Strainer(TreatmentKPI):
         self.open_area_friction = (
             self.bar_spacing/(self.bar_spacing + self.bar_width)
                 ) * (1 - self.blockage_factor)
-        self.nominal_flow_m3perh = performance_indicators.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.screen_velocity_mpersec = parameters[TPN['velocity_bar_screen']]
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -1011,12 +1034,12 @@ class ChainScrapedSedimentation(TreatmentKPI):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
-        performance_indicators = self.plant_kpis
+        plant_kpis = self.plant_kpis
         wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', 1)
         self.units_per_lane = design_parameters.get('units per lane', 1)
-        self.flow_m3perh = performance_indicators.get(
+        self.flow_m3perh = plant_kpis.get(
             'nominal flow rate (m3/hr)', None)
         self.flow_m3persec = self.flow_m3perh / 3600
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -1035,8 +1058,8 @@ class ChainScrapedSedimentation(TreatmentKPI):
         self.tank_height_m = self.unit_volume_m3 / self.unit_area_m2
 
     def __repr__(self):
-        return f"ChainScrapedSedimentation(retention time (min)={self.retention_time_min}, " \
-                f"nominal flow (m3/hr)={self.flow_m3perh})"
+        return f"ChainScrapedSedimentation (retention time (min)={self.retention_time_min}, " \
+               f"nominal flow (m3/hr)={self.flow_m3perh})"
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -1109,8 +1132,9 @@ class ChlorineDisinfection(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
 
-        self.units_per_lane = design_parameters.get('units per lane', 1)        
+        self.units_per_lane = design_parameters.get('units per lane', 1)
         self.lanes = design_parameters.get('number of lanes', 1)
         self.tank_height_m = parameters[
             TPN['tank_height']]
@@ -1204,17 +1228,16 @@ class ChlorineDisinfection(TreatmentKPI):
 
 class ChloramineDisinfection(TreatmentKPI):
     """KPI calculations for a Chloramine Disinfection treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            plant_kpis: dict,
-            design_parameters: dict,
-    ):
+    
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.chlorine_disinfection = ChlorineDisinfection(
-            parameters,
-            plant_kpis,
-            design_parameters,
-        )
+            parameters, plant_kpis, design_parameters)
         self.ammonia_dosing_mgL = self.chlorine_disinfection.chlorine_dosing_mgL / 5  # noqa, E501
         self.ammonia_concentration_mgL = calculate_ammonia_concentration_mgL(
             target_chlorine_mgL=parameters[
@@ -1305,15 +1328,16 @@ class ChloramineDisinfection(TreatmentKPI):
 
 class MembraneFiltration(TreatmentKPI):
     """KPI calculations for a Membrane Filtration treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.lanes = design_parameters[TPN['number_of_lanes']]
         self.units_per_lane = design_parameters[TPN['number_of_units_per_lane']]
-        self.flow_rate_m3perh = performance_indicators.get(
+        self.flow_rate_m3perh = plant_kpis.get(
             'nominal flow rate (m3/hr)', None)
         self.number_of_units = self.units_per_lane * self.lanes
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -1339,8 +1363,7 @@ class MembraneFiltration(TreatmentKPI):
             pressure_vessel_orientation=self.pressure_vessel_orientation,
             membranes_per_vessel=self.membranes_per_vessel,
             vessels_per_unit=self.vessels_per_unit,
-        )
-        
+        ) 
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -1352,9 +1375,9 @@ class MembraneFiltration(TreatmentKPI):
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
 
-    def get_kpi_dict(self):
+    def get_kpi_dict(self, kpi_list=None):
         if kpi_list:
-            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}        
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
@@ -1390,14 +1413,16 @@ class MembraneFiltration(TreatmentKPI):
 
 
 class IntakePump(TreatmentKPI):
-    """KPI calculations for an Intake Pump treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
-        self.flow_m3perh = performance_indicators.get('nominal flow', None)
+    """KPI calculations for an Intake Pump."""
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
+        self.flow_m3perh = plant_kpis.get('nominal flow', None)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 1)
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -1478,19 +1503,20 @@ class IntakePump(TreatmentKPI):
 
 class CleanWaterStorageTank(TreatmentKPI):
     """KPI calculations for a Clean Water Storage Tank treatment unit."""
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.tank_height_m = parameters[TPN['tank height']]
         self.retention_time_hrs = parameters[TPN['retention_time_hr']]
         self.lanes = design_parameters.get('number of lanes', 1)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 2)
         self.number_of_units = self.units_per_lane * self.lanes
-        self.flow_m3perh = performance_indicators.get(
+        self.flow_m3perh = plant_kpis.get(
             'nominal flow rate (m3/hr)', None)
         self.unit_volume_m3 = (
             self.retention_time_hrs * self.flow_m3perh) / (
@@ -1550,85 +1576,86 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     antracite_porosity: float
     antracite_density_kg_per_m3: float
     sand_bed_depth_m: float
-    antracite_bed_depth_m: float        
+    antracite_bed_depth_m: float
     filter_bed_depth_m: float
     sand_media_grain_size: float
     antracite_media_grain_size: float
-    filtration_rate_m3_per_m2_per_h: int
-    backwash_duration_min:int
-    backwash_tank_depth_m:float
-    backwash_flow_rate_m3_per_m2_per_h:float
-    efficiency_backwash_pump:float
+    hydraulic_loading_rate_m3m2h: float
+    backwash_hydraulic_loading_rate_m3m2h: float
+    backwash_duration_min: int
+    backwash_tank_height_m: float
+    backwash_flow_rate_m3_per_m2_per_h: float
+    efficiency_backwash_pump: float
     water_density_kg_per_m3: float
     water_viscosity: float
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
-    unit_depth_m: float
+    unit_height_m: float
     tanks_area_m2: float
-    backwash_pump_flow_m3_per_h:float
-    backwash_pump_head_m:float
-    backwash_pump_area_m2:float
-    backwash_water_area_m2:float 
-    backwash_area_m2:float
-    backwash_pump_head_m:float
-    
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
-        self.flow_m3perh = performance_indicators.get(
-            'nominal flow rate (m3/hr)', None)
+    backwash_pump_flow_m3_per_h: float
+    backwash_pump_head_m: float
+    backwash_pump_area_m2: float
+    backwash_water_area_m2: float 
+    backwash_area_m2: float
+    backwash_pump_head_m: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
+        self.flow_m3perh = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 1)
-        self.filtration_rate_m3_per_m2_per_h = parameters[
-            TPN['filtration_rate_m3_per_m2_per_h']]
-        self.filtration_rate_m3_per_m2_per_h = parameters[
-            TPN['filtration_rate_m3_per_m2_per_h']]
+        self.hydraulic_loading_rate_m3m2h = design_parameters[
+            TPN['hydraulic_loading_rate_m3m2h']]
         self.sand_porosity = parameters[
             TPN['sand_porosity']]
         self.sand_density_kg_per_m3 = parameters[
-            TPN['sand_density_kg_per_m3']]
+            TPN['sand_density']]
         self.sand_media_grain_size = parameters[
             TPN['sand_media_grain_size']]
         self.backwash_duration_min = parameters[
-            TPN['backwash_duration_min']]
-        self.backwash_tank_depth_m = parameters[
-            TPN['backwash_tank_depth_m']] 
-        self.backwash_flow_rate_m3_per_m2_per_h = parameters[
-            TPN['backwash_flow_rate_m3_per_m2_per_h']]
+            TPN['backwash_duration']]
+        self.backwash_tank_height_m = parameters[
+            TPN['backwash_tank_height']] 
+        self.backwash_hydraulic_loading_rate_m3m2h = parameters[
+            TPN['backwash_hydraulic_loading_rate']]
         self.efficiency_backwash_pump = parameters[
             TPN['efficiency_backwash_pump']]
         self.unit_area_m2 = (
             self.flow_per_lane_m3perh /
-            self.filtration_rate_m3_per_m2_per_h)
-        self.sand_bed_depth_m = parameters[
-            TPN['sand_bed_depth_m']] 
-        self.anthracite_bed_depth_m = 0 # no anthracite media on single filtration
-        self.unit_depth_m = self.sand_bed_depth_m + self.anthracite_bed_depth_m  + 1 # additional height above the sand filter
-        self.unit_volume_m3 = self.unit_area_m2 * self.unit_depth_m
+            self.hydraulic_loading_rate_m3m2h)
+        self.sand_bed_height_m = parameters[
+            TPN['sand_bed_height']] 
+        self.anthracite_bed_height_m = 0  # no anthracite media on single filtration
+        self.unit_height_m = (
+            self.sand_bed_height_m + self.anthracite_bed_height_m  + 1)
+        self.unit_volume_m3 = self.unit_area_m2 * self.unit_height_m
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.backwash_pump_flow_m3_per_h = (
-            np.ceil(self.unit_area_m2 *self.backwash_flow_rate_m3_per_m2_per_h))
+            np.ceil(self.unit_area_m2 * self.backwash_hydraulic_loading_rate_m3m2h))
         self.backwash_pump_head_m = np.ceil(
             calculate_backwash_headloss_m(
-                water_density_kg_per_m3 = DENS_WATER_KG_PER_M3,
-                water_viscosity = self.water_viscosity,
-                sand_porosity = self.sand_porosity,
-                anthracite_porosity = None,
-                sand_density_kg_per_m3 = self.sand_density_kg_per_m3,
-                antracite_density_kg_per_m3 = None,
-                sand_bed_depth_m = self.sand_bed_depth_m,
-                anthracite_bed_depth_m = None,
-                tank_height = self.unit_depth_m))
+                water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
+                water_viscosity=self.water_viscosity,
+                sand_porosity=self.sand_porosity,
+                anthracite_porosity=None,
+                sand_density_kg_per_m3=self.sand_density_kg_per_m3,
+                antracite_density_kg_per_m3=None,
+                sand_bed_depth_m=self.sand_bed_depth_m,
+                anthracite_bed_depth_m=None,
+                tank_height=self.unit_height_m))
         self.backwash_water_area_m2 = (
             self.backwash_pump_flow_m3_per_h * self.backwash_duration_min
             /(60 * self.backwash_tank_depth_m))
@@ -1676,10 +1703,10 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             sand_media_grain_size=self.sand_media_grain_size,
             anthracite_porosity=self.sand_porosity,
             anthracite_media_grain_size=self.sand_media_grain_size, #dummy number
-            filtration_rate_m3_m2_h=self.filtration_rate_m3_per_m2_per_h,
+            hydraulic_loading_rate_m3m2h=self.hydraulic_loading_rate_m3m2h,
             sand_bed_depth_m=self.sand_bed_depth_m,
-            anthracite_bed_depth_m=self.anthracite_bed_depth_m,# calculated as zero as anthracite depth = 0m
-            tank_height=unit_depth_m) 
+            anthracite_bed_depth_m=self.anthracite_bed_depth_m,  # calculated as zero as anthracite depth = 0m
+            tank_height=self.unit_height_m)
             
     def power__kw(self) -> float:
         power_watts = (
@@ -1696,6 +1723,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
+
 class RapidSandDoubleMediumFiltration(TreatmentKPI):
     """KPI calculations for a Rapid Sand Filtration treatment unit."""
     tank_height: float
@@ -1706,16 +1734,16 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     sand_density_kg_per_m3: float
     antracite_porosity: float
     antracite_density_kg_per_m3: float
-    sand_bed_depth_m: float
+    sand_bed_height_m: float
     antracite_bed_depth_m: float        
     filter_bed_depth_m: float
     sand_media_grain_size: float
     antracite_media_grain_size: float
-    filtration_rate_m3_per_m2_per_h: int
-    backwash_duration_min:int
-    backwash_tank_depth_m:float
-    backwash_flow_rate_m3_per_m2_per_h:float
-    efficiency_backwash_pump:float
+    hydraulic_loading_rate_m3m2h: int
+    backwash_duration_min: int
+    backwash_tank_height_m: float
+    backwash_flow_rate_m3_per_m2_per_h: float
+    efficiency_backwash_pump: float
     water_density_kg_per_m3: float
     water_viscosity: float
     flow_per_lane_m3perh: float
@@ -1723,64 +1751,65 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     unit_area_m2: float
     unit_height_m: float
     tanks_area_m2: float
-    backwash_pump_flow_m3_per_h:float
-    backwash_pump_head_m:float
-    backwash_pump_area_m2:float
-    backwash_water_area_m2:float 
-    backwash_area_m2:float
-    backwash_pump_head_m:float
-    
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
-        self.flow_m3perh = performance_indicators.get(
-            'nominal flow rate (m3/hr)', None)
+    backwash_pump_flow_m3_per_h: float
+    backwash_pump_head_m: float
+    backwash_pump_area_m2: float
+    backwash_water_area_m2: float
+    backwash_area_m2: float
+    backwash_pump_head_m: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
+        self.flow_m3perh = plant_kpis[NOMINAL_FLOW_RATE_NAME]
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 1)
-        self.filtration_rate_m3_per_m2_per_h = parameters[
-            TPN['filtration_rate_m3_per_m2_per_h']]
-        self.sand_porosity = parameters[
+        self.hydraulic_loading_rate_m3m2h = design_parameters[
+            TPN['hydraulic_loading_rate']]
+        self.sand_porosity = design_parameters[
             TPN['sand_porosity']]
-        self.anthracite_porosity = parameters[
+        self.anthracite_porosity = design_parameters[
             TPN['anthracite_porosity']]
-        self.sand_density_kg_per_m3 = parameters[
-            TPN['sand_density_kg_per_m3']]
-        self.anthracite_density_kg_per_m3 = parameters[
-            TPN['anthracite_density_kg_per_m3']]
-        self.anthracite_media_grain_size = parameters[
+        self.sand_density_kg_per_m3 = design_parameters[
+            TPN['sand_density']]
+        self.anthracite_density_kg_per_m3 = design_parameters[
+            TPN['anthracite_density']]
+        self.anthracite_media_grain_size = design_parameters[
             TPN['anthracite_media_grain_size']]
-        self.sand_media_grain_size = parameters[
+        self.sand_media_grain_size = design_parameters[
             TPN['sand_media_grain_size']]
-        self.backwash_duration_min = parameters[
-            TPN['backwash_duration_min']]
-        self.backwash_tank_depth_m = parameters[
-            TPN['backwash_tank_depth_m']] 
-        self.backwash_flow_rate_m3_per_m2_per_h = parameters[
-            TPN['backwash_flow_rate_m3_per_m2_per_h']]
+        self.backwash_duration_min = design_parameters[
+            TPN['backwash_duration']]
+        self.backwash_tank_height_m = design_parameters[
+            TPN['backwash_tank_height']] 
+        self.backwash_hydraulic_loading_rate_m3m2h = design_parameters[
+            TPN['backwash_hydraulic_loading_rate']]
         self.efficiency_backwash_pump = parameters[
             TPN['efficiency_backwash_pump']]
         self.unit_area_m2 = (
             self.flow_per_lane_m3perh /
-            self.filtration_rate_m3_per_m2_per_h)
-        self.sand_bed_depth_m = parameters[
-            TPN['sand_bed_depth_m']] 
-        self.anthracite_bed_depth_m = parameters[
-            TPN['anthracite_bed_depth_m']]
+            self.hydraulic_loading_rate_m3m2h)
+        self.sand_bed_height_m = design_parameters[
+            TPN['sand_bed_height']]
+        self.anthracite_bed_height_m = design_parameters[
+            TPN['anthracite_bed_height']]
         self.unit_height_m = (
-            self.sand_bed_depth_m + self.anthracite_bed_depth_m  + 1)  # additional height above the filter
+            self.sand_bed_height_m +
+            self.anthracite_bed_height_m + 1)  # additional height: 1m
         self.unit_volume_m3 = self.unit_area_m2 * self.unit_height_m
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.backwash_pump_flow_m3_per_h = (
-            np.ceil(self.unit_area_m2 *self.backwash_flow_rate_m3_per_m2_per_h))
+            np.ceil(self.unit_area_m2 * self.backwash_flow_rate_m3_per_m2_per_h))
         self.backwash_pump_head_m = np.ceil(
             calculate_backwash_headloss_m(
                 water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
@@ -1789,22 +1818,23 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
                 anthracite_porosity=self.anthracite_porosity,
                 sand_density_kg_per_m3=self.sand_density_kg_per_m3,
                 antracite_density_kg_per_m3=self.anthracite_density_kg_per_m3,
-                sand_bed_depth_m=self.sand_bed_depth_m,
-                anthracite_bed_depth_m=self.anthracite_bed_depth_m,
+                sand_bed_height_m=self.sand_bed_height_m,
+                anthracite_bed_height_m=self.anthracite_bed_height_m,
                 tank_height=self.unit_height_m)
                 )
         self.backwash_water_area_m2 = (
-            backwash_pump_flow_m3_per_h * self.backwash_duration_min
-            /(60 * self.backwash_tank_depth_m))
+            self.backwash_pump_flow_m3_per_h * self.backwash_duration_min
+            /(60 * self.backwash_tank_height_m))
+        # rule of thumb Apump=3*Qpump (in m/s):
         self.backwash_pump_area_m2 = (
-            2*(3*backwash_pump_flow_m3_per_h/3600))      # rule of thump of Apump=3*Qpump (in m/s)
+            2*(3 * self.backwash_pump_flow_m3_per_h/3600))
         self.backwash_area_m2 = (
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
                 f"Backwash nominal head (m)={self.backwash_pump_head_m})"
-            
+
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
         function_name = get_value_of_dictionary_with_lower_key_str(
@@ -1838,11 +1868,11 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             water_viscosity=self.water_viscosity,
             sand_porosity=self.sand_porosity,
             sand_media_grain_size=self.sand_media_grain_size,
-            anthracite_porosity=self.sand_porosity,
+            anthracite_porosity=self.anthracite_porosity,
             anthracite_media_grain_size=self.anthracite_media_grain_size,
-            filtration_rate_m3_m2_h=self.filtration_rate_m3_per_m2_per_h,
-            sand_bed_depth_m=self.sand_bed_depth_m,
-            anthracite_bed_depth_m=self.anthracite_bed_depth_m,
+            hydraulic_loading_rate_m3m2h=self.hydraulic_loading_rate_m3m2h,
+            sand_bed_depth_m=self.sand_bed_height_m,
+            anthracite_bed_depth_m=self.anthracite_bed_height_m,
             tank_height=self.unit_height_m)
             
     def power__kw(self) -> float:
@@ -1855,10 +1885,13 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         return power_kw  # TODO: Greg to provide formula
 
     def daily_energy_consumption__kwh(self) -> float:
-        return self.power__kw() * (self.backwash_duration_min/60) * self.units_per_lane * self.lanes  # Assuming one full backwash (all units one time) per day 
-    
+        return self.power__kw() * (
+            (self.backwash_duration_min / 60) * self.units_per_lane *
+            self.lanes)  # Assuming one full backwash (all units one time) per day
+
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation 
+
 
 class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     """KPI calculations for a Rapid Sand Filtration treatment unit."""
@@ -1868,31 +1901,32 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     units_per_lane: int
     flow_per_unit_m3hr: float
     filter_bed_pressure_head_m: float
-    power_lane_kw: float 
-    efficiency_pump : float
-    backwash_duration_min:int
-    backwash_tank_depth_m:float
-    backwash_flow_rate_m3_per_m2_per_h:float
-    efficiency_backwash_pump:float
+    power_lane_kw: float
+    efficiency_pump: float
+    backwash_duration_min: int
+    backwash_tank_depth_m: float
+    backwash_flow_rate_m3_per_m2_per_h: float
+    efficiency_backwash_pump: float
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
     unit_depth_m: float
     tanks_area_m2: float
-    backwash_pump_flow_m3_per_h:float
-    backwash_pump_head_m:float
-    backwash_pump_area_m2:float
-    backwash_water_area_m2:float 
-    backwash_area_m2:float
-    backwash_pump_head_m:float
+    backwash_pump_flow_m3_per_h: float
+    backwash_pump_head_m: float
+    backwash_pump_area_m2: float
+    backwash_water_area_m2: float 
+    backwash_area_m2: float
+    backwash_pump_head_m: float
     
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
-        self.nominal_flow_m3hr = performance_indicators.get(
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+    
+        self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -1905,7 +1939,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
             flow_per_unit_m3hr=self.flow_per_unit_m3hr)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)        
-        self.filter_bed_pressure_head_m = 3 + self.unit_depth_m #average design value for losses
+        self.filter_bed_pressure_head_m = 3 + self.unit_depth_m  # average design value for losses
         self.backwash_duration_min = parameters[
             TPN['backwash_duration_min']]
         self.backwash_tank_depth_m = parameters[
@@ -2001,32 +2035,35 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
     unit_power_kw: float
     tanks_area_m2: float
     
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = design_parameters.get(
-            TPN['units_per_lane'], 2)     
+            TPN['units_per_lane'], 2)
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/(self.units_per_lane-1) #Always 1 pressurized filter stand-by
-        self.unit_depth_m, self.unit_area_m2, self.unit_power_kw = movingbedvesselcalc_m_m2(
-            flow_per_unit_m3hr = self.flow_per_unit_m3hr)
+        (
+            self.unit_depth_m,
+            self.unit_area_m2,
+            self.unit_power_kw) = movingbedvesselcalc_m_m2(
+            flow_per_unit_m3hr=self.flow_per_unit_m3hr)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)        
-        self.filter_bed_pressure_head_m = 3 + self.unit_depth_m #average design value for losses
+        self.filter_bed_pressure_head_m = 3 + self.unit_depth_m  # average design value for losses
 
     def __repr__(self):
         return f"Moving bed filtration height (m)={self.unit_depth_m}, " \
                f"Moving bed filtration area (m2)={self.unit_area_m2}, " \
                f"Moving bed filtration installed power (kW)={self.unit_power_kw}, " 
               
-            
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
         function_name = get_value_of_dictionary_with_lower_key_str(
@@ -2074,7 +2111,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     nominal_flow_m3hr: float
     units_per_lane: int
     empty_bed_contact_time: int
-    filtration_rate_m3_per_m2_per_h: int
+    hydraulic_loading_rate_m3m2h: int
     gac_porosity: float
     effective_particle_diameter: float
     filter_bed_depth_m: float
@@ -2086,21 +2123,22 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     unit_depth_m: float
     tanks_area_m2: float
     
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
-        self.nominal_flow_m3hr = performance_indicators.get(
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
+        self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', 1)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 2)
-        self.filtration_rate_m3_per_m2_per_h = parameters[
-            TPN['filtration_rate_m3_per_m2_per_h']]
+        self.hydraulic_loading_rate_m3m2h = design_parameters[
+            TPN['hydraulic_loading_rate']]
         self.gac_porosity = parameters[
             TPN['gac_porosity']]
         self.empty_bed_contact_time = parameters[
@@ -2112,7 +2150,8 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.flow_per_lane_m3perh / self.units_per_lane)
         self.unit_volume_m3 = (
             self.empty_bed_contact_time * self.flow_per_unit_m3hr / 60)
-        self.unit_area_m2 = (self.flow_per_unit_m3hr / self.filtration_rate_m3_per_m2_per_h)
+        self.unit_area_m2 = (
+            self.flow_per_unit_m3hr / self.hydraulic_loading_rate_m3m2h)
         self.unit_depth_m = (
             np.ceil(self.unit_volume_m3 / self.unit_area_m2 + 1))
         self.water_viscosity = design_parameters.get(
@@ -2124,7 +2163,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
 
     def __repr__(self):
         return f"GAC bed area (m2)={self.unit_area_m2}, " \
-                f"GAC filtration rate (m2/m3/h)={self.filtration_rate_m3_per_m2_per_h}"
+                f"GAC filtration rate (m2/m3/h)={self.hydraulic_loading_rate_m3m2h}"
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2145,13 +2184,13 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return np.ceil(self.tanks_area_m2 * 1.1)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+        pass  # TODO
 
     def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+        pass  # TODO
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+        pass  # TODO
 
     def hydraulic_headloss__bar(self) -> float:
         headloss = (
@@ -2197,10 +2236,11 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
 
     def __post_init__(self):
         super().__post_init__()
-        
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+        
         self.units_per_lane = design_parameters.get('units per lane', 2)        
         self.lanes = design_parameters.get('number of lanes', 1)
         self.unit_depth_m = parameters[TPN['unit_depth_m']]
@@ -2216,7 +2256,8 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             TPN['slurry_tank_height_m'], 2.5)
         self.pac_bulk_density_g_cm3 = parameters[TPN['mass_density_of_chemical']]
         # Convert from w/w% to w/w fraction
-        self.slurry_concentration_w_w = parameters[TPN['pac_slurry_concentration']] / 100
+        self.slurry_concentration_w_w = parameters[
+            TPN['pac_slurry_concentration']] / 100
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.power_total_kw = parameters[TPN['power']]  # Total installed power for mixers/pumps
 
@@ -2249,7 +2290,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
 
     def footprint_area_for_chemicals__m2(self) -> float:
         """Calculates the area required for the PAC storage silo."""
-        safety_factor = 1.2 # Factor for PAC aeration/fluffing
+        safety_factor = 1.2  # Factor for PAC aeration/fluffing
         total_mass_stored = self.daily_mass_of_chemicals__kg() * self.storage_time_days
         bulk_density_kg_m3 = self.pac_bulk_density_g_cm3 * 1000  # Convert g/cm3 to kg/m3
         required_volume_m3 = (total_mass_stored /
@@ -2312,16 +2353,20 @@ class UVAOPDisinfection(TreatmentKPI):
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', 1)
-        self.nominal_flow_m3perh = self.plant_kpis.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.tank_height_m = parameters[TPN['tank_height']]
-        self.chemicals_tank_height_m = parameters[TPN['tank_height_chemical_storage']]
-        self.storage_time_days = design_parameters.get(TPN['storage_time_of_chemicals_days'], 30)
+        self.tank_height_m = design_parameters[TPN['tank_height']]
+        self.chemicals_tank_height_m = parameters[
+            TPN['tank_height_chemical_storage']]
+        self.storage_time_days = design_parameters.get(
+            TPN['storage_time_of_chemicals_days'], 30)
         self.h2o2_dosing_mgL = parameters.get(TPN['h2o2_target_dosing_mg_l'], 7.0)
         self.h2o2_solution_w_w = parameters.get(TPN['h2o2_solution_concentration_w_w'], 0.35)
         self.energy_per_m3_kwh = parameters.get(TPN['aop_energy_intensity_kwh_m3'], 0.25)
@@ -2381,9 +2426,9 @@ class Ozonation(TreatmentKPI):
     units_per_lane: int
     nominal_flow_m3perh: float
     retention_time_min: float
-    ozone_dosage_mgL: float
-    energy_per_kg_ozone_kwh: float # Energy efficiency of the ozonator
-    flow_per_unit_m3hr:float
+    ozone_dosage_mgliter: float
+    energy_per_kg_ozone_kwh: float  # Energy efficiency of the ozonator
+    flow_per_unit_m3hr: float
     lane_volume_m3: float
     lane_area_m2: float
     tank_area_m2:float
@@ -2392,18 +2437,22 @@ class Ozonation(TreatmentKPI):
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', 2) # Usually at least 2 for redundancy
-        self.nominal_flow_m3perh = self.plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+        self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 1)     
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/self.units_per_lane 
-        self.tank_height_m = parameters.get(TPN['tank_height'], 5.0)
-        self.retention_time_min = parameters.get(TPN['retention_time_min'], 15.0)
-        self.ozone_dosage_mgL = parameters.get(TPN['ozone_target_dosage_mg_l'], 3.0)
-        self.energy_per_kg_ozone_kwh = parameters.get(TPN['energy_intensity_kwh_kg_o3'], 8.0)
+        self.tank_height_m = design_parameters[TPN['tank_height']]
+        self.retention_time_min = parameters[TPN['retention_time_min']]
+        self.ozone_dosage_mgliter = parameters.get(
+            TPN['ozone_target_dosage_mg_l'], 3.0)
+        self.energy_per_kg_ozone_kwh = parameters.get(
+            TPN['energy_intensity_kwh_kg_o3'], 8.0)
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2422,34 +2471,36 @@ class Ozonation(TreatmentKPI):
 
     def daily_mass_of_chemicals__kg(self) -> float:
         """Total ozone gas generated per day."""
-        return (self.nominal_flow_m3perh * 24 * self.ozone_dosage_mgL) / 1000.0    
+        return (self.nominal_flow_m3perh * 24 * self.ozone_dosage_mgliter) / 1000.0    
 
     def footprint_area_for_chemicals__m2(self) -> float:
         equipment_area_m2 = self.daily_mass_of_chemicals__kg * 10 / 24  #10m2 per kg/h used
         return equipment_area_m2 
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        return  self.ozone_dosage_mgL 
+        return self.ozone_dosage_mgliter 
 
     def footprint_area__m2(self) -> float:
         
         return np.ceil(1.2 * self.area_per_unit_m2 * self.number_of_units)
- 
+
     def footprint_area__m2(self) -> float:
         """
         Total Area = Contact Tank Area + Ozonator Equipment Room.
         """
-        lane_volume_m3 = (self.flow_per_lane_m3perh * self.lanes * self.retention_time_min) / 60.0
-        lane_area_m2 = lane_volume_m3  / self.tank_height_m
+        lane_volume_m3 = (
+            self.flow_per_lane_m3perh * self.lanes *
+            self.retention_time_min) / 60.0
+        lane_area_m2 = lane_volume_m3 / self.tank_height_m
         tanks_area_m2 = lane_area_m2 * self.lanes
         
-        return np.ceil(tank_area_m2 + self.footprint_area_for_chemicals__m2)
+        return np.ceil(tanks_area_m2 + self.footprint_area_for_chemicals__m2())
 
     def power__kw(self) -> float:
         """
         Calculates power consumption of the ozone generator + oxygen feed system.
         """
-        kg_o3_per_hour = (self.nominal_flow_m3perh * self.ozone_dosage_mgL) / 1000.0
+        kg_o3_per_hour = (self.nominal_flow_m3perh * self.ozone_dosage_mgliter) / 1000.0
         return kg_o3_per_hour * self.energy_per_kg_ozone_kwh
 
     def daily_energy_consumption__kwh(self) -> float:
@@ -2472,53 +2523,71 @@ class PelletSoftening(TreatmentKPI):
     lanes: int
     units_per_lane: int
     nominal_flow_m3perh: float
-    hardness_in_mgliter: float
+    total_hardness_in_mgliter: float
     target_hardness_mgliter: float
-    target_upflow_velocity_mperh: float # m/h
+    target_upflow_velocity_mperh: float
     rho_pellet: float
-    rho_lime: float
+    rho_lime_gcm3: float
     porosity_static: float
     porosity_expanded: float
     hardness_removed_kg: float
     lime_req_kgperday: float
     pellets_out_kg: float
-    seed_req_kg: float    
-    
+    seed_req_kg: float
+
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
-        waterquality_parameters = self.waterquality_parameters
+        wq_parameters = self.wq_parameters
+
         self.lanes = design_parameters.get('number of lanes', 2)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 2)  
-        self.nominal_flow_m3perh = self.plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+        self.nominal_flow_m3perh = self.plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * self.units_per_lane)
-        self.hardness_in_mgliter = waterquality_parameters['total hardness']
-        self.target_hardness_mgliter = parameters.get(TPN['target_hardness_mgL'])
-        self.target_upflow_velocity_mperh = parameters.get(TPN['target_upflow_velocity_mperh'])
+        self.total_hardness_in_mgliter = wq_parameters[
+            'input_parameter']['total hardness']
+        self.target_hardness_mgliter = wq_parameters[
+            'target_parameter']['total_hardness']
+        self.target_upflow_velocity_mperh = parameters[
+            TPN['target_upflow_velocity']]
         self.delta_c = max(
-            0, self.hardness_in_mgliter - self.target_hardness_mgliter
+            0, self.total_hardness_in_mgliter - self.target_hardness_mgliter
             )
-        self.h_static_m = parameters.get(TPN['static_bed_height_m'], 2.0)
-        self.porosity_static = 0.40
-        self.porosity_expanded = 0.60 # Typical for v_up = 80 m/h
-        self.rho_pellet = 2700.0  # kg/m3
-        self.rho_lime = 1100.0  # kg/m3
-        self.lime_purity_factor = parameters.get(TPN['lime_dosage_factor'], 0.75) # kg lime/kg CaCO3
-        self.storage_days = parameters.get(TPN['storage_time_days'], 30)
+        self.h_static_m = parameters[TPN['static_bed_height_of_pellet_bed']]
+        self.porosity_static = parameters[TPN['pellet_porosity_static']]
+        self.porosity_expanded = parameters[TPN['pellet_porosity_expanded']]
+        self.rho_pellet = parameters[TPN['mass_density_of_pellets']]  # kg/m3
+        # TODO: lime density not used??
+        # self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]  # g/cm3
+        self.power_efficiency_pumps = parameters[TPN['power_efficiency_pumps']]
+        self.lime_purity_factor = parameters[
+            TPN['lime_dosage_mass_fraction']]  # kg lime/kg CaCO3
+        self.storage_days = parameters[TPN['storage_time_days']]
         (
             self.unit_diam_m,
             self.unit_depth_m,
             self.unit_area_m2
             ) = reactor_dimensions(
                 flow_per_unit_m3hr=self.flow_per_unit_m3hr,
-                upflow_velocity_target=self.target_upflow_velocity_mperh)
-        self.hardness_removed_kg, self.lime_req_kgperday, self.seed_req_kg, self.pellets_out_kg = daily_mass_balance__kg(         
-            flow_per_unit_m3hr=self.flow_per_unit_m3hr,
-            delta_c=self.delta_c,
-            lime_purity_factor=self.lime_purity_factor)
+                upflow_velocity_target=self.target_upflow_velocity_mperh,
+                h_static_m=self.h_static_m,
+                porosity_static=self.porosity_static,
+                porosity_expanded=self.porosity_expanded
+                )
+        (
+            self.hardness_removed_kg,
+            self.lime_req_kgperday,
+            self.seed_req_kg,
+            self.pellets_out_kg
+            ) = daily_mass_balance__kg(
+                flow_per_unit_m3hr=self.flow_per_unit_m3hr,
+                delta_c=self.delta_c,
+                lime_mass_fraction=self.lime_purity_factor)
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2540,35 +2609,44 @@ class PelletSoftening(TreatmentKPI):
         return self.lime_req_kgperday
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        lime_depth_m=2.5
-        lime_vol = self.lime_req_kgperday * self.storage_days / 1100.0
+        lime_depth_m = 2.5
+        lime_density_kgm3 = self.rho_lime_gcm3 / 1000
+        lime_vol = (
+            self.lime_req_kgperday * self.storage_days
+            ) / lime_density_kgm3
         lime_area = lime_vol / lime_depth_m
-        pellet_depth_m=2.5
+        pellet_depth_m = 2.5
         pellet_vol = self.pellets_out_kg * self.storage_days / self.rho_pellet
         pellet_area = pellet_vol / pellet_depth_m
-        return lime_area +  pellet_area
+        return lime_area + pellet_area
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        lime_mgperl = 1000 * self.lime_req_kgperday / (self.nominal_flow_m3perh * 24)
-        return  lime_mgperl 
+        lime_mgperl = 1000 * self.lime_req_kgperday / (
+            self.nominal_flow_m3perh * 24)
+        return lime_mgperl
 
     def footprint_area__m2(self) -> float:
         """Total Area = Reactors + Chemicals area + 20% Access."""
         reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane       
-        return np.ceil((reactors_area + self.footprint_area_for_chemicals__m2) * 1.2)
+        return np.ceil(
+            (reactors_area + self.footprint_area_for_chemicals__m2) * 1.2
+            )
 
     def hydraulic_headloss__bar(self) -> float:
-        hl_m = self.h_static_m * (1 - self.porosity_static) * ((self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
+        hl_m = self.h_static_m * (1 - self.porosity_static) * (
+            (self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
         total_lift = hl_m + self.unit_depth_m + 2.0 
         return meters_of_water_to_bar(total_lift)
  
     def power__kw(self) -> float:
         """Power based on overcoming bed headloss + lift height."""
-        hl_m = self.h_static_m * (1 - self.porosity_static) * ((self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
-        total_lift = hl_m + self.unit_depth_m + 2.0 # 2m friction margin
-        efficiency = 0.75
-        power_w = (self.nominal_flow_m3perh / 3600) * self.rho_water * 9.81 * total_lift/(1000*efficiency)
-        return power_w
+        hl_m = self.h_static_m * (1 - self.porosity_static) * (
+            (self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
+        total_lift = hl_m + self.unit_depth_m + 2  # 2m friction margin
+        power = (
+            (self.nominal_flow_m3perh / 3600) * self.rho_water *
+            GRAVITY_M_PER_S2 * total_lift) / self.power_efficiency_pumps / 1000
+        return power
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24
@@ -2576,9 +2654,10 @@ class PelletSoftening(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
+
 class CationicIEX(TreatmentKPI):
     """KPI calculations for Ion Exchange Softening with Brine Regeneration."""
-    unit_depth_m: float
+    bed_height_m: float
     unit_area_m2: float
     unit_diam_m: float
     lanes: int
@@ -2586,28 +2665,37 @@ class CationicIEX(TreatmentKPI):
     nominal_flow_m3perh: float
     hardness_in: float
     target_hardness: float
-    delta_c_eq_m3:float
-    resin_capacity_eqperliter:float
-    cycle_h:float
-    nacl_density:float
-    storage_days:int
+    delta_c_eq_m3: float
+    resin_capacity_eqperliter: float
+    cycle_h: float
+    nacl_density: float
+    storage_days: int
 
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
+        wq_parameters = self.wq_parameters
+
+        self.nominal_flow_m3perh = plant_kpis.get(
+            'NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
-        self.units_per_lane = self.design_parameters.get('units_per_lane', 2)
-        self.nominal_flow_m3perh = self.plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
-        self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (self.lanes * (self.units_per_lane-1))
-        self.hardness_in = self.parameters.get(TPN['influent_hardness_mgL'])
-        self.target_hardness = self.parameters.get(TPN['target_hardness_mgL'])
+        self.units_per_lane = design_parameters.get('units_per_lane', 2)
+
+        self.cycle_h = parameters.get(TPN['regeneration_duration'], 10.0)
+        self.tank_height_m = parameters.get(TPN['tank_height'], 4.0)
+        self.storage_days = parameters.get(TPN['storage_time_days'], 30)
+
+        self.hardness_in = wq_parameters['input_parameter']['total hardness']
+        self.target_hardness = wq_parameters[
+            'target_parameter']['total hardness']
+        
+        self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
+            self.lanes * (self.units_per_lane - 1))
         self.delta_c_eq_m3 = (self.hardness_in - self.target_hardness) / 50.0 # equivalent weight of Calcium Carbonate/m3
         self.resin_capacity_eqperliter = 1.8  # eq/L of resin
-        self.nacl_density = 1200 # kg/m3
-        self.cycle_h = self.parameters.get(TPN['regeneration_cycle_h'], 10.0)
-        self.unit_depth_m = self.parameters.get(TPN['bed_depth_m'], 4.0)
-        self.storage_days = parameters.get(TPN['storage_time_days'], 30)
+        self.nacl_density = 1200  # kg/m3
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2628,7 +2716,7 @@ class CationicIEX(TreatmentKPI):
         """Calculates chemicals in and pellets out per day."""
         """Total salt consumed by the whole plant per day."""
         daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow * 24
-        salt_ratio = 0.20 # kg NaCl per eq removed (avg range 0.16-0.24)
+        salt_ratio = 0.20  # kg NaCl per eq removed (avg range 0.16-0.24)
         return daily_removal_eq * salt_ratio
 
     def footprint_area_for_chemicals__m2(self) -> float:
@@ -2637,7 +2725,8 @@ class CationicIEX(TreatmentKPI):
         return area_salt
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        nacl_mgperl = 1000 * self.daily_mass_of_chemicals__kg / (self.nominal_flow_m3perh * 24)
+        nacl_mgperl = 1000 * self.daily_mass_of_chemicals__kg / (
+            self.nominal_flow_m3perh * 24)
         return  nacl_mgperl
 
     def footprint_area__m2(self) -> float:
@@ -2663,8 +2752,8 @@ class CationicIEX(TreatmentKPI):
         bead_diameter = 0.0007 # 7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate**2   
-        DP_m = (term_laminar + term_turbulent) * self.unit_depth_m
-        return meters_of_water_to_bar (self.unit_depth_m + DP_m) 
+        DP_m = (term_laminar + term_turbulent) * self.bed_height_m
+        return meters_of_water_to_bar (self.bed_height_m + DP_m) 
 
     def power__kw(self) -> float:
         eff = 0.75
@@ -2686,6 +2775,7 @@ class CationicIEX(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
+
 class AnionicIEX(TreatmentKPI):
     """KPI calculations for Anion Ion Exchange for NOM/DOC removal with Brine Regeneration."""
     lanes: int
@@ -2705,10 +2795,16 @@ class AnionicIEX(TreatmentKPI):
 
     def __post_init__(self):
         super().__post_init__()
-        self.lanes = self.design_parameters.get('lanes', 2)
-        self.units_per_lane = self.design_parameters.get('units_per_lane', 2)
-        self.nominal_flow_m3perh = self.plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
-        self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (self.lanes * (self.units_per_lane - 1))
+        parameters = self.parameters
+        plant_kpis = self.plant_kpis
+        design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
+
+        self.lanes = design_parameters.get('lanes', 2)
+        self.units_per_lane = design_parameters.get('units_per_lane', 2)
+        self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
+        self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
+            self.lanes * (self.units_per_lane - 1))
         self.doc_in = self.parameters.get(TPN['influent_doc_mgL'], None)
         self.target_doc = self.parameters.get(TPN['target_doc_mgL'], None) 
         self.delta_doc_gm3 = max(0.0, self.doc_in_mgL - self.target_doc_mgL)
@@ -2751,19 +2847,20 @@ class AnionicIEX(TreatmentKPI):
 
     def footprint_area__m2(self) -> float:
         """Total area including vessels, chemical storage, and waste tanks."""
-        vol_resin_per_unit_m3 = (self.flow_per_unit_m3hr * (self.ebct_min / 60.0))
-        self.unit_area_m2 = vol_resin_per_unit_m3 / self.bed_depth_m
+        volume_resin_per_unit_m3 = (self.flow_per_unit_m3hr * (self.ebct_min / 60.0))
+        self.unit_area_m2 = volume_resin_per_unit_m3 / self.bed_depth_m
         
         reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane
         
-        v_resin_total = resin_volume_unit_m3 * self.lanes * (self.units_per_lane - 1)
-        regens_per_day = 24 / self.cycle_h
-        bv_waste_factor = 4.0 # Brine + slow rinse volumes
-        waste_storage_vol = v_resin_total * regens_per_day * bv_waste_factor * (12/24) # 12h buffer
+        volume_resin_total = volume_resin_per_unit_m3 * self.lanes * (
+            self.units_per_lane - 1)
+        regenarations_day = 24 / self.cycle_h
+        brinevolume_waste_factor = 4.0  # Brine + slow rinse volumes
+        waste_storage_vol = (volume_resin_total * regenarations_day *
+                             brinevolume_waste_factor) * (12 / 24)  # 12h buffer
         area_waste_tank = waste_storage_vol / 3.0
-        
         total_net_area = reactors_area + self.footprint_area_for_chemicals__m2() + area_waste_tank
-        return np.ceil(total_area * 1.25) # 20% spacing factor for maintenance
+        return np.ceil(total_net_area * 1.25) # 20% spacing factor for maintenance
 
     def hydraulic_headloss__bar(self) -> float:
         """Calculates pressure drop using the Ergun Equation + Internal Losses."""
@@ -2776,9 +2873,9 @@ class AnionicIEX(TreatmentKPI):
         bead_diameter = 0.0007 # 7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate**2   
-        DP_m = (term_laminar + term_turbulent) * self.unit_depth_m
+        hydr_pressure_m = (term_laminar + term_turbulent) * self.unit_depth_m
         
-        return meters_of_water_to_bar (self.unit_depth_m + DP_m) 
+        return meters_of_water_to_bar(self.unit_depth_m + hydr_pressure_m)
 
     def power__kw(self) -> float:
         """Total power for service pumps and regeneration pumps."""
@@ -2793,6 +2890,7 @@ class AnionicIEX(TreatmentKPI):
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation 
+
 
 class AirFlotationDAF(TreatmentKPI):
     """KPI calculations for Dissolved Air Flotation (DAF)."""
@@ -2809,12 +2907,13 @@ class AirFlotationDAF(TreatmentKPI):
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
         
-
         self.lanes = design_parameters.get('lanes', 2)
         self.units_per_lane = design_parameters.get('units_per_lane', 1)
-        self.nominal_flow_m3perh = self.plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
+        self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.surface_overflow_rate = parameters.get(TPN['surface_overflow_rate'], 2.0)  # m3/m2/h
         self.air_solids_ratio = parameters.get(TPN['air_solids_ratio'], 0.05) # kg air/kg solids
@@ -2833,7 +2932,6 @@ class AirFlotationDAF(TreatmentKPI):
         """Total area for DAF tanks + recirculation units."""
 
         unit_area_m2 = (self.flow_per_lane / self.units_per_lane) / self.surface_overflow_rate
-        
         self.unit_volume_m3 = self.unit_area_m2 * (self.retention_time_min / 60.0)
         
         self.unit_depth_m = max(self.min_depth, self.unit_volume_m3 / self.unit_area_m2)    
@@ -2874,6 +2972,7 @@ class AirFlotationDAF(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation 
 
+
 class SludgeBlanketClarifier(TreatmentKPI):
     """KPI calculations for Sludge Blanket Clarification."""
     surface_overflow_rate: float
@@ -2886,11 +2985,13 @@ class SludgeBlanketClarifier(TreatmentKPI):
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
+        plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('lanes', 2)
         self.units_per_lane = design_parameters.get('units_per_lane', 2)
-        self.nominal_flow_m3perh = self.plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
+        self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
         self.surface_overflow_rate = parameters.get(TPN['surface_overflow_rate'], 30.0)# m3/m2/h
@@ -2927,7 +3028,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         """Headloss calculation assumptions"""
         headlosses = self.unit_depth_m + 0.1 * self.unit_depth_m
         
-        return meters_of_water_to_bar (headlosses) 
+        return meters_of_water_to_bar(headlosses)
 
     def power__kw(self) -> float:
         """Power for sludge scrapers/pumps based on sludge production."""
