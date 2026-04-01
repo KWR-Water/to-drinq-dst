@@ -47,6 +47,8 @@ with open("drinq/utils/treatmentpropertyname.json", "r") as file:
 with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
     TPPN = json.load(file)
 
+NOMINAL_FLOW_RATE_NAME = TPPN['nominal_flow_rate_m3perh']
+
 
 def match_tech_kpi(kpi_fullname: str) -> str:
     """Match user-provided KPI name to available KPIs.
@@ -2547,8 +2549,8 @@ class PelletSoftening(TreatmentKPI):
 
         self.lanes = design_parameters.get('number of lanes', 2)
         self.units_per_lane = design_parameters.get(
-            TPN['units_per_lane'], 2)  
-        self.nominal_flow_m3perh = self.plant_kpis.get(
+            TPN['units_per_lane'], 2)
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * self.units_per_lane)
@@ -2565,8 +2567,7 @@ class PelletSoftening(TreatmentKPI):
         self.porosity_static = parameters[TPN['pellet_porosity_static']]
         self.porosity_expanded = parameters[TPN['pellet_porosity_expanded']]
         self.rho_pellet = parameters[TPN['mass_density_of_pellets']]  # kg/m3
-        # TODO: lime density not used??
-        # self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]  # g/cm3
+        self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]  # g/cm3
         self.power_efficiency_pumps = parameters[TPN['power_efficiency_pumps']]
         self.lime_purity_factor = parameters[
             TPN['lime_dosage_mass_fraction']]  # kg lime/kg CaCO3
@@ -2613,11 +2614,11 @@ class PelletSoftening(TreatmentKPI):
 
     def footprint_area_for_chemicals__m2(self) -> float:
         lime_depth_m = 2.5
-        lime_density_kgm3 = self.rho_lime_gcm3 / 1000
-        lime_vol = (
+        lime_density_kgm3 = self.rho_lime_gcm3 * 1000  # convert to kg/m3
+        lime_volume = (
             self.lime_req_kgperday * self.storage_days
             ) / lime_density_kgm3
-        lime_area = lime_vol / lime_depth_m
+        lime_area = lime_volume / lime_depth_m
         pellet_depth_m = 2.5
         pellet_vol = self.pellets_out_kg * self.storage_days / self.rho_pellet
         pellet_area = pellet_vol / pellet_depth_m
@@ -2630,7 +2631,7 @@ class PelletSoftening(TreatmentKPI):
 
     def footprint_area__m2(self) -> float:
         """Total Area = Reactors + Chemicals area + 20% Access."""
-        reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane       
+        reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane
         return np.ceil(
             (reactors_area + self.footprint_area_for_chemicals__m2) * 1.2
             )
