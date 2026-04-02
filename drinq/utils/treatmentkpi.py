@@ -1394,7 +1394,7 @@ class MembraneFiltration(TreatmentKPI):
 
     def daily_mass_of_chemicals__kg(self) -> float:
         return 0.0  # No chemicals used in Membrane Filtration
-    
+
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Membrane Filtration
 
@@ -2411,26 +2411,34 @@ class UVAOPDisinfection(TreatmentKPI):
 
     def footprint_area_for_chemicals__m2(self) -> float:
         """Calculates area for H2O2 storage tanks including safety bunding."""
-        daily_mass_solution_kg = self.daily_mass_of_chemicals__kg() / self.h2o2_solution_w_w
-        volume_m3 = daily_mass_solution_kg / 1100.0  # Density of 35% H2O2 is ~1.1 kg/L
+        daily_mass_solution_kg = (
+            self.daily_mass_of_chemicals__kg() / self.h2o2_solution_w_w)
+        # Density of 35% H2O2 is ~1.1 kg/L:
+        volume_m3 = daily_mass_solution_kg / 1100.0
         total_storage_vol_m3 = volume_m3 * self.storage_time_days
         base_area = total_storage_vol_m3 / self.chemicals_tank_height_m
         return base_area * 1.2
 
     def footprint_area__m2(self) -> float:
-        self.lane_volume_m3 =(self.flow_per_lane_m3perh / 3600) * self.exposure_time_sec * 4 # safty factor of 4
-        self.lane_area_m2 =self.lane_volume_m3/ self.self.tank_height_m
-        return np.ceil(self.lane_area_m2 * self.lanes + self.footprint_area_for_chemicals__m2())
+        self.lane_volume_m3 = (
+            self.flow_per_lane_m3perh / 3600) * (
+            self.exposure_time_sec * 4)  # safty factor of 4
+        self.lane_area_m2 = self.lane_volume_m3 / self.tank_height_m
+        return np.ceil(
+            self.lane_area_m2 * self.lanes +
+            self.footprint_area_for_chemicals__m2())
 
     def power__kw(self) -> float:
         """Total power for UV lamps in AOP mode."""
-        return self.flow_per_lane_m3perh * self.energy_per_m3_kwh * self.lanes + 0.1 # Estimation of H202 dosage pumps of 0.1kW
+        return (
+            self.flow_per_lane_m3perh * self.energy_per_m3_kwh *
+            self.lanes + 0.1)  # Estimation of H202 dosage pumps of 0.1kW
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24
 
     def hydraulic_headloss__bar(self) -> float:
-        return 0.3 + meters_of_water_to_bar (self.unit_depth_m)  
+        return 0.3 + meters_of_water_to_bar(self.unit_depth_m)  
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
@@ -2448,9 +2456,9 @@ class Ozonation(TreatmentKPI):
     flow_per_unit_m3hr: float
     lane_volume_m3: float
     lane_area_m2: float
-    tank_area_m2:float
-    equipment_area_m2:float
-    
+    tank_area_m2: float
+    equipment_area_m2: float
+
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
@@ -2498,7 +2506,6 @@ class Ozonation(TreatmentKPI):
         return self.ozone_dosage_mgliter 
 
     def footprint_area__m2(self) -> float:
-        
         return np.ceil(1.2 * self.area_per_unit_m2 * self.number_of_units)
 
     def footprint_area__m2(self) -> float:
@@ -2510,7 +2517,6 @@ class Ozonation(TreatmentKPI):
             self.retention_time_min) / 60.0
         lane_area_m2 = lane_volume_m3 / self.tank_height_m
         tanks_area_m2 = lane_area_m2 * self.lanes
-        
         return np.ceil(tanks_area_m2 + self.footprint_area_for_chemicals__m2())
 
     def power__kw(self) -> float:
@@ -2526,7 +2532,8 @@ class Ozonation(TreatmentKPI):
     def hydraulic_headloss__bar(self) -> float:
         # Pressure required to overcome the water column in the contact tank
         # Roughly 0.1 bar per 1m of depth + diffuser friction
-        return meters_of_water_to_bar(self.unit_depth_m + self.tank_height_m * 0.5) + 0.03 # assuming 3m of diffusers losses.
+        return meters_of_water_to_bar(
+            self.unit_depth_m + self.tank_height_m * 0.5 + 3)  # 3m extra losses
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
@@ -3166,132 +3173,3 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
-
-
-class UVAOPDisinfection(TreatmentKPI):
-    """KPI calculations for a UV/H2O2 Advanced Oxidation Process (AOP) unit."""
-    tank_height_m: float
-    chemicals_tank_height_m: float
-    lanes: int
-    units_per_lane: int
-    nominal_flow_m3perh: float
-    flow_per_lane_m3perh: float
-    h2o2_dosing_mgL: float  
-    h2o2_solution_w_w: float  
-    energy_per_m3_kwh: float 
-    storage_time_days: float
-    exposure_time_sec:float
-    lane_volume_m3: float
-    lane_area_m2: float
-
-    def __post_init__(self):
-        super().__post_init__()
-        parameters = self.parameters
-        design_parameters = self.design_parameters
-        
-        self.lanes = design_parameters.get('number of lanes', 1)
-        self.nominal_flow_m3perh = self.plant_kpis.get(
-            NOMINAL_FLOW_RATE_NAME, None)
-        self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, self.nominal_flow_m3perh)
-        self.tank_height_m = parameters[TPN['tank_height']]
-        self.chemicals_tank_height_m = parameters[TPN['tank_height_chemical_storage']]
-        self.storage_time_days = design_parameters.get(TPN['storage_time_of_chemicals_days'], 30)
-        self.h2o2_dosing_mgL = parameters.get('h2o2_target_dosing_mg_l', 7.0)
-        self.h2o2_solution_w_w = parameters.get('h2o2_solution_concentration_w_w', 0.35)
-        self.energy_per_m3_kwh = parameters.get('aop_energy_intensity_kwh_m3', 0.25)
-        self.exposure_time_sec = parameters.get('exposure_time_sec', 12)
-
-    def daily_mass_of_chemicals__kg(self) -> float:
-        """Calculates daily mass of pure H2O2 required."""
-        daily_flow_m3 = self.nominal_flow_m3perh * 24
-        return (daily_flow_m3 * self.h2o2_dosing_mgL) / 1000.0
-
-    def footprint_area_for_chemicals__m2(self) -> float:
-        """Calculates area for H2O2 storage tanks including safety bunding."""
-        daily_mass_solution_kg = self.daily_mass_of_chemicals__kg() / self.h2o2_solution_w_w
-        volume_m3 = daily_mass_solution_kg / 1100.0  # Density of 35% H2O2 is ~1.1 kg/L
-        total_storage_vol_m3 = volume_m3 * self.storage_time_days
-        base_area = total_storage_vol_m3 / self.chemicals_tank_height_m
-        return base_area * 1.2
-
-    def footprint_area__m2(self) -> float:
-        self.lane_volume_m3 =(self.flow_per_lane_m3perh / 3600) * self.exposure_time_sec * 4 # safty factor of 4
-        self.lane_area_m2 =self.lane_volume_m3/ self.self.tank_height_m
-        return np.ceil(self.lane_area_m2 * self.lanes + self.footprint_area_for_chemicals__m2())
-
-    def power__kw(self) -> float:
-        """Total power for UV lamps in AOP mode."""
-        return self.flow_per_lane_m3perh * self.energy_per_m3_kwh * self.lanes + 0.1  # Estimation of H202 dosage pumps of 0.1kW
-
-    def daily_energy_consumption__kwh(self) -> float:
-        return self.power__kw() * 24
-
-    def hydraulic_headloss__bar(self) -> float:
-        return 0.3 + meters_of_water_to_bar (self.unit_depth_m)  # Increased headloss due to high intensity/baffling
-
-    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
-
-class Ozonation(TreatmentKPI):
-    """KPI calculations for an Ozonation treatment unit."""
-    tank_height_m: float
-    lanes: int
-    units_per_lane: int
-    nominal_flow_m3perh: float
-    retention_time_min: float
-    ozone_dosage_mgL: float
-    energy_per_kg_ozone_kwh: float # Energy efficiency of the ozonator
-    flow_per_unit_m3hr:float
-    lane_volume_m3: float
-    lane_area_m2: float
-    tank_area_m2:float
-    equipment_area_m2:float
-    
-    def __post_init__(self):
-        super().__post_init__()
-        parameters = self.parameters
-        design_parameters = self.design_parameters
-
-        self.lanes = design_parameters.get('number of lanes', 2) # Usually at least 2 for redundancy
-        self.nominal_flow_m3perh = self.plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
-        self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
-        self.units_per_lane = design_parameters.get(
-            TPN['units_per_lane'], 1)     
-        self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/self.units_per_lane 
-        self.tank_height_m = parameters.get(TPN['tank_height'], 5.0)
-        self.retention_time_min = parameters.get(TPN['retention_time_min'], 15.0)
-        self.ozone_dosage_mgL = parameters.get('ozone_target_dosage_mg_l', 3.0)
-        self.energy_per_kg_ozone_kwh = parameters.get('energy_intensity_kwh_kg_o3', 8.0)
-
-    def daily_ozone_production__kg(self) -> float:
-        """Total ozone gas generated per day."""
-        return (self.nominal_flow_m3perh * 24 * self.ozone_dosage_mgL) / 1000.0
-
-    def footprint_area__m2(self) -> float:
-        """
-        Total Area = Contact Tank Area + Ozonator Equipment Room.
-        """
-        lane_volume_m3 = (self.flow_per_lane_m3perh * self.lanes * self.retention_time_min) / 60.0
-        lane_area_m2 = lane_volume_m3  / self.tank_height_m
-        tanks_area_m2 = lane_area_m2 * self.lanes
-        equipment_area_m2 = self.daily_ozone_production__kg * 10 / 24  # 10m2 per kg/h used
-        return np.ceil(tank_area_m2 + equipment_area_m2)
-
-    def power__kw(self) -> float:
-        """
-        Calculates power consumption of the ozone generator + oxygen feed system.
-        """
-        kg_o3_per_hour = (self.nominal_flow_m3perh * self.ozone_dosage_mgL) / 1000.0
-        return kg_o3_per_hour * self.energy_per_kg_ozone_kwh
-
-    def daily_energy_consumption__kwh(self) -> float:
-        return self.power__kw() * 24
-
-    def hydraulic_headloss__bar(self) -> float:
-        # Pressure required to overcome the water column in the contact tank
-        # Roughly 0.1 bar per 1m of depth + diffuser friction
-        return meters_of_water_to_bar (self.unit_depth_m +self.tank_height_m * 0.5) + 0.03 # assuming 3m of diffusers losses.
-
-    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
