@@ -2022,7 +2022,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
-                              
+
 class RapidSandMovingBedFiltration(TreatmentKPI):
     """KPI calculations for a Rapid Sand Filtration treatment unit."""
     tank_height: float
@@ -2035,16 +2035,17 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
-    unit_depth_m: float
+    unit_height_m: float
     unit_kW :float
     tanks_area_m2: float
     
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -2053,17 +2054,16 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 2)     
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/(self.units_per_lane-1) #Always 1 pressurized filter stand-by
-        self.unit_depth_m, self.unit_area_m2, self.unit_kW = movingbedvesselcalc_m_m2(
+        self.unit_height_m, self.unit_area_m2, self.unit_kW = movingbedvesselcalc_m_m2(
             flow_per_unit_m3hr = self.flow_per_unit_m3hr)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)        
-        self.filter_bed_pressure_head_m = 3 + self.unit_depth_m #average design value for losses
+        self.filter_bed_pressure_head_m = 3 + self.unit_height_m #average design value for losses
 
     def __repr__(self):
-        return f"Moving bed filtration height (m)={self.unit_depth_m}, " \
-               f"Moving bed filtration area (m2)={self.unit_area_m2), " \
+        return f"Moving bed filtration height (m)={self.unit_height_m}, " \
+               f"Moving bed filtration area (m2)={self.unit_area_m2}, " \
                f"Moving bed filtration installed power (kW)={self.filter_bed_depth_m}, " 
-              
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2081,7 +2081,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def footprint_area__m2(self) -> float:
-        return np.ceil( 1.1 * (self.tanks_area_m2)
+        return np.ceil(1.1 * (self.tanks_area_m2))
 
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
@@ -2105,13 +2105,14 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
 
-class GranularActivatedCarbon(TreatmentKPI):
+
+class GranularActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Granular Activated Carbon (GAC) treatment unit."""
     lanes: int
     nominal_flow_m3hr: float
     units_per_lane: int
     empty_bed_contact_time:int
-    filtration_rate_m3_per_m2_per_h: int
+    hydraulic_loading_rate_m3m2h: int
     gac_porosity: float
     water_density_kg_per_m3: float
     water_viscosity: float
@@ -2124,13 +2125,14 @@ class GranularActivatedCarbon(TreatmentKPI):
     unit_area_m2: float
     unit_depth_m: float
     tanks_area_m2: float
-    
-    def __init__(
-            self,
-            parameters: dict,
-            performance_indicators: dict,
-            design_parameters: dict,
-    ):
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', 1)
@@ -2138,8 +2140,8 @@ class GranularActivatedCarbon(TreatmentKPI):
             self.lanes, self.flow_m3perh)
         self.units_per_lane = design_parameters.get(
             TPN['units_per_lane'], 1)
-        self.filtration_rate_m3_per_m2_per_h = parameters[
-            TPN['filtration_rate_m3_per_m2_per_h']]
+        self.hydraulic_loading_rate_m3m2h = parameters[
+            TPN['hydraulic_loading_rate']]
         self.gac_porosity = parameters[
             TPN['gac_porosity']]
         self.empty_bed_contact_time = parameters[
@@ -2147,14 +2149,14 @@ class GranularActivatedCarbon(TreatmentKPI):
         self.effective_particle_diameter = parameters[
             TPN['effective_particle_diameter']]
         self.anthracite_bed_depth_m = 0
-        self.flow_per_unit_m3hr=(
-            self.flow_per_lane_m3perh /self.units_per_lane)
+        self.flow_per_unit_m3hr = (
+            self.flow_per_lane_m3perh / self.units_per_lane)
         self.unit_volume_m3 = (
             self.effective_particle_diameter * self.flow_per_unit_m3hr/60) 
-        self.unit_area_m2 = 
-            self.flow_per_lane_m3perh/self.filtration_rate_m3_per_m2_per_h)
-        self.unit_depth_m =(
-            np.ceil(self.unit_volume_m3 /self.unit_area_m2 +1)
+        self.unit_area_m2 = (
+            self.flow_per_lane_m3perh / self.hydraulic_loading_rate_m3m2h)
+        self.unit_height_m = (
+            np.ceil(self.unit_volume_m3 / self.unit_area_m2 + 1))
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
@@ -2194,16 +2196,15 @@ class GranularActivatedCarbon(TreatmentKPI):
         return 0.0  # No chemicals used in Rapid Sand Filtration
 
     def hydraulic_headloss__bar(self) -> float:
-        headloss = (
-            (150 * (1 - self.gac_porocity)**2 / self.gac_porocity**3)
-            * (self.water_viscosity * self.superficial_velocity * self.unit_depth_m)
-            / (DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * self.effective_particle_diameter**2)
-            +
-            (1.75 * (1 - self.gac_porocity) / self.gac_porocity**3)
-            * (self.superficial_velocity**2 * self.unit_depth_m)
-            / (GRAVITY_M_PER_S2 * self.effective_particle_diameter)
+        headloss = calculate_headloss_over_filtration_media(
+            water_viscosity=self.water_viscosity,
+            water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
+            porosity=self.gac_porosity,
+            grain_size=self.effective_particle_diameter,
+            hydraulic_loading_rate_m3m2h=self.superficial_velocity,
+            filter_bed_height_m=self.unit_height_m
         )
-        return  meters_of_water_to_bar (headloss)
+        return meters_of_water_to_bar(headloss)
             
     def power__kw(self) -> float:
         power_kw = 0
@@ -2215,7 +2216,8 @@ class GranularActivatedCarbon(TreatmentKPI):
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation 
 
-class PowderedActivatedCarbon(TreatmentKPI):
+
+class PowderedActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Powdered Activated Carbon (PAC) treatment unit."""
     tank_height_m: float
     silo_height_m: float
@@ -2239,11 +2241,14 @@ class PowderedActivatedCarbon(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
+        # wq_parameters = self.wq_parameters
+
         self.units_per_lane = design_parameters.get('units per lane', 1)        
         self.lanes = design_parameters.get('number of lanes', 1)
         self.unit_depth_m = parameters[TPN['unit_depth_m']]
         self.silo_height_m = parameters.get(TPN['silo_height'], 10.0) # Average Silo Height
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.storage_time_days = design_parameters.get(
@@ -2292,7 +2297,7 @@ class PowderedActivatedCarbon(TreatmentKPI):
 
     def hydraulic_headloss__bar(self) -> float:
         """Headloss through the contact basin baffles."""
-        return 0.03 + meters_of_water_to_bar (self.unit_depth_m)  # Approx 0.3m converted to bar
+        return 0.03 + meters_of_water_to_bar(self.unit_depth_m)  # Approx 0.3m converted to bar
 
     def power__kw(self) -> float:
         unit_volume_m3 = calculate_unit_volume_m3(
@@ -2301,7 +2306,7 @@ class PowderedActivatedCarbon(TreatmentKPI):
             retention_time_min=self.retention_time_min)
         p_mixing_contact = v_contact * self.lanes * 0.02
         hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        v_slurry_batch = (hourly_mass / (self.slurry_concentration_w_w * 1000)
+        v_slurry_batch = hourly_mass / (self.slurry_concentration_w_w * 1000)
         p_mixing_slurry = v_slurry_batch * 0.75 /8 # Assuming 8 hours of operation.
         p_pumps = 0.04 * self.lane # Estimation
         return p_mixing_contact + p_mixing_slurry + p_pumps
@@ -2311,6 +2316,7 @@ class PowderedActivatedCarbon(TreatmentKPI):
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation
+
 
 class UVAOPDisinfection(TreatmentKPI):
     """KPI calculations for a UV/H2O2 Advanced Oxidation Process (AOP) unit."""
@@ -2366,7 +2372,7 @@ class UVAOPDisinfection(TreatmentKPI):
 
     def power__kw(self) -> float:
         """Total power for UV lamps in AOP mode."""
-        return self.flow_per_lane_m3perh * self.energy_per_m3_kwh * self.lanes + 0.1 KW # Estimation of H202 dosage pumps of 0.1kW
+        return self.flow_per_lane_m3perh * self.energy_per_m3_kwh * self.lanes + 0.1  # Estimation of H202 dosage pumps of 0.1kW
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24
@@ -2419,7 +2425,7 @@ class Ozonation(TreatmentKPI):
         lane_volume_m3 = (self.flow_per_lane_m3perh * self.lanes * self.retention_time_min) / 60.0
         lane_area_m2 = lane_volume_m3  / self.tank_height_m
         tanks_area_m2 = lane_area_m2 * self.lanes
-        equipment_area_m2 = self.daily_ozone_production__kg * 10 / 24  #10m2 per kg/h used
+        equipment_area_m2 = self.daily_ozone_production__kg * 10 / 24  # 10m2 per kg/h used
         return np.ceil(tank_area_m2 + equipment_area_m2)
 
     def power__kw(self) -> float:

@@ -14,6 +14,7 @@ from drinq.utils.treatmentkpi import (
     GranularActivatedCarbonFiltration,
     PowderedActivatedCarbonFiltration,
     PelletSoftening,
+    CationExchangeSoftening,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
@@ -41,7 +42,6 @@ TECHKPI_CO2_EMISSIONS_KGPERM3 = 'co2 emissions'
 
 TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_FOOTPRINT_AREA_M2,
-    TECHKPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_POWER_KW,
     TECHKPI_HEADLOSS_BAR,
@@ -324,8 +324,8 @@ class TechnologyPerformanceCalculator:
                                 pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
                             case str(technology) if ('cation exchange') in technology.lower():
-                                pass  # Placeholder for cation exchange technology
-
+                                ciex = CationExchangeSoftening(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = ciex.get_kpi_dict()  # noqa, E501
 
         if footprint_area is None:
             raise ValueError("Not possible to calculate footprint area (m2).")
@@ -578,10 +578,16 @@ class TreatmentPlantPerformanceCalculator:
     db_kpi_mapping: dict[str, str | None]  # database KPI names
 
     nominal_flow_m3perhr: NominalFlowKPI
+    footprint_area_m2: FootprintAreaM2KPI
     energyconsumption_kwhrperday: EnergyConsumptionPerDayKPI
     energyconsumption_kwhrperm3: EnergyConsumptionPerM3KPI
     constructioncosts_eur: ConstructionCostsKPI
     investmentcosts_eur: InvestmentCostsYearKPI
+    operation_maintenance_costs_peryear: OperAndMaintenanceCostsKPI
+    head_loss_bar: HeadLossBarKPI
+    mass_of_chemicals_daily_kg: MassOfChemicalsDailyKPI
+    power_kw: PowerKWKPI
+    co2_emissions_kgperm3: CO2EmissionsPerM3KPI
 
     def __init__(
         self,

@@ -34,7 +34,7 @@ from drinq.models import (
     TreatmentPlantTechnologyPropertyValue,
     TechnologyConstructionCostParameter,
     WaterqualityParameter,
-    WaterQualityParameterTechnologyPropertyJunction,
+    WaterqualityParameterTechnologyJunction,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -57,6 +57,7 @@ from drinq.api_calculation import (
     KPI_FOOTPRINT_AREA_M2,
     KPI_OPER_AND_MAINT_COSTS,
     KPI_INVESTMENT_COSTS,
+    KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
     TECHKPI_MASS_OF_CHEMICALS,
@@ -77,6 +78,7 @@ PLANT_KPI_MAPPING = {
     KPI_CONSTRUCTION_COSTS_EUR: TPPN['construction_costs_eurperm3'],
     KPI_OPER_AND_MAINT_COSTS: TPPN['operation_and_maintenance_costs_eurperyr'],
     KPI_INVESTMENT_COSTS: TPPN['investment_costs'],
+    KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
 #     KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['energy_consumption_kwhperm3'],
@@ -690,6 +692,9 @@ class DesignParameterInputView(generic.FormView):
         technologies = self.get_treatment_technology_names()
 
         # Initialize the treatment plant performance calculator
+        print("--------------------------------------")
+        print("Processing results for treatment plant:", treatment_plant.name)  # noqa, E501
+        print('Initializing plant calculator with stages:', stages, 'and technologies:', technologies)  # noqa, E501
         plant_calculator = dac.TreatmentPlantPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stages,
@@ -704,6 +709,8 @@ class DesignParameterInputView(generic.FormView):
 
         # Calculate and store plant properties
         # TODO: Is this processed???
+        print("--------------------------------------")
+        print("Calculating nominal flow for treatment plant:", treatment_plant.name)  # noqa, E501
         nominal_flow_value = plant_calculator.update_nominal_flow_m3perhr()
         nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
             name=TPPN["nominal_flow_rate_m3perh"])
@@ -873,7 +880,7 @@ class TechnologyPropertiesView(generic.FormView):
                 'input_parameter': {}, 'target_parameter': {}}
             digested_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
-            for wq_input in WaterQualityParameterTechnologyPropertyJunction.objects.filter(  # noqa, E501
+            for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=True,
                         is_targetparameter=False):
@@ -881,7 +888,7 @@ class TechnologyPropertiesView(generic.FormView):
                     {
                         wq_input.waterqualityparameter.name: wq_input.default_value  # noqa, E501
                     })
-            for wq_target in WaterQualityParameterTechnologyPropertyJunction.objects.filter(  # noqa, E501
+            for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=False,
                         is_targetparameter=True):
