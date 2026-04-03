@@ -3012,27 +3012,27 @@ class SludgeBlanketClarifier(TreatmentKPI):
         parameters = self.parameters
         plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
-        # wq_parameters = self.wq_parameters
+        wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('lanes', 2)
         self.units_per_lane = design_parameters.get('units_per_lane', 2)
         self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
-        self.surface_overflow_rate = parameters.get(TPN['surface_overflow_rate'], 30.0)# m3/m2/h
+        self.surface_overflow_rate = design_parameters.get(TPN['surface_overflow_rate'], None)# m3/m2/h
         self.retention_time_h = parameters.get(TPN['retention_time'], 2.0)# hours
-        self.unit_depth_input_m = parameters.get(TPN['unit_depth'], 3.0) # m
-        self.tss_in_mgL = parameters.get(TPN['total_suspended_solids'], 500.0) # mgl/l
-        self.tss_out_mgL = parameters.get(TPN['total_suspended_solids_outlet'], 10.0)
-        self.sludge_density_kg_m3 = parameters.get(TPN['total_suspended_solids_density'], 30.0) # kg/m3
-        self.power_density_Wperm3 = parameters.get(TPN['Power density'], 5.0) # W/m3
+        self.tank_height_m = design_parameters.get(TPN['tank_height'], None) # m
+        self.tss_in_mgl = wq_parameters.get('total_suspended_solids', None) # mgl/l
+        self.tss_out_mgl = wq_parameters.get('total_suspended_solids_outlet'], None)
+        self.sludge_density_kg_m3 = parameters.get(TPN['total_suspended_solids_density'], None) # kg/m3
+        self.power_density_wperm3 = parameters.get(TPN['power_density'], None) # W/m3
     
     def daily_mass_of_chemicals__kg(self) -> float:
         return 0.0  # No chemicals used in Sludge clarifiers
     
     def sludge_production_kg(self) -> float:
         """Calculates sludge production (waste solids) in kg/day."""
-        sludge_production_kgh = self.nominal_flow_m3perh * (self.tss_in_mgL - self.tss_out_mgL) / 1000.0
+        sludge_production_kgh = self.nominal_flow_m3perh * (self.tss_in_mgl - self.tss_out_mgl) / 1000.0
 
         return sludge_production_kgh * 24.0
 
@@ -3040,7 +3040,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         """Total Area = Clarifier Area + Sludge Thickening Area."""
         self.unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         self.unit_volume_m3 = self.flow_per_unit * self.retention_time_h
-        self.unit_depth_m = max(self.unit_depth_input_m, self.unit_volume_m3 / self.unit_area_m2)
+        self.unit_depth_m = max(self.tank_height_m, self.unit_volume_m3 / self.unit_area_m2)
 
         clarifiers_area_total = self.unit_area_m2 * self.units_per_lane * self.lanes 
         
@@ -3059,7 +3059,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         """Power for sludge scrapers/pumps based on sludge production."""
         self.unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         self.unit_volume_m3 = self.flow_per_unit * self.retention_time_h
-        pulsator_kw = self.unit_volume_m3 * self.units_per_lane * self.lanes * self.power_density_Wperm3 /1000
+        pulsator_kw = self.unit_volume_m3 * self.units_per_lane * self.lanes * self.power_density_wperm3 /1000
         daily_sludge_vol_m3 = self.sludge_production_kg() / self.sludge_density_kg_m3
         head = 10 # assuming 10 meters of pressure head
         power_eff = 0.6 # assuming 60% pump efficiency
