@@ -14,7 +14,7 @@ from drinq.utils.treatmentkpi import (
     GranularActivatedCarbonFiltration,
     PowderedActivatedCarbonFiltration,
     PelletSoftening,
-    CationExchangeSoftening,
+    CationIonExchange,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
@@ -54,6 +54,10 @@ KPI_FOOTPRINT_AREA_M2 = 'footprint area (m2)'
 KPI_CONSTRUCTION_COSTS_EUR = 'construction costs (eur)'
 KPI_INVESTMENT_COSTS = 'investment costs'
 KPI_OPER_AND_MAINT_COSTS = 'operational and maintenance costs'
+KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3 = 'co2 emissions from chemicals (kgperm3)'
+
+INPUT_WQPARAMETER_KEY = 'input_parameter'
+TARGET_WQPARAMETER_KEY = 'target_parameter'
 
 logger = logging.getLogger(__name__)
 
@@ -357,6 +361,53 @@ class TechnologyPerformanceCalculator:
         # return summed_kpis
 
 
+# TODO: implement in views.py
+@dataclass
+# Name WaterQualityParameterData or WaterqualityParameterKPI. Not to be
+# confused with the db table.
+class WaterqualityParameterData:
+    name: str
+    input_value: float
+    target_value: float
+    input_label: str = INPUT_WQPARAMETER_KEY
+    target_label: str = TARGET_WQPARAMETER_KEY
+
+    def to_db_kpi_dict(
+            self,
+            is_input_parameter: bool = True,
+            is_target_parameter: bool = False,
+        ) -> dict[str, float | int | None]:
+
+        if is_input_parameter and is_target_parameter:
+            raise ValueError("A water quality parameter cannot be both an input and target parameter.")
+        elif not (is_input_parameter or is_target_parameter):
+            raise ValueError("A water quality parameter must be either an input or target parameter.")
+        elif is_input_parameter:
+            return {
+                self.name: self.input_value,
+            }
+        elif is_target_parameter:
+            return {
+                self.name: self.target_value,
+            }
+
+    def to_dict(self) -> dict[str, float | int | None]:
+        return {
+            self.name: {
+                self.input_label: self.input_value,
+                self.target_label: self.target_value,
+            }
+        }
+
+    def __repr__(self):
+        return (
+            f"Water quality indicator {self.name}: (input:) {self.input_value:.2f}"
+            f"(target:) {self.target_value:.2f}")
+
+    def __str__(self):
+        return f"{self.name}: {self.input_value} / {self.target_value}"
+
+
 @dataclass
 class PlantKPI:
     name: str
@@ -585,7 +636,7 @@ class TreatmentPlantPerformanceCalculator:
     investmentcosts_eur: InvestmentCostsYearKPI
     operation_maintenance_costs_peryear: OperAndMaintenanceCostsKPI
     head_loss_bar: HeadLossBarKPI
-    mass_of_chemicals_daily_kg: MassOfChemicalsDailyKPI
+    # mass_of_chemicals_daily_kg: MassOfChemicalsDailyKPI
     power_kw: PowerKWKPI
     co2_emissions_kgperm3: CO2EmissionsPerM3KPI
 
@@ -611,7 +662,7 @@ class TreatmentPlantPerformanceCalculator:
             'constructioncosts_eur': KPI_CONSTRUCTION_COSTS_EUR,
             'investmentcosts_eur': KPI_INVESTMENT_COSTS,
             'head_loss_bar': TECHKPI_HEADLOSS_BAR,
-            'mass_of_chemicals_daily_kg': TECHKPI_MASS_OF_CHEMICALS,
+            # 'mass_of_chemicals_daily_kg': TECHKPI_MASS_OF_CHEMICALS,
             'power_kw': TECHKPI_POWER_KW,
             'co2_emissions_kgperm3': TECHKPI_CO2_EMISSIONS_KGPERM3,
             'oper_and_maintenancecosts_eurperyear': KPI_OPER_AND_MAINT_COSTS,
@@ -651,10 +702,15 @@ class TreatmentPlantPerformanceCalculator:
             name=TECHKPI_HEADLOSS_BAR, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(TECHKPI_HEADLOSS_BAR, None)
         )
-        self.mass_of_chemicals_daily_kg = MassOfChemicalsDailyKPI(
-            name=TECHKPI_MASS_OF_CHEMICALS, value=None,
+        # self.mass_of_chemicals_daily_kg = MassOfChemicalsDailyKPI(
+        #     name=TECHKPI_MASS_OF_CHEMICALS, value=None,
+        #     name_in_dbtable=self.db_kpi_mapping.get(
+        #         TECHKPI_MASS_OF_CHEMICALS, None)
+        # )
+        self.co2_emmissions_chemicals_kgperm3 = CO2EmissionsPerM3KPI(
+            name=KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(
-                TECHKPI_MASS_OF_CHEMICALS, None)
+                KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3, None)
         )
         self.power_kw = PowerKWKPI(
             name=TECHKPI_POWER_KW, value=None,
@@ -676,19 +732,25 @@ class TreatmentPlantPerformanceCalculator:
         self,
     ):
         """
-        Calculates and sets the nominal flow rate in cubic meters per hour (m3/hr) based on design parameters.
+        Calculates and sets the nominal flow rate in cubic meters per hour
+        based on design parameters.
 
-        This method retrieves required parameters from `self.design_parameters`, including population size,
-        average consumption per person per day, large-scale consumption, leakage factor, and peak demand factor.
-        It validates the presence of essential parameters and raises a ValueError if any are missing.
-        The nominal flow rate is then calculated using these parameters and stored in `self.nominal_flow_m3perhr`.
+        This method retrieves required parameters from `design_parameters`, e.g.
+        including population size, average consumption per person per day,
+        large-scale consumption, leakage factor, and peak demand factor.
+        It validates the presence of essential parameters and raises a
+        ValueError if any are missing. The nominal flow rate is then calculated
+        using these parameters and stored in `nominal_flow_m3perhr`.
 
         Returns:
             The updated `self.nominal_flow_m3perhr` object after calculation.
 
         Raises:
-            ValueError: If any of the required parameters ('population persons', 'average consumption (lppd)',
-            'leakage factor', or 'peak demand factor') are missing from `self.design_parameters`.
+            ValueError: If any of the required parameters (e.g.
+                'population persons', 'average consumption (lppd)',
+                'large-scale consumption (m3/day)', 'leakage factor',
+                or 'peak demand factor') are missing from
+                `design_parameters`.
         """        
         nominal_flow_m3perhr = self.nominal_flow_m3perhr
         parameters = self.design_parameters

@@ -1035,7 +1035,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
             self.lanes, self.flow_m3perh)
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.scraper_power_per_m2 = parameters[TPN['scraper_power_coefficient']]
-        self.total_suspended_solids = wq_parameters.get(
+        self.total_suspended_solids = wq_parameters['input_parameter'].get(
             'total suspended solids (mg/l)', 0)
         self.overflow_rate_m3_per_m2_per_h = design_parameters['overflow rate (m3/m2/h)']
         self.unit_area_m2 = (self.flow_per_lane_m3perh /
@@ -2568,8 +2568,8 @@ class PelletSoftening(TreatmentKPI):
 
         self.lanes = design_parameters.get('number of lanes', 2)
         self.units_per_lane = design_parameters.get(
-            TPN['units_per_lane'], 2)  
-        self.nominal_flow_m3perh = self.plant_kpis.get(
+            TPN['units_per_lane'], 2)
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * self.units_per_lane)
@@ -2650,8 +2650,8 @@ class PelletSoftening(TreatmentKPI):
         return lime_mgperl
 
     def footprint_area__m2(self) -> float:
-        """Total Area = Reactors + Chemicals area + 20% Access."""
-        reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane       
+        """Total Area = Reactors + Chemicals area + 20% margin."""
+        reactors_area = self.unit_area_m2 * self.lanes * self.units_per_lane
         return np.ceil(
             (reactors_area + self.footprint_area_for_chemicals__m2) * 1.2
             )
@@ -2679,7 +2679,7 @@ class PelletSoftening(TreatmentKPI):
         pass  # Placeholder for CO2 emissions calculation
 
 
-class CationicIEX(TreatmentKPI):
+class CationIonExchange(TreatmentKPI):
     """KPI calculations for Ion Exchange Softening with Brine Regeneration."""
     bed_height_m: float
     unit_area_m2: float

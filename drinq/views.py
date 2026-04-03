@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+
+from collections import OrderedDict
 import logging
 import numpy as np
 from warnings import warn
@@ -9,8 +11,9 @@ from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse,
     )
 from django.views import generic
-from django.forms import ValidationError
+from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse, reverse_lazy
+
 from drinq.models import (
     Compound,
     CompoundCas,
@@ -57,28 +60,29 @@ from drinq.api_calculation import (
     KPI_FOOTPRINT_AREA_M2,
     KPI_OPER_AND_MAINT_COSTS,
     KPI_INVESTMENT_COSTS,
-    KPI_MASS_OF_CHEMICALS,
+    # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
     TECHKPI_MASS_OF_CHEMICALS,
     TECHKPI_POWER_KW,
     TECHKPI_CO2_EMISSIONS_KGPERM3,
+    INPUT_WQPARAMETER_KEY,
+    TARGET_WQPARAMETER_KEY,
     )
-# from drinq.api_views import TPPN  # Treatment Plant Property Names
 from drinq.utils.treatmentkpi import TPPN, TPN
 
 
 EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
 INITIAL_TOTAL_STEPS = 4
 DECISION_TREE_MAX_STEPS = 50
-PLANT_KPI_MAPPING = {
+DB_PLANTKPI_MAPPING = {
     KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate_m3perh'],
     KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['energy_consumption_kwhperm3'],
     KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area_m2'],
     KPI_CONSTRUCTION_COSTS_EUR: TPPN['construction_costs_eurperm3'],
     KPI_OPER_AND_MAINT_COSTS: TPPN['operation_and_maintenance_costs_eurperyr'],
     KPI_INVESTMENT_COSTS: TPPN['investment_costs'],
-    KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
+    # KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
 #     KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['energy_consumption_kwhperm3'],
@@ -790,7 +794,6 @@ class TechnologyPropertiesView(generic.FormView):
         # `extra=len(initial)` so the provided initial entries are
         # rendered as editable forms.
         if not queryset.exists() and initial:
-            from django.forms import modelformset_factory
             DynamicTechFormSet = modelformset_factory(
                 TreatmentPlantTechnologyPropertyValue,
                 form=TechnologyPropertyValueForm,
@@ -853,10 +856,10 @@ class TechnologyPropertiesView(generic.FormView):
             technologies=technology_names,
             design_parameters=design_parameters,
             plant_kpis={},
-            db_kpi_mapping=PLANT_KPI_MAPPING,
+            db_kpi_mapping=DB_PLANTKPI_MAPPING,
         )
         # Step 1: set the nominal flow
-        # ------------------------------        
+        # -----------------------------------------------------     
         if plant_calculator.nominal_flow_m3perhr.value is None:
             plant_calculator.update_nominal_flow_m3perhr()
             plant_calculator.update_plant_kpis()  # to set nominal flow KPI
@@ -877,14 +880,16 @@ class TechnologyPropertiesView(generic.FormView):
             technology = Technology.objects.get(id=tech_id)
             tech_properties[technology.name] = {}
             wq_parameters[technology.name] = {
-                'input_parameter': {}, 'target_parameter': {}}
+                INPUT_WQPARAMETER_KEY: {},
+                TARGET_WQPARAMETER_KEY: {}
+                }
             digested_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
             for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=True,
                         is_targetparameter=False):
-                wq_parameters[technology.name]['input_parameter'].update(
+                wq_parameters[technology.name][INPUT_WQPARAMETER_KEY].update(
                     {
                         wq_input.waterqualityparameter.name: wq_input.default_value  # noqa, E501
                     })
@@ -1076,14 +1081,12 @@ class TechnologyPropertiesView(generic.FormView):
         tech_map = {tech.id: tech for tech in tech_order}
 
         # Group forms by technology id preserving order
-        from collections import OrderedDict
         forms_by_tech = OrderedDict()
         for tech in tech_order:
             forms_by_tech[tech] = []
 
         # For each form in the formset, determine its technology and attach
         # the form along with the human-readable property name
-        from drinq.models import TechnologyProperty
         for form in formset.forms:
             # determine technology id from instance (saved) or initial
             tech_id = None
