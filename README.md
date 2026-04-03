@@ -1,8 +1,10 @@
 # Setup of the package
 ## For developers: configuration
 Follow the steps as below:
-- Install the conda environment:
+- Install the conda environment for Windows:
 `conda env create -f environment.yml`
+- Install the conda environment for Mac:
+`conda env create -f environment_mac.yml`
 and activate the (conda) python environment with:
 `conda activate todrinq_dst`
 - Migrate the database with `python manage.py makemigrations` and complete the migration with `python manage.py migrate`
