@@ -1,3 +1,5 @@
+from webbrowser import get
+
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict
@@ -53,7 +55,9 @@ from drinq.forms import (
 from drinq.chemistry_tools import smiles_to_svg
 import drinq.decision_tree as dst
 import drinq.api_calculation as dac
+
 from drinq.api_calculation import (
+    WaterqualityParameterData,
     KPI_NOMINAL_FLOW_M3PERH,
     KPI_ENERGY_CONSUMPTION_KWHRPERM3,
     KPI_CONSTRUCTION_COSTS_EUR,
@@ -63,13 +67,17 @@ from drinq.api_calculation import (
     # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
-    TECHKPI_MASS_OF_CHEMICALS,
+    # TECHKPI_MASS_OF_CHEMICALS,
     TECHKPI_POWER_KW,
     TECHKPI_CO2_EMISSIONS_KGPERM3,
+    )
+
+from drinq.utils.treatmentkpi import (
+    TPPN,
+    TPN,
     INPUT_WQPARAMETER_KEY,
     TARGET_WQPARAMETER_KEY,
-    )
-from drinq.utils.treatmentkpi import TPPN, TPN
+)
 
 
 EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
@@ -691,41 +699,41 @@ class DesignParameterInputView(generic.FormView):
         """Handle invalid form"""
         return self.render_to_response(self.get_context_data(formset=formset))
 
-    def process_results(self, treatment_plant):
-        stages = self.get_treatment_stage_names()
-        technologies = self.get_treatment_technology_names()
+    # def process_results(self, treatment_plant):
+    #     stages = self.get_treatment_stage_names()
+    #     technologies = self.get_treatment_technology_names()
 
-        # Initialize the treatment plant performance calculator
-        print("--------------------------------------")
-        print("Processing results for treatment plant:", treatment_plant.name)  # noqa, E501
-        print('Initializing plant calculator with stages:', stages, 'and technologies:', technologies)  # noqa, E501
-        plant_calculator = dac.TreatmentPlantPerformanceCalculator(
-            treatmentplant_id=treatment_plant.id,
-            stages=stages,
-            technologies=technologies,
-            design_parameters={
-                dp.designparameter.name: dp.value
-                for dp in TreatmentplantDesignParameter.objects.filter(
-                    treatmentplant=treatment_plant
-                )
-            }
-            )
+    #     # Initialize the treatment plant performance calculator
+    #     print("--------------------------------------")
+    #     print("Processing results for treatment plant:", treatment_plant.name)  # noqa, E501
+    #     print('Initializing plant calculator with stages:', stages, 'and technologies:', technologies)  # noqa, E501
+    #     plant_calculator = dac.TreatmentPlantPerformanceCalculator(
+    #         treatmentplant_id=treatment_plant.id,
+    #         stages=stages,
+    #         technologies=technologies,
+    #         design_parameters={
+    #             dp.designparameter.name: dp.value
+    #             for dp in TreatmentplantDesignParameter.objects.filter(
+    #                 treatmentplant=treatment_plant
+    #             )
+    #         }
+    #         )
 
-        # Calculate and store plant properties
-        # TODO: Is this processed???
-        print("--------------------------------------")
-        print("Calculating nominal flow for treatment plant:", treatment_plant.name)  # noqa, E501
-        nominal_flow_value = plant_calculator.update_nominal_flow_m3perhr()
-        nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
-            name=TPPN["nominal_flow_rate_m3perh"])
-        plant_calculator.set_constructioncosts(
-            cost_parameters=self.get_constructioncost_parameter_dict(),
-        )
-        TreatmentPlantPropertyValue.objects.update_or_create(
-            treatmentplant=treatment_plant,
-            property=nominal_flow,
-            defaults={'value': str(nominal_flow_value)}
-        )
+    #     # Calculate and store plant properties
+    #     # TODO: Is this processed???
+    #     print("--------------------------------------")
+    #     print("Calculating nominal flow for treatment plant:", treatment_plant.name)  # noqa, E501
+    #     nominal_flow_value = plant_calculator.update_nominal_flow_m3perhr()
+    #     nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
+    #         name=TPPN["nominal_flow_rate_m3perh"])
+    #     plant_calculator.set_constructioncosts(
+    #         cost_parameters=self.get_constructioncost_parameter_dict(),
+    #     )
+    #     TreatmentPlantPropertyValue.objects.update_or_create(
+    #         treatmentplant=treatment_plant,
+    #         property=nominal_flow,
+    #         defaults={'value': str(nominal_flow_value)}
+    #     )
 
     def post(self, request, *args, **kwargs):
         """Handle POST requests"""
@@ -855,6 +863,7 @@ class TechnologyPropertiesView(generic.FormView):
             stages=stage_names,
             technologies=technology_names,
             design_parameters=design_parameters,
+            waterquality_parameters={},  # to be filled in by tech calculator
             plant_kpis={},
             db_kpi_mapping=DB_PLANTKPI_MAPPING,
         )
@@ -863,7 +872,8 @@ class TechnologyPropertiesView(generic.FormView):
         if plant_calculator.nominal_flow_m3perhr.value is None:
             plant_calculator.update_nominal_flow_m3perhr()
             plant_calculator.update_plant_kpis()  # to set nominal flow KPI
-        wq_parameters = {tech: None for tech in technology_names}
+        wq_parameters = {
+            tech: {} for tech in technology_names}
 
         # plant_calculator.plant_kpis[TPPN['nominal_flow_rate_m3perh']] = (
         #     plant_calculator.nominal_flow_m3perhr.value)
@@ -879,28 +889,39 @@ class TechnologyPropertiesView(generic.FormView):
         for tech_id in tech_ids:
             technology = Technology.objects.get(id=tech_id)
             tech_properties[technology.name] = {}
-            wq_parameters[technology.name] = {
-                INPUT_WQPARAMETER_KEY: {},
-                TARGET_WQPARAMETER_KEY: {}
-                }
+            wq_parameters[technology.name] = {}
             digested_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
             for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=True,
                         is_targetparameter=False):
-                wq_parameters[technology.name][INPUT_WQPARAMETER_KEY].update(
-                    {
-                        wq_input.waterqualityparameter.name: wq_input.default_value  # noqa, E501
-                    })
+                wq_p = WaterqualityParameterData(
+                    name=wq_input.waterqualityparameter.name,
+                    input_label=INPUT_WQPARAMETER_KEY,
+                    input_value=wq_input.default_value)
+                wq_parameters[technology.name] = wq_p.to_dict()
             for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=False,
                         is_targetparameter=True):
-                wq_parameters[technology.name]['target_parameter'].update(
-                    {
-                        wq_target.waterqualityparameter.name: wq_target.default_value  # noqa, E501
-                    })
+                if wq_target:
+                    wq_name = wq_target.waterqualityparameter.name
+                    wq_inputvalue, wq_inputdict = None, {}
+                    if wq_parameters[technology.name].get(wq_name, None) is not None:  # noqa, E501
+                        wq_inputdict = wq_parameters[technology.name][wq_name]
+                        wq_inputvalue = wq_inputdict.get(
+                            INPUT_WQPARAMETER_KEY, None)
+                    # if there is already an input parameter with the same
+                    # name, we want to keep its value and label, otherwise
+                    # fill the dict with the target parameter's default value
+                    wq_p = WaterqualityParameterData(
+                        name=wq_name,
+                        target_label=TARGET_WQPARAMETER_KEY,
+                        target_value=wq_target.default_value,
+                        input_value=wq_inputvalue,
+                        input_label=INPUT_WQPARAMETER_KEY)
+                    wq_parameters[technology.name].update(wq_p.to_dict())
 
             # Technology property default value lookup
             for def_tp in TechnologyPropertyJunction.objects.filter(
