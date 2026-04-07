@@ -155,7 +155,7 @@
   "slurry_tank_height": "slurry tank height",
   "velocity_target": "velocity target",
   "pac_slurry_concentration": "PAC slurry concentration",
-  "static_bed_height_of_pellet_bed": "static bed height of pellet bed",
+  "static_height_of_pellet_bed": "static height of pellet bed",
   "lime_dosage_mass_fraction": "lime dosage mass fraction",
   "target_upflow_velocity": "target upflow velocity"
 }
