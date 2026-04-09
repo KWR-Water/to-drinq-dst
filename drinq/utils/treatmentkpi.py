@@ -3023,7 +3023,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.retention_time_h = parameters.get(TPN['retention_time'], 2.0)# hours
         self.tank_height_m = design_parameters.get(TPN['tank_height'], None) # m
         self.tss_in_mgl = wq_parameters.get('total_suspended_solids', None) # mgl/l
-        self.tss_out_mgl = wq_parameters.get('total_suspended_solids_outlet'], None)
+        self.tss_out_mgl = wq_parameters.get('total_suspended_solids_outlet', None)
         self.sludge_density_kg_m3 = parameters.get(TPN['total_suspended_solids_density'], None) # kg/m3
         self.power_density_wperm3 = parameters.get(TPN['power_density'], None) # W/m3
     
