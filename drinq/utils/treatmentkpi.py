@@ -3067,15 +3067,6 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
-<<<<<<< HEAD
-        self.surface_overflow_rate = design_parameters.get(TPN['surface_overflow_rate'], None)# m3/m2/h
-        self.retention_time_h = parameters.get(TPN['retention_time'], 2.0)# hours
-        self.tank_height_m = design_parameters.get(TPN['tank_height'], None) # m
-        self.tss_in_mgl = wq_parameters.get('total_suspended_solids', None) # mgl/l
-        self.tss_out_mgl = wq_parameters.get('total_suspended_solids_outlet', None)
-        self.sludge_density_kg_m3 = parameters.get(TPN['total_suspended_solids_density'], None) # kg/m3
-        self.power_density_wperm3 = parameters.get(TPN['power_density'], None) # W/m3
-=======
         self.surface_overflow_rate = parameters[
             TPN['surface_overflow_rate']]  # m3/m2/h
         self.retention_time_h = parameters[TPN['retention_time_hr']]  # hours
@@ -3088,7 +3079,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
             TPN['power_density']]  # W/m3
->>>>>>> 34709e594a21655cd2eabb7299b5755ff17929fc
+
     
     def __repr__(self):
         return f"Sludge Blanket Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
