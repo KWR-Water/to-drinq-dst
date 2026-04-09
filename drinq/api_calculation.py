@@ -11,6 +11,8 @@ from drinq.utils.treatmentkpi import (
     ChlorineDisinfection,
     ChloramineDisinfection,
     ChainScrapedSedimentation,
+    SludgeBlanketClarifier,
+    AirFlotationDAF,
     GranularActivatedCarbonFiltration,
     PowderedActivatedCarbonFiltration,
     PelletSoftening,
@@ -20,7 +22,9 @@ from drinq.utils.treatmentkpi import (
     RapidSandPressurizedVesselFiltration,
     MembraneFiltration,
     calculate_water_demand_m3hr_for_population,
-    calculate_flow_per_unit
+    calculate_flow_per_unit,
+    INPUT_WQPARAMETER_KEY,
+    TARGET_WQPARAMETER_KEY,
 )
 from drinq.utils.financial_costs import (
     construction_costs_total,
@@ -55,9 +59,6 @@ KPI_CONSTRUCTION_COSTS_EUR = 'construction costs (eur)'
 KPI_INVESTMENT_COSTS = 'investment costs'
 KPI_OPER_AND_MAINT_COSTS = 'operational and maintenance costs'
 KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3 = 'co2 emissions from chemicals (kgperm3)'
-
-INPUT_WQPARAMETER_KEY = 'input_parameter'
-TARGET_WQPARAMETER_KEY = 'target_parameter'
 
 logger = logging.getLogger(__name__)
 
@@ -192,13 +193,71 @@ def technology_selector(
     return selected_technology
 
 
+# TODO: implement in views.py
+@dataclass
+# Name WaterQualityParameterData or WaterqualityParameterKPI. Not to be
+# confused with the db table.
+class WaterqualityParameterData:
+    input_value: float | None = None
+    target_value: float | None = None
+    name: str | None = None
+    input_label: str = INPUT_WQPARAMETER_KEY
+    target_label: str = TARGET_WQPARAMETER_KEY
+
+    def to_db_kpi_dict(
+            self,
+            is_input_parameter: bool = False,
+            is_target_parameter: bool = False,
+        ) -> dict[str, float | int | None]:
+
+        if self.name is None:
+            return {}
+        else:
+            if is_input_parameter and is_target_parameter:
+                raise ValueError(
+                    "A water quality parameter cannot be both an input and target parameter.")
+            elif not (is_input_parameter or is_target_parameter):
+                raise ValueError(
+                    "A water quality parameter must be either an input or target parameter.")
+            elif is_input_parameter:
+                return {
+                    self.name: self.input_value,
+                }
+            elif is_target_parameter:
+                return {
+                    self.name: self.target_value,
+                }
+
+    def to_dict(self) -> dict[str, float | int | None]:
+        if self.name is None:
+            return {}
+        return {
+            self.name: {
+                self.input_label: self.input_value,
+                self.target_label: self.target_value,
+            }
+        }
+
+    def __repr__(self):
+        if self.name is None:
+            return "No water quality parameter(s)"
+        return (
+            f"Water quality indicator {self.name}: (input) {self.input_value:.2f}"
+            f", (target) {self.target_value:.2f}")
+
+    def __str__(self):
+        if self.name is None:
+            return "No water quality parameter(s)"
+        return f"{self.name}, input: {self.input_value}; output: {self.target_value}"  # noqa, E501
+
+
 class TechnologyPerformanceCalculator:
     treatmentplant_id: int
     stages: list[str]  # names of stages
     technologies: list[str]  # names of technologies
     tech_parameters: dict[str, dict[str, float | int]]  # tech: {parameter_id: value}
     design_parameters: dict[str, float | int]  # plant parameter_id: value
-    waterquality_parameters: dict[str, float | int]  # waterqual parameter_id: value
+    waterquality_parameters: dict[str, dict[str, float | int]]  # tech: wq_dict
     plant_kpis: dict[str, float | int]  # plant performance indicators
     tech_kpinames: list[str]  # technology performance indicators
     digested_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
@@ -253,11 +312,12 @@ class TechnologyPerformanceCalculator:
                 digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
                 if digest_property_list is None:
                     digest_property_list = []
+                tech_wq_parameters = wq_parameters.get(technology, {})
                 tech_kwargs = {
                     'parameters': parameters[technology],
                     'plant_kpis': plant_kpis,
                     'design_parameters': design_parameters,
-                    'wq_parameters': wq_parameters[technology],
+                    'wq_parameters': tech_wq_parameters,
                     'digest_parameter_list': digest_property_list,
                 }
                 match stage.lower():
@@ -267,12 +327,18 @@ class TechnologyPerformanceCalculator:
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
-
+                            # case 'strainer':
+                            #     strainer = Strainer(**tech_kwargs)
+                            #     self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            #     self.tech_parameters[technology] = strainer.parameters  # noqa, E501
+                            case _:
+                                pass
+                    case 'screening':
+                        match technology.lower():
                             case 'strainer':
                                 strainer = Strainer(**tech_kwargs)
                                 self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = strainer.parameters  # noqa, E501
-
                             case _:
                                 pass
                     case 'coagulation':
@@ -288,6 +354,22 @@ class TechnologyPerformanceCalculator:
                             ) in technology:
                                 cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
+                    case 'floc removal':
+                        match technology.lower():
+                            case str(technology) if (
+                                'sludge blanket'
+                            ) in technology.lower():
+                                sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('chain scraped sedimentation') in technology.lower():  # noqa, E501
+                                chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
+                            case str(technology) if (
+                                ('flotation with saturated air') in technology.lower()):
+                                air_flotation_daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = air_flotation_daf.get_kpi_dict()  # noqa, E501
+                            case _:
+                                pass
                     case 'submerged rapid sand filtration':
                         match technology.lower():
                             case str(technology) if ((
@@ -324,11 +406,13 @@ class TechnologyPerformanceCalculator:
 
                     case 'softening':
                         match technology.lower():
-                            case str(technology) if ('pellet softening') in technology.lower():
+                            case str(technology) if (
+                                ('pellet softening') in technology.lower()
+                            ):
                                 pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
                             case str(technology) if ('cation exchange') in technology.lower():
-                                ciex = CationExchangeSoftening(**tech_kwargs)  # noqa, E501
+                                ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = ciex.get_kpi_dict()  # noqa, E501
 
         if footprint_area is None:
@@ -348,64 +432,17 @@ class TechnologyPerformanceCalculator:
         if allowed_kpis is None:
             allowed_kpis = TODRINQ_KPINAMES_TOSUM
         for _, kpis in self.tech_kpis.items():
-            for kpi_name, kpi_value in kpis.items():
+            for kpi_name, kpi_method in kpis.items():
                 for kpi in allowed_kpis:
                     if re.search(kpi, kpi_name.lower()) is None:
-                        continue
-                    if kpi_value is not None:
+                        continue  # skip when kpi not in list
+                    if kpi_method is not None:
                         if kpi_name in summed_kpis:
-                            summed_kpis[kpi_name] += kpi_value
+                            summed_kpis[kpi_name] += kpi_method()
                         else:
-                            summed_kpis[kpi_name] = kpi_value
+                            summed_kpis[kpi_name] = kpi_method()
         self.summed_kpis = summed_kpis
         # return summed_kpis
-
-
-# TODO: implement in views.py
-@dataclass
-# Name WaterQualityParameterData or WaterqualityParameterKPI. Not to be
-# confused with the db table.
-class WaterqualityParameterData:
-    name: str
-    input_value: float
-    target_value: float
-    input_label: str = INPUT_WQPARAMETER_KEY
-    target_label: str = TARGET_WQPARAMETER_KEY
-
-    def to_db_kpi_dict(
-            self,
-            is_input_parameter: bool = True,
-            is_target_parameter: bool = False,
-        ) -> dict[str, float | int | None]:
-
-        if is_input_parameter and is_target_parameter:
-            raise ValueError("A water quality parameter cannot be both an input and target parameter.")
-        elif not (is_input_parameter or is_target_parameter):
-            raise ValueError("A water quality parameter must be either an input or target parameter.")
-        elif is_input_parameter:
-            return {
-                self.name: self.input_value,
-            }
-        elif is_target_parameter:
-            return {
-                self.name: self.target_value,
-            }
-
-    def to_dict(self) -> dict[str, float | int | None]:
-        return {
-            self.name: {
-                self.input_label: self.input_value,
-                self.target_label: self.target_value,
-            }
-        }
-
-    def __repr__(self):
-        return (
-            f"Water quality indicator {self.name}: (input:) {self.input_value:.2f}"
-            f"(target:) {self.target_value:.2f}")
-
-    def __str__(self):
-        return f"{self.name}: {self.input_value} / {self.target_value}"
 
 
 @dataclass
@@ -627,6 +664,7 @@ class TreatmentPlantPerformanceCalculator:
     design_parameters: dict[str, float | int]  # parameter_id: value in m3/day
     plant_kpis: dict[str, float | int | None]  # plant performance indicators
     db_kpi_mapping: dict[str, str | None]  # database KPI names
+    waterquality_parameters: dict[str, dict[str, float | int]] | None  # tech: wq_dict
 
     nominal_flow_m3perhr: NominalFlowKPI
     footprint_area_m2: FootprintAreaM2KPI
@@ -642,18 +680,22 @@ class TreatmentPlantPerformanceCalculator:
 
     def __init__(
         self,
-        treatmentplant_id: int, 
+        treatmentplant_id: int,
         design_parameters: dict[str, float | int],
         technologies: list[str] = None,
         stages: list[str] = None,
         plant_kpis: dict[str, float | int] = None,
         db_kpi_mapping: dict[str, str | None] = None,
+        waterquality_parameters: dict[str, dict[str, float | int]] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.design_parameters = design_parameters
         self.technologies = technologies
         self.stages = stages
         self.db_kpi_mapping = db_kpi_mapping
+        if waterquality_parameters is None:
+            waterquality_parameters = {}  # Initialize as empty dictionary
+        self.waterquality_parameters = waterquality_parameters
         self.kpi_attr_mapping = {
             'nominal_flow_m3perhr': KPI_NOMINAL_FLOW_M3PERH,
             'footprint_area_m2': KPI_FOOTPRINT_AREA_M2,
