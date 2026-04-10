@@ -2144,13 +2144,13 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.hydraulic_loading_rate_m3m2h = parameters[
-            TPN['hydraulic_loading_rate']]
+            TPN['hydraulic_loading_rate'],15]
         self.gac_porosity = parameters[
             TPN['gac_porosity']]
         self.empty_bed_contact_time = parameters[
-            TPN['empty_bed_contact_time']]
+            TPN['empty_bed_contact_time'],15]
         self.effective_particle_diameter = parameters[
-            TPN['effective_particle_diameter']]
+            TPN['effective_particle_diameter'],0.5]
         self.anthracite_bed_depth_m = 0
         self.flow_per_unit_m3hr = (
             self.flow_per_lane_m3perh / self.units_per_lane)
@@ -2238,6 +2238,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     unit_area_m2: float
     unit_depth_m: float
     tanks_area_m2: float
+    power_mixing_intensity_wperm3:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2256,15 +2257,14 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         self.storage_time_days = parameters.get(
             TPN['storage_time_of_chemicals_days'], 30)
         self.pac_dosage_mg_liter = parameters[
-            TPN['pac_dosage_concentration']]
+            TPN['pac_dosage_concentration'],12]
         self.slurry_tank_height_m = parameters.get(
             TPN['slurry_tank_height_m'], 2.5)
-        self.pac_bulk_density_g_cm3 = parameters[TPN['mass_density_of_chemical']]
+        self.pac_bulk_density_g_cm3 = parameters[TPN['mass_density_of_chemical'],0.45] #450kg/m3
         # Convert from w/w% to w/w fraction
-        self.slurry_concentration_w_w = parameters[
-            TPN['pac_slurry_concentration']] / 100
-        self.retention_time_min = parameters[TPN['retention_time_min']]
-        self.power_total_kw = parameters[TPN['power']]  # Total installed power for mixers/pumps
+        self.slurry_concentration_w_w = parameters[TPN['pac_slurry_concentration'],5] # 5% w/w
+        self.retention_time_min = parameters[TPN['retention_time_min'],30]
+        self.power_mixing_intensity_wperm3 = parameters[TPN['power_ mixing_intensity'],10]  # 10 W/m3
 
     def __repr__(self):
         return f"PAC tank height (m)={self.tank_height_m}, " \
@@ -2323,7 +2323,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             flow_per_lane_m3h=self.flow_per_lane_m3perh,
             units_per_lane=self.units_per_lane,
             retention_time_min=self.retention_time_min)
-        p_mixing_contact = volume_vessel * self.lanes * 0.02  # conversion factor?
+        p_mixing_contact = volume_vessel * self.lanes * self.power_mixing_intensity_wperm3
         hourly_mass = (self.nominal_flow_m3perh *
                        self.pac_dosage_mg_liter) / 1000
         volume_slurry_batch = (hourly_mass / (
@@ -3152,106 +3152,3 @@ class SludgeBlanketClarifier(TreatmentKPI):
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         pass  # Placeholder for CO2 emissions calculation 
-
-
-class PowderedActivatedCarbonFiltration(TreatmentKPI):
-    """KPI calculations for a Powdered Activated Carbon (PAC) treatment unit."""
-    tank_height_m: float
-    silo_height_m: float
-    lanes: int
-    units_per_lane: int
-    nominal_flow_m3perh: float
-    flow_per_lane_m3perh: float
-    storage_time_days: float
-    pac_dosage_mgL: float
-    pac_bulk_density_kgm3: float
-    slurry_concentration_w_w: float
-    power_total_kw: float
-    retention_time_min: float
-    unit_volume_m3: float
-    unit_area_m2: float
-    unit_depth_m: float
-    tanks_area_m2: float
-
-    def __post_init__(self):
-        super().__post_init__()
-        parameters = self.parameters
-        design_parameters = self.design_parameters
-        plant_kpis = self.plant_kpis
-        # wq_parameters = self.wq_parameters
-
-        self.lanes = design_parameters.get('number of lanes', 1)
-
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.unit_depth_m = parameters[TPN['unit_depth_m']]
-        self.silo_height_m = parameters.get(TPN['silo_height'], 10.0) # Average Silo Height
-        self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
-        self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, self.nominal_flow_m3perh)
-        self.storage_time_days = parameters.get(
-            TPN['storage_time_of_chemicals_days'],30)
-        self.pac_dosage_mgL = parameters[
-            TPN['pac_dosage_mgL']]
-        self.slurry_tank_height_m = parameters[TPN['slurry_tank_height_m']]
-        self.pac_bulk_density_kgm3 = parameters[
-            TPN['pac_bulk_density']]  # 450 kg/m3
-        self.slurry_concentration_w_w = parameters[
-            TPN['PAC_slurry_concentration']] / 100.0
-        self.retention_time_min = parameters[TPN['retention_time_min']]
-        # Total installed power for the PAC unit (mixing + pumps):
-        self.power_total_kw = parameters[TPN['power']]
-
-    def __repr__(self):
-        return f"PAC unit (tank height (m)={self.tank_height_m}, " \
-            f"silo height (m)={self.silo_height_m}, " \
-            f"dosage (mg/L)={self.pac_dosage_mgL}, " \
-            f"nominal flow (m3/hr)={self.nominal_flow_m3perh})"
-
-    def daily_mass_of_chemicals__kg(self) -> float:
-        """Calculates total dry PAC required per day."""
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        return hourly_mass * 24
-
-    def footprint_area_for_chemicals__m2(self) -> float:
-        """Calculates the area required for the PAC storage silo."""
-        safety_factor = 1.2 # Factor for PAC aeration/fluffing
-        total_mass_stored = self.daily_mass_of_chemicals__kg() * self.storage_time_days
-        required_volume_m3 = (total_mass_stored / self.pac_bulk_density_kgm3) * safety_factor
-        return required_volume_m3 / self.silo_height_m
-
-    def footprint_area__m2(self) -> float:
-        """Total area including Contact Basin and Silo storage."""
-        unit_volume_m3 = calculate_unit_volume_m3(
-            flow_per_lane_m3h=self.flow_per_lane_m3perh,
-            units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
-        unit_area_m2 = calculate_unit_area_tank(
-            unit_volume_m3=unit_volume_m3,
-            unit_height_m=self.unit_depth_m)
-        storage_area_m2 = self.footprint_area_for_chemicals__m2()
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        v_slurry_batch = (hourly_mass * 8) / (self.slurry_concentration_w_w * 1000)
-        slurry_area_m2 = v_slurry_batch / self.slurry_tank_height_m
-        return np.ceil((unit_area_m2 * self.lanes + storage_area_m2) * 1.1)
-
-    def hydraulic_headloss__bar(self) -> float:
-        """Headloss through the contact basin baffles."""
-        return 0.03 + meters_of_water_to_bar(self.unit_depth_m)  # Approx 0.3m converted to bar
-
-    def power__kw(self) -> float:
-        unit_volume_m3 = calculate_unit_volume_m3(
-            flow_per_lane_m3h=self.flow_per_lane_m3perh,
-            units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
-        p_mixing_contact = v_contact * self.lanes * 0.02
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        v_slurry_batch = hourly_mass / (self.slurry_concentration_w_w * 1000)
-        p_mixing_slurry = v_slurry_batch * 0.75 /8 # Assuming 8 hours of operation.
-        p_pumps = 0.04 * self.lane # Estimation
-        return p_mixing_contact + p_mixing_slurry + p_pumps
-
-    def daily_energy_consumption__kwh(self) -> float:
-        return self.power__kw() * 24 
-
-    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
