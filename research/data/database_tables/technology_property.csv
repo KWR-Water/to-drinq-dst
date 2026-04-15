@@ -1,4 +1,4 @@
-id,technology,property,defaultvalue,is_designparameter,is_digested
+﻿id,technology,property,defaultvalue,is_designparameter,is_digested
 1,1,2,5,0,0
 2,2,2,5,0,0
 3,40,13,2,0,0
@@ -318,7 +318,7 @@ id,technology,property,defaultvalue,is_designparameter,is_digested
 317,14,110,15,1,0
 318,14,105,0.5,1,0
 319,14,10,0.5,1,0
-320,45,160,30,0,0
+320,15,110,10,1,0
 321,15,19,4,1,0
 322,15,35,2.5,0,0
 323,15,36,5,0,0
@@ -399,4 +399,5 @@ id,technology,property,defaultvalue,is_designparameter,is_digested
 398,43,19,5,1,0
 399,41,106,0.15,1,0
 400,41,111,0.1,1,0
-401,41,161,10,1,0
+401,41,160,10,1,0
+402,2,123,1.8,0,0

@@ -17,10 +17,13 @@ from drinq.utils.treatmentkpi import (
     PowderedActivatedCarbonFiltration,
     PelletSoftening,
     CationIonExchange,
+    AnionicIEX,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
+    BaffledOzonationContactor,
     MembraneFiltration,
+    CleanWaterStorageTank,
     calculate_water_demand_m3hr_for_population,
     calculate_flow_per_unit,
     INPUT_WQPARAMETER_KEY,
@@ -327,10 +330,6 @@ class TechnologyPerformanceCalculator:
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
-                            # case 'strainer':
-                            #     strainer = Strainer(**tech_kwargs)
-                            #     self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
-                            #     self.tech_parameters[technology] = strainer.parameters  # noqa, E501
                             case _:
                                 pass
                     case 'screening':
@@ -354,6 +353,8 @@ class TechnologyPerformanceCalculator:
                             ) in technology:
                                 cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
+                    case 'flocculation':
+                        pass
                     case 'floc removal':
                         match technology.lower():
                             case str(technology) if (
@@ -364,10 +365,10 @@ class TechnologyPerformanceCalculator:
                             case str(technology) if ('chain scraped sedimentation') in technology.lower():  # noqa, E501
                                 chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
-                            case str(technology) if (
-                                ('flotation with saturated air') in technology.lower()):
-                                air_flotation_daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = air_flotation_daf.get_kpi_dict()  # noqa, E501
+                            # case str(technology) if (
+                            #     ('flotation with saturated air') in technology.lower()):
+                            #     air_flotation_daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
+                            #     self.tech_kpis[technology] = air_flotation_daf.get_kpi_dict()  # noqa, E501
                             case _:
                                 pass
                     case 'submerged rapid sand filtration':
@@ -385,24 +386,34 @@ class TechnologyPerformanceCalculator:
                             ) in technology.lower():  # noqa, E501
                                 rsf = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
-
-                            case str(technology) if ((
-                                'rapid sand filtration') and ('pressurized')
-                            ) in technology.lower():
-                                rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
+                            # case str(technology) if ((
+                            #     'rapid sand filtration') and ('pressurized')
+                            # ) in technology.lower():
+                            #     rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
+                            #     self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
 
                     case 'omp removal':
                         match technology.lower():
-                            case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
-                                membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('microfiltration') in technology.lower():  # noqa, E501
+                                microfiltr = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = microfiltr.get_kpi_dict()  # noqa, E501
                             case str(technology) if ('granular activated carbon') in technology.lower():  # noqa, E501
                                 gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = gac_filtration.get_kpi_dict()  # noqa, E501
                             case str(technology) if ('powdered activated carbon') in technology.lower():  # noqa, E501
                                 pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('ozonation') in technology.lower():  # noqa, E501
+                                ozonation = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = ozonation.get_kpi_dict()  # noqa, E501
+                    case 'nom removal':
+                        match technology.lower():                        
+                            case str(technology) if ('anion exchange') in technology.lower():  # noqa, E501
+                                aiex = AnionicIEX(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = aiex.get_kpi_dict()  # noqa, E501
+                            case str(technology) if ('ultrafiltration') in technology.lower():  # noqa, E501
+                                ultrafiltr = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = ultrafiltr.get_kpi_dict()  # noqa, E501
 
                     case 'softening':
                         match technology.lower():
@@ -414,6 +425,14 @@ class TechnologyPerformanceCalculator:
                             case str(technology) if ('cation exchange') in technology.lower():
                                 ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = ciex.get_kpi_dict()  # noqa, E501
+
+                    case 'clean water storage':  # TODO: debug!
+                        match technology.lower():
+                            case str(technology) if (
+                                ('clean water storage') in technology.lower()
+                            ):
+                                storage = CleanWaterStorageTank(**tech_kwargs)  # noqa, E501
+                                self.tech_kpis[technology] = storage.get_kpi_dict()  # noqa, E501                        
 
         if footprint_area is None:
             raise ValueError("Not possible to calculate footprint area (m2).")

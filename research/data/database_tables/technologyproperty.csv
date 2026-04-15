@@ -1,4 +1,4 @@
-id,name,unit,description,category,parent_property
+﻿id,name,unit,description,category,parent_property
 1,volume,m^3,volume of the asset,1,
 2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,
 3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,
@@ -158,5 +158,4 @@ id,name,unit,description,category,parent_property
 157,static height of pellet bed,m,height of pellet bed when not expanded,1,
 158,lime dosage mass fraction,kg/kg,mass fraction of lime dosed per kg CaCO3,4,
 159,target upflow velocity,m/h,setpoint for upflow velocity,1,
-160,total suspended solids density,kg/m^3,bulk density of total suspended solids ,4,
-161,level difference,m,level difference,1,
+160,level difference,m,level difference,1,

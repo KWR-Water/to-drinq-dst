@@ -2441,7 +2441,7 @@ class UVAOPDisinfection(TreatmentKPI):
         pass  # Placeholder for CO2 emissions calculation
 
 
-class Ozonation(TreatmentKPI):
+class BaffledOzonationContactor(TreatmentKPI):
     """KPI calculations for an Ozonation treatment unit."""
     tank_height_m: float
     lanes: int
@@ -3063,7 +3063,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('lanes', 2)
-        self.units_per_lane = parameters.get('units_per_lane', 2)
+        self.units_per_lane = parameters.get('units_per_lane', None)
         self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
@@ -3079,7 +3079,6 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
             TPN['power_density']]  # W/m3
-
     
     def __repr__(self):
         return f"Sludge Blanket Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
