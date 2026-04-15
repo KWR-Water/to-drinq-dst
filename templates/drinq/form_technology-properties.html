@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% load dict_extras %}
 
 {% block content %}
 <body class="bg-light">
@@ -10,11 +11,29 @@
   <div class="card shadow-sm p-3 bg-white">
     <form method="post">
       {% csrf_token %}
+
+
       {{ formset.management_form }}
+      {# Ensure waterquality_formset management form is present for POST #}
+      {{ waterquality_formset.management_form }}
+
+      {# Display formset errors #}
+      {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+          {{ formset.non_form_errors }}
+        </div>
+      {% endif %}
+      {% if waterquality_formset.non_form_errors %}
+        <div class="alert alert-danger">
+          {{ waterquality_formset.non_form_errors }}
+        </div>
+      {% endif %}
+
 
       {% for tech, items in forms_by_tech.items %}
       <div class="mb-4">
         <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
+        <h5 class="mb-2">Operational conditions</h5>
         <div class="table-responsive">
           <table class="table table-bordered table-sm">
             <thead class="thead-light">
@@ -48,6 +67,52 @@
           </table>
         </div>
       </div>
+
+      {# Per-technology water quality parameter table using canonical Django formset rendering #}
+      {% if waterquality_forms_by_tech and waterquality_forms_by_tech|dict_get:tech %}
+      <div class="mb-4">
+        <h5 class="mb-2">Water quality parameters</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th style="width:30%">Parameter</th>
+                <th style="width:15%">Value, untreated water</th>
+                <th style="width:15%">Value, target water</th>
+                <th style="width:30%">Description</th>
+                <th style="width:10%">Unit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in waterquality_forms_by_tech|dict_get:tech %}
+                <tr>
+                  <td>
+                    {{ form.instance.wq_tech_parameter.id }}
+                    {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
+                  </td>
+                  <td>
+                    {% if form.instance.wq_tech_parameter.waterqualityparameter.is_input_parameter %}
+                      <input type="number" step="any" name="{{ form.value.html_name }}" class="form-control form-control-sm waterquality-parameter-value" value="{{ form.value.value|default_if_none:form.value.initial|default:0 }}">
+                    {% else %}
+                      <span class="text-muted">{{ form.instance.value }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if form.instance.wq_tech_parameter.waterqualityparameter.is_target_value %}
+                      <input type="number" step="any" name="{{ form.target_value.html_name }}" class="form-control form-control-sm waterquality-parameter-target-value" value="{{ form.target_value.value|default_if_none:form.target_value.initial|default:0 }}">
+                    {% else %}
+                      <span class="text-muted">{{ form.instance.target_value }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ form.instance.wq_tech_parameter.waterqualityparameter.description }}</td>
+                  <td>{{ form.instance.wq_tech_parameter.waterqualityparameter.unit }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
       {% endfor %}
 
       <div class="d-flex justify-content-between">

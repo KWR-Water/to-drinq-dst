@@ -269,7 +269,7 @@ class DigestDesignParametersAPI(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-        # TODO: add a form for the technology properties and refer to it.
+        # TODO: add a form for showing the KPIs per technology and refer to it.
         
         # If technology property values are provided, validate and persist them
         tech_props_input = request.data.get('technology_properties')
@@ -293,7 +293,7 @@ class DigestDesignParametersAPI(APIView):
                     defaults={'value': str(val)},
                 )
 
-        # Build input for calculator (adapt as needed by your calculator API)
+        # Build input for calculator
         dp_qs = TreatmentplantDesignParameter.objects.filter(
             treatmentplant=plant)
         design_params_by_name = {
