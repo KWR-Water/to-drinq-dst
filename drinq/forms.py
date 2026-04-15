@@ -18,6 +18,8 @@ from drinq.models import (
     DesignParameter,
     TreatmentPlantTechnologyPropertyValue,
     TechnologyPropertyJunction,
+    TreatmentPlantWaterQualityParameterValue,
+    WaterqualityParameter,
     # DecisionConfiguration,
     )
 
@@ -281,6 +283,24 @@ TechnologyPropertyValueFormSet = forms.modelformset_factory(
     TreatmentPlantTechnologyPropertyValue,
     form=TechnologyPropertyValueForm,
     extra=0
+)
+
+
+class WaterQualityParameterValueForm(forms.ModelForm):
+    class Meta:
+        model = TreatmentPlantWaterQualityParameterValue
+        fields = ['wq_tech_parameter', 'value']
+        widgets = {
+            'wq_tech_parameter': forms.HiddenInput(),
+            'value': forms.NumberInput(attrs={'class': 'parameter-value'}),
+        }
+
+
+WaterQualityParameterValueFormSet = forms.modelformset_factory(
+    TreatmentPlantWaterQualityParameterValue,
+    form=WaterQualityParameterValueForm,
+    extra=0,
+    can_delete=False
 )
 
 

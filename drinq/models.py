@@ -852,11 +852,12 @@ class TreatmentPlantWaterQualityParameterValue(models.Model):
         TreatmentPlant,
         on_delete=models.CASCADE,
         db_column='treatmentplant')
-    waterqualityparameter = models.ForeignKey(
-        WaterqualityParameter,
+    wq_tech_parameter = models.ForeignKey(
+        WaterqualityParameterTechnologyJunction,
         on_delete=models.CASCADE,
-        db_column='waterqualityparameter')
-    value = models.FloatField(blank=True, null=True)
+        db_column='tech_wqparameter')
+    value = models.FloatField(
+        blank=True, null=True, db_column='value')
 
     class Meta:
         # managed = False
@@ -865,5 +866,5 @@ class TreatmentPlantWaterQualityParameterValue(models.Model):
 
     def __str__(self):
         wqp = WaterqualityParameter.objects.get(
-            pk=self.waterqualityparameter)
+            pk=self.wq_tech_parameter.waterqualityparameter.id)
         return f"Treatment plant: {self.treatmentplant}, WQ parameter: {wqp.name}, value: {self.value}"  # noqa: E501

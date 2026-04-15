@@ -1,8 +1,8 @@
 from webbrowser import get
-
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import logging
 import numpy as np
 from warnings import warn
@@ -14,7 +14,8 @@ from django.http import (
     )
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy        
+from django.conf import settings
 
 from drinq.models import (
     Compound,
@@ -37,6 +38,7 @@ from drinq.models import (
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
+    TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
     WaterqualityParameter,
     WaterqualityParameterTechnologyJunction,
@@ -50,6 +52,7 @@ from drinq.forms import (
     DesignParameterValueFormSet,
     TechnologyPropertyValueFormSet,
     TechnologyPropertyValueForm,
+    WaterQualityParameterValueFormSet,
     build_technology_property_initials,
     )
 from drinq.chemistry_tools import smiles_to_svg
@@ -818,26 +821,115 @@ class TechnologyPropertiesView(generic.FormView):
         return TechnologyPropertyValueFormSet(
             queryset=queryset, initial=initial)
 
-    def form_valid(self, formset):
+    def get_waterquality_formset(self):
+        """Return a formset for water quality parameter values for this plant."""
+
         treatment_plant = self.get_treatment_plant()
-        if not formset.is_valid():
+        logger.debug(
+            "get_waterquality_formset called for plant id %s", treatment_plant.id)
+        # Get all technologies for this plant
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).values_list('technology', flat=True)
+        # Get all relevant water quality parameter junctions for these technologies
+        wqtech_junctions = WaterqualityParameterTechnologyJunction.objects.filter(
+            technology__in=tech_ids
+        ).select_related('waterqualityparameter')
+        # Get or create value objects for this plant and these parameters
+        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
+            treatmentplant=treatment_plant,
+            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
+        )
+        # If not all exist, create missing ones with default values
+        existing_ids = set(
+            qs.values_list('wq_tech_parameter_id', flat=True))
+        for junction in wqtech_junctions:
+            if junction.id not in existing_ids:
+                logger.debug("Creating missing TreatmentPlantWaterQualityParameterValue for junction id %s", junction.id)
+                TreatmentPlantWaterQualityParameterValue.objects.create(
+                    treatmentplant=treatment_plant,
+                    wq_tech_parameter=junction,
+                    value=junction.default_value
+                )
+        # Re-query to get all
+        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
+            treatmentplant=treatment_plant,
+            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
+        )
+        try:
+            if self.request.method == 'POST':
+                logger.debug("Returning WaterQualityParameterValueFormSet with POST data, queryset count: %d", qs.count())
+                return WaterQualityParameterValueFormSet(
+                    self.request.POST, queryset=qs)
+            logger.debug("Returning WaterQualityParameterValueFormSet with GET, queryset count: %d", qs.count())
+            return WaterQualityParameterValueFormSet(queryset=qs)
+        except Exception as e:
+            logger.error("Exception in get_waterquality_formset: %s", e, exc_info=True)
+            raise
+
+    def form_valid(self, formset):
+        logger.debug("form_valid called")
+        treatment_plant = self.get_treatment_plant()
+        try:
+            waterquality_formset = self.get_waterquality_formset()
+        except Exception as e:
+            logger.error("Exception in get_waterquality_formset during form_valid: %s", e, exc_info=True)
+            raise
+        valid_tech = formset.is_valid()
+        valid_wq = waterquality_formset.is_valid()
+        logger.debug("formset.is_valid(): %s, waterquality_formset.is_valid(): %s", valid_tech, valid_wq)
+        if not (valid_tech and valid_wq):
+            logger.warning("Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
+            print("=== TechnologyPropertyValueFormSet errors ===")
+            print(formset.errors)
+            print("=== WaterQualityParameterValueFormSet errors ===")
+            print(waterquality_formset.errors)
+            print("=== TechnologyPropertyValueFormSet non_form_errors ===")
+            print(formset.non_form_errors())
+            print("=== WaterQualityParameterValueFormSet non_form_errors ===")
+            print(waterquality_formset.non_form_errors())
             return self.form_invalid(formset)
 
+        # Step 1: Save all form data
         saved = []
         for form in formset.forms:
             if getattr(form, 'cleaned_data', None) is None:
                 form.full_clean()
-            if not form.cleaned_data:
-                continue
-            if form.cleaned_data.get('DELETE', False):
-                if form.instance.pk:
-                    form.instance.delete()
+            if not form.cleaned_data or form.cleaned_data.get('DELETE', False):
                 continue
             instance = form.save(commit=False)
             if getattr(instance, 'treatmentplant', None) is None:
                 instance.treatmentplant = treatment_plant
             instance.save()
             saved.append(instance)
+        # Save water quality parameter values
+        for form in waterquality_formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data:
+                continue
+            instance = form.save(commit=False)
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
+            instance.save()
+            saved.append(instance)
+
+        # Save water quality parameter values
+        for form in waterquality_formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data:
+                continue
+            instance = form.save(commit=False)
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
+            instance.save()
+
+        # Step 2: Calculate technology-specific and plant-wide KPIs
+        # - gather technologies and stages
+        # - build design parameter dict
+        # - run TreatmentPlantPerformanceCalculator and
+        #   TechnologyPerformanceCalculator
+        # - save calculated values to the DB
 
         # Run performance calculations after tech properties saved
         # gather technologies and stages
@@ -867,7 +959,7 @@ class TechnologyPropertiesView(generic.FormView):
             plant_kpis={},
             db_kpi_mapping=DB_PLANTKPI_MAPPING,
         )
-        # Step 1: set the nominal flow
+        # Step 2a: set the nominal flow
         # -----------------------------------------------------     
         if plant_calculator.nominal_flow_m3perhr.value is None:
             plant_calculator.update_nominal_flow_m3perhr()
@@ -878,7 +970,7 @@ class TechnologyPropertiesView(generic.FormView):
         # plant_calculator.plant_kpis[TPPN['nominal_flow_rate_m3perh']] = (
         #     plant_calculator.nominal_flow_m3perhr.value)
 
-        # Step 2: initialize technology-dependent calculations
+        # Step 2b: initialize technology-dependent calculations
         # ----------------------------------------------------
         # The technology_properties dictionary contains the property values
         # for each technology in the treatment plant.
@@ -991,11 +1083,10 @@ class TechnologyPropertiesView(generic.FormView):
                     )
                 except TechnologyProperty.DoesNotExist:
                     continue
-        
-        # Step 3: compute plant-wide properties
+
+        # Step 2c: compute plant-wide properties
         # --------------------------------------
         plant_calculator.update_plant_kpis()
-
         # compute construction costs if possible (replicate existing helper)
         constrcosts = {}
         for tech_id in tech_ids:
@@ -1068,7 +1159,7 @@ class TechnologyPropertiesView(generic.FormView):
         # Calculate investment and maintenance costs
         # TODO: implement
 
-        # Step 4: update plant-wide properties (KPIs)
+        # Step 2-d: update plant-wide properties (KPIs)
         # --------------------------------------------
         plant_calculator.update_plant_kpis()  # update cost related KPIs
         for prop_name, val in plant_calculator.plant_kpis.items():
@@ -1082,8 +1173,48 @@ class TechnologyPropertiesView(generic.FormView):
                 defaults={'value': str(value)}
             )
 
+        # Step 3: Prepare and POST to the API
+        tech_props = []
+        for form in formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data or form.cleaned_data.get('DELETE', False):
+                continue
+            instance = form.save(commit=False)
+            tech_props.append({
+                'technology': instance.technology.id,
+                'technologyproperty': instance.technologyproperty.id,
+                'value': instance.value,
+            })
+
         return redirect(
             'design_parameter_results', plant_id=treatment_plant.id)
+        
+        # payload = {
+        #     'treatmentplant_id': treatment_plant.id,
+        #     'configuration_id': getattr(treatment_plant, 'configuration_id', None),
+        #     'technology_properties': tech_props,
+        # }
+
+        # api_url = reverse('api_process_parameters')
+        # if not api_url.startswith('http'):
+        #     api_url = settings.SITE_URL.rstrip('/') + api_url
+
+        # try:
+        #     response = requests.post(api_url, json=payload, cookies=self.request.COOKIES)
+        #     if response.status_code == 200:
+        #         data = response.json()
+        #         redirect_url = data.get('redirect_url')
+        #         if redirect_url:
+        #             return HttpResponseRedirect(redirect_url)
+        #         else:
+        #             self.add_error(None, 'No redirect URL returned from API.')
+        #     else:
+        #         self.add_error(None, f'API error: {response.status_code} {response.text}')
+        # except Exception as e:
+        #     self.add_error(None, f'API request failed: {e}')
+
+        # return self.form_invalid(formset)
 
     def form_invalid(self, formset):
         return self.render_to_response(self.get_context_data(formset=formset))
@@ -1092,6 +1223,7 @@ class TechnologyPropertiesView(generic.FormView):
         context = super().get_context_data(**kwargs)
         treatment_plant = self.get_treatment_plant()
         formset = context.get('form') or self.get_form()
+        waterquality_formset = self.get_waterquality_formset()
 
         # Build ordered technologies from TreatmentPlantLayout (by step)
         layouts = TreatmentPlantLayout.objects.filter(
@@ -1140,9 +1272,78 @@ class TechnologyPropertiesView(generic.FormView):
                     'prop_help': prop_help,
                 })
 
+        # Group water quality parameter forms by technology
+        # Build a mapping: {Technology: [form, ...]}
+        waterquality_forms_by_tech = OrderedDict(
+            (tech, []) for tech in tech_order)
+        # Build a mapping from parameter id to technology ids (from WaterqualityParameterTechnologyJunction)
+        wqp_tech_map = {}
+        for junction in WaterqualityParameterTechnologyJunction.objects.filter(technology__in=tech_order):
+            tid = junction.technology.id
+            pid = junction.waterqualityparameter.id
+            wqp_tech_map.setdefault(pid, set()).add(tid)
+        # Assign forms to technologies
+        for form in waterquality_formset.forms:
+            param = getattr(form.instance, 'wq_tech_parameter', None)
+            if param is not None:
+                tech = param.technology
+                if tech is not None:
+                    waterquality_forms_by_tech[tech].append(form)
+
         context['forms_by_tech'] = forms_by_tech
         context['treatment_plant'] = treatment_plant
         context['formset'] = formset
+        context['waterquality_formset'] = waterquality_formset
+        context['waterquality_forms_by_tech'] = waterquality_forms_by_tech
+
+        # --- Build waterquality_params_by_tech for new table rendering ---
+        # Use technology id as key for grouping, then map back to tech 
+        # instance for template
+        wq_params_by_techid = {}
+        for tech in tech_order:
+            param_map = defaultdict(lambda: {
+                'untreated': None,
+                'target': None,
+                'description': '',
+                'unit': ''
+                })
+            forms = waterquality_forms_by_tech.get(tech, [])
+            for form in forms:
+                junction = getattr(form.instance, 'wq_tech_parameter', None)
+                if not junction:
+                    continue
+                param = getattr(junction, 'waterqualityparameter', None)
+                if not param:
+                    continue
+                name = param.name
+                desc = param.description or ''
+                unit = param.unit or ''
+                is_input = getattr(junction, 'is_inputparameter', False)
+                is_target = getattr(junction, 'is_targetparameter', False)
+                value = form['value']
+                if is_input:
+                    param_map[name]['untreated'] = value
+                if is_target:
+                    param_map[name]['target'] = value
+                param_map[name]['description'] = desc
+                param_map[name]['unit'] = unit
+            param_list = []
+            for pname, pdata in param_map.items():
+                param_list.append({
+                    'name': pname,
+                    'untreated': pdata['untreated'],
+                    'target': pdata['target'],
+                    'description': pdata['description'],
+                    'unit': pdata['unit'],
+                })
+            wq_params_by_techid[tech.id] = param_list
+        # Now build OrderedDict with tech instance as key for template
+        waterquality_params_by_tech = OrderedDict()
+        for tech in tech_order:
+            waterquality_params_by_tech[tech] = wq_params_by_techid.get(
+                tech.id, [])
+        context['waterquality_params_by_tech'] = waterquality_params_by_tech
+        # --- End new context variable ---
         return context
 
 
