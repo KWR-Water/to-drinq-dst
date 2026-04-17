@@ -50,8 +50,8 @@ from drinq.forms import (
     SessionSelectForm,
     TreatmentDesignSelectionForm,
     DesignParameterValueFormSet,
-    TechnologyPropertyValueFormSet,
-    TechnologyPropertyValueForm,
+    TreatmentPlantTechPropertyValueFormSet,
+    TreatmentTechPropertyValueForm,
     WaterQualityParameterValueFormSet,
     build_technology_property_initials,
     )
@@ -779,15 +779,13 @@ class TechnologyPropertiesView(generic.FormView):
     redirect to the results page.
     """
     template_name = 'drinq/form_technology-properties.html'
-    form_class = TechnologyPropertyValueFormSet
+    form_class = TreatmentPlantTechPropertyValueFormSet
 
     def get_treatment_plant(self):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
     def get_form(self, form_class=None):
         treatment_plant = self.get_treatment_plant()
-        # Only include properties where is_digested is False
-        # Get all property IDs for this plant's technologies where is_digested is False
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list('technology', flat=True)
         non_digested_prop_ids = TechnologyPropertyJunction.objects.filter(
@@ -799,94 +797,79 @@ class TechnologyPropertiesView(generic.FormView):
         )
         initial = []
         if not queryset.exists():
+            # Build initial data for new forms, but do NOT include 'id'
             initial = build_technology_property_initials(treatment_plant)
 
-        # If there are no persisted rows, create a dynamic formset with
-        # `extra=len(initial)` so the provided initial entries are
-        # rendered as editable forms.
-        if not queryset.exists() and initial:
-            DynamicTechFormSet = modelformset_factory(
-                TreatmentPlantTechnologyPropertyValue,
-                form=TechnologyPropertyValueForm,
-                extra=len(initial)
-            )
-            if self.request.method == 'POST':
-                return DynamicTechFormSet(
-                    self.request.POST, queryset=queryset, initial=initial)
-            return DynamicTechFormSet(queryset=queryset, initial=initial)
-
+        prefix = "techprop"
         if self.request.method == 'POST':
-            return TechnologyPropertyValueFormSet(
-                self.request.POST, queryset=queryset, initial=initial)
-        return TechnologyPropertyValueFormSet(
-            queryset=queryset, initial=initial)
+            total_forms = int(self.request.POST.get(f'{prefix}-TOTAL_FORMS', '0'))
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=total_forms,
+            )
+            formset = DynamicFormSet(
+                self.request.POST,
+                queryset=queryset,
+                initial=initial,
+                prefix=prefix)
+            return formset
+        # For GET: if queryset is empty and initial is non-empty, set extra
+        if not queryset.exists() and initial:
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=len(initial),
+            )
+            return DynamicFormSet(
+                queryset=queryset, initial=initial, prefix=prefix)
+        return TreatmentPlantTechPropertyValueFormSet(
+            queryset=queryset, initial=initial, prefix=prefix)
 
     def get_waterquality_formset(self):
         """Return a formset for water quality parameter values for this plant."""
-
         treatment_plant = self.get_treatment_plant()
-        logger.debug(
-            "get_waterquality_formset called for plant id %s", treatment_plant.id)
-        # Get all technologies for this plant
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list('technology', flat=True)
-        # Get all relevant water quality parameter junctions for these technologies
         wqtech_junctions = WaterqualityParameterTechnologyJunction.objects.filter(
             technology__in=tech_ids
         ).select_related('waterqualityparameter')
-        # Get or create value objects for this plant and these parameters
         qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
             treatmentplant=treatment_plant,
             wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
         )
-        # If not all exist, create missing ones with default values
         existing_ids = set(
             qs.values_list('wq_tech_parameter_id', flat=True))
         for junction in wqtech_junctions:
             if junction.id not in existing_ids:
-                logger.debug("Creating missing TreatmentPlantWaterQualityParameterValue for junction id %s", junction.id)
                 TreatmentPlantWaterQualityParameterValue.objects.create(
                     treatmentplant=treatment_plant,
                     wq_tech_parameter=junction,
                     value=junction.default_value
                 )
-        # Re-query to get all
         qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
             treatmentplant=treatment_plant,
             wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
         )
+        prefix = "waterquality"
         try:
             if self.request.method == 'POST':
-                logger.debug("Returning WaterQualityParameterValueFormSet with POST data, queryset count: %d", qs.count())
                 return WaterQualityParameterValueFormSet(
-                    self.request.POST, queryset=qs)
-            logger.debug("Returning WaterQualityParameterValueFormSet with GET, queryset count: %d", qs.count())
-            return WaterQualityParameterValueFormSet(queryset=qs)
+                    self.request.POST, queryset=qs, prefix=prefix)
+            return WaterQualityParameterValueFormSet(
+                queryset=qs, prefix=prefix)
         except Exception as e:
             logger.error("Exception in get_waterquality_formset: %s", e, exc_info=True)
             raise
 
     def form_valid(self, formset):
-        logger.debug("form_valid called")
         treatment_plant = self.get_treatment_plant()
-        try:
-            waterquality_formset = self.get_waterquality_formset()
-        except Exception as e:
-            logger.error("Exception in get_waterquality_formset during form_valid: %s", e, exc_info=True)
-            raise
+        waterquality_formset = self.get_waterquality_formset()
         valid_tech = formset.is_valid()
         valid_wq = waterquality_formset.is_valid()
-        logger.debug("formset.is_valid(): %s, waterquality_formset.is_valid(): %s", valid_tech, valid_wq)
         if not (valid_tech and valid_wq):
-            logger.warning("Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
-            print("=== TechnologyPropertyValueFormSet errors ===")
-            print(formset.errors)
-            print("=== WaterQualityParameterValueFormSet errors ===")
-            print(waterquality_formset.errors)
-            print("=== TechnologyPropertyValueFormSet non_form_errors ===")
-            print(formset.non_form_errors())
-            print("=== WaterQualityParameterValueFormSet non_form_errors ===")
-            print(waterquality_formset.non_form_errors())
+            logger.warning(
+                "Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
             return self.form_invalid(formset)
 
         # Step 1: Save all form data
@@ -1150,11 +1133,11 @@ class TechnologyPropertiesView(generic.FormView):
                 continue
         try:
             plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
-        except KeyError or Exception:
+        except KeyError as ke:
             # TODO: raise the error in future versions
             # perf_indic.update({TPPN['construction_costs_eurperm3']: None})
             logger.warning(
-                "Failed to calculate construction costs", exc_info=True)
+                f"KeyError during construction cost calculation: {ke}. ")  # noqa, E501
 
         # Calculate investment and maintenance costs
         # TODO: implement
@@ -1217,7 +1200,16 @@ class TechnologyPropertiesView(generic.FormView):
         # return self.form_invalid(formset)
 
     def form_invalid(self, formset):
-        return self.render_to_response(self.get_context_data(formset=formset))
+        # Ensure waterquality_formset is POST-bound for error display
+        waterquality_formset = self.get_waterquality_formset()
+        # Debug logging for errors
+        print("=== form_invalid called ===")
+        print("formset.errors:", formset.errors)
+        print("formset.non_form_errors:", formset.non_form_errors())
+        print("waterquality_formset.errors:", waterquality_formset.errors)
+        print("waterquality_formset.non_form_errors:", waterquality_formset.non_form_errors())
+        return self.render_to_response(self.get_context_data(
+            formset=formset, waterquality_formset=waterquality_formset))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1240,8 +1232,7 @@ class TechnologyPropertiesView(generic.FormView):
 
         # For each form in the formset, determine its technology and attach
         # the form along with the human-readable property name
-        for form in formset.forms:
-            # determine technology id from instance (saved) or initial
+        for idx, form in enumerate(formset.forms):
             tech_id = None
             if getattr(form.instance, 'technology', None):
                 tech_id = form.instance.technology.id

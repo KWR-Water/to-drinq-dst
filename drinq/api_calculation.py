@@ -49,7 +49,7 @@ TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_POWER_KW,
     TECHKPI_HEADLOSS_BAR,
-    TECHKPI_CO2_EMISSIONS_KGPERM3,
+    # TECHKPI_CO2_EMISSIONS_KGPERM3,  # NOT WORKING YET
 ]
 KPI_NOMINAL_FLOW_M3PERH = 'nominal flow rate (m3perh)'
 KPI_ENERGY_CONSUMPTION_KWHRPERDAY = 'energy consumption (kwhrperday)'
@@ -438,6 +438,8 @@ class TechnologyPerformanceCalculator:
                         continue  # skip when kpi not in list
                     if kpi_method is not None:
                         if kpi_name in summed_kpis:
+                            print(
+                                f'-- Adding to summed KPI: {kpi_name}, tech: {_}')
                             summed_kpis[kpi_name] += kpi_method()
                         else:
                             summed_kpis[kpi_name] = kpi_method()

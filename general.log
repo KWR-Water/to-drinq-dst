@@ -1,32 +1,14 @@
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97)
+Failed to calculate construction costs
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1135, in form_valid
+    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 863, in set_constructioncosts
+    constrcost_params = cost_parameters[technology]
+                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'Strainer'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
