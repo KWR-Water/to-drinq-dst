@@ -723,7 +723,6 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
-        digest_parameter_list = self.digest_parameter_list  # TODO: Unused variable
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.weir_height = parameters[TPN['weir_height']]
@@ -772,7 +771,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -966,7 +965,7 @@ class Strainer(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1060,7 +1059,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1166,7 +1165,7 @@ class ChlorineDisinfection(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1273,7 +1272,7 @@ class ChloramineDisinfection(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1380,7 +1379,7 @@ class MembraneFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1447,7 +1446,7 @@ class IntakePump(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1547,7 +1546,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1689,7 +1688,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1856,7 +1855,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -1993,7 +1992,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2085,7 +2084,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2185,7 +2184,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2286,7 +2285,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2400,7 +2399,7 @@ class UVAOPDisinfection(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2494,7 +2493,7 @@ class Ozonation(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2635,7 +2634,7 @@ class PelletSoftening(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2751,7 +2750,7 @@ class CationIonExchange(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2875,7 +2874,7 @@ class AnionicIEX(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2997,7 +2996,7 @@ class AirFlotationDAF(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -3112,7 +3111,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         function_name = get_value_of_dictionary_with_lower_key_str(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
-            return getattr(self, function_name)
+            return getattr(self, function_name)()
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")

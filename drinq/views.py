@@ -42,6 +42,7 @@ from drinq.models import (
     TechnologyConstructionCostParameter,
     WaterqualityParameter,
     WaterqualityParameterTechnologyJunction,
+    TreatmentPlantTechnologyKPIValue,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -1025,7 +1026,7 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
 
         # Instantiate the Technology Performance Calculator
-        tech_calculator = dac.TechnologyPerformanceCalculator(
+        kpi_calculator = dac.TechnologyPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stage_names,
             technologies=technology_names,
@@ -1036,11 +1037,11 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
         )
-        tech_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
-        tech_calculator.sum_kpis()
+        kpi_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
+        kpi_calculator.sum_kpis()
         
         # Assign the summed technology KPIs to the plant calculator
-        summed_kpis = tech_calculator.summed_kpis
+        summed_kpis = kpi_calculator.summed_kpis
         plant_calculator.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
             TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
         plant_calculator.energyconsumption_kwhrperm3.value = plant_calculator.get_energyconsumption_per_m3()  # noqa, E501
@@ -1053,19 +1054,39 @@ class TechnologyPropertiesView(generic.FormView):
 
         # Save the digested technology properties back to the database
         for tech_name in technology_names:
-            for prop_name in tech_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
+            for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
                 try:
-                    prop_value = tech_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
-                    tech_obj = Technology.objects.get(name=tech_name)
+                    prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
+                    tech = Technology.objects.get(name=tech_name)
                     prop_obj = TechnologyProperty.objects.get(name=prop_name)
                     TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
                         treatmentplant=treatment_plant,
-                        technology=tech_obj,
+                        technology=tech,
                         technologyproperty=prop_obj,
                         defaults={'value': str(prop_value)}
                     )
                 except TechnologyProperty.DoesNotExist:
                     continue
+            for (kpi_name, kpi_value) in (
+                    kpi_calculator.tech_kpis[tech_name].items()):
+                try:
+                    kpi = TechnologyKPI.objects.get(name=kpi_name)
+                    tech = Technology.objects.get(name=tech_name)
+                    if kpi_value is None:
+                        logger.warning(
+                            f"-- None value found for technology: {tech.name}, KPI: {kpi.name}")
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech,
+                        kpi=kpi,
+                        defaults={'value': str(kpi_value)}
+                        )
+                except TechnologyKPI.DoesNotExist:
+                    continue
+        # TODO: show the technology KPIS in the UI as well (currently only plant KPIs are shown in the results page)
+        
+        
 
         # Step 2c: compute plant-wide properties
         # --------------------------------------
