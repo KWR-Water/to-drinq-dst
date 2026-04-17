@@ -165,7 +165,7 @@ LOGGING = {
     "loggers": {
         "drinq": {  # use 'drinq' logger
             "handlers": ["file"],
-            "level": "WARNING",
+            "level": "DEBUG",
             "propagate": True,
         },
     },
