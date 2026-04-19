@@ -1,12 +1,10 @@
-from webbrowser import get
-import requests
+ 
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
 import logging
 import numpy as np
 from warnings import warn
-# from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.http import (
@@ -14,8 +12,7 @@ from django.http import (
     )
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
-from django.urls import reverse, reverse_lazy        
-from django.conf import settings
+from django.urls import reverse
 
 from drinq.models import (
     Compound,
@@ -40,7 +37,6 @@ from drinq.models import (
     TreatmentPlantTechnologyPropertyValue,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
-    WaterqualityParameter,
     WaterqualityParameterTechnologyJunction,
     TreatmentPlantTechnologyKPIValue,
 )
@@ -757,6 +753,34 @@ class DesignParameterResultsView(generic.DetailView):
         context['properties'] = TreatmentPlantPropertyValue.objects.filter(
             treatmentplant=self.object
         )
+
+        # Gather all technology KPIs for this treatment plant, grouped by technology
+        tech_kpi_qs = TreatmentPlantTechnologyKPIValue.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology', 'kpi')
+
+        # Group by technology
+        from collections import defaultdict
+        tech_kpis = defaultdict(list)
+        for kpi_value in tech_kpi_qs:
+            tech_kpis[kpi_value.technology].append(kpi_value)
+
+        # Get the ordered list of technologies by step from 
+        # TreatmentPlantLayout
+        layout_qs = TreatmentPlantLayout.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology').order_by('step')
+        ordered_techs = [
+            layout.technology for layout in layout_qs
+            if layout.technology is not None]
+
+        # Build an ordered list of (technology, kpis) pairs
+        technology_kpis_ordered = []
+        for tech in ordered_techs:
+            if tech in tech_kpis:
+                technology_kpis_ordered.append((tech, tech_kpis[tech]))
+
+        context['technology_kpis_ordered'] = technology_kpis_ordered
         return context
 
 
@@ -1004,9 +1028,7 @@ class TechnologyPropertiesView(generic.FormView):
                         technology=technology, is_designparameter=False):
                 if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
                     defaultval_tech_props[technology.name].update(
-                        {
-                            def_tp.property.name: def_tp.default_value
-                        })
+                        {def_tp.property.name: def_tp.default_value})
             for isdigested_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_digested=True):
                 digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
