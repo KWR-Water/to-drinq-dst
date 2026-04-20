@@ -1,14 +1,61 @@
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily mass of chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area for chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: chemical solution concentration
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: head loss
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: power
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily energy consumption
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area
+-- None value found for technology: Sludge blanket clarification, KPI: daily mass of chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area for chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: chemical solution concentration
+-- None value found for technology: Sludge blanket clarification, KPI: head loss
+-- None value found for technology: Sludge blanket clarification, KPI: power
+-- None value found for technology: Sludge blanket clarification, KPI: daily energy consumption
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97)
-Failed to calculate construction costs
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 1135, in form_valid
-    plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 863, in set_constructioncosts
-    constrcost_params = cost_parameters[technology]
-                        ~~~~~~~~~~~~~~~^^^^^^^^^^^^
-KeyError: 'Strainer'
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily mass of chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area for chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: chemical solution concentration
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: head loss
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: power
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily energy consumption
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area
+-- None value found for technology: Sludge blanket clarification, KPI: daily mass of chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area for chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: chemical solution concentration
+-- None value found for technology: Sludge blanket clarification, KPI: head loss
+-- None value found for technology: Sludge blanket clarification, KPI: power
+-- None value found for technology: Sludge blanket clarification, KPI: daily energy consumption
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
 KeyError during construction cost calculation: 'Strainer'. 
