@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load kpi_format %}
+{% load unit_format %}
 
 {% block content %}
 <!-- templates/drinq/treatmentplant_property_results.html -->
@@ -22,10 +23,10 @@
                 {% for prop in properties %}
                 <tr>
                     <td>{{ prop.property.name }}</td>
-                    <td>{{ prop.value }}</td>
+                    <td>{{ prop.value|format_kpi_value }}</td>
                     <td class="align-top">
                         <div class="form-text text-muted small mt-1">
-                            {{ prop.unit }}
+                            {{ prop.unit|superscript_exponents|safe }}
                         </div>
                     </td>
                 </tr>
@@ -55,7 +56,7 @@
                                 <td>{{ kpi_value.value|format_kpi_value }}</td>
                                 <td class="align-top">
                                     <div class="form-text text-muted small mt-1">
-                                        {{ kpi_value.kpi.unit }}
+                                        {{ kpi_value.kpi.unit|superscript_exponents|safe }}
                                     </div>
                                 </td>
                             </tr>

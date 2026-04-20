@@ -584,7 +584,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
     units_per_lane: int
     conc_chem_mgL: float
     solution_wwperc: float
-    density_chemical: float
+    density_chemical_kgm3: float
     retention_time_min: float
     storage_time_days: float
     efficiency_mixer: float
@@ -610,11 +610,11 @@ class CoagulationDynamicMixing(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.conc_chem_mgL = parameters[
-            TPN['target_concentration_of_dosing_chemical_mg_l']]
+            TPN['target_concentration_of_dosing_chemical_mg_per_l']]
         self.solution_wwperc = parameters[
-            TPN['chemical_dosing_solution_concentration_w_w_percent']]
-        self.density_chemical = parameters[
-            TPN['mass_density_of_chemical_g_cm3']] * 1000  # g/cm3 to kg/m3
+            TPN['chemical_dosing_solution_concentration_w_per_wpercent']]
+        self.density_chemical_kgm3 = parameters[
+            TPN['mass_density_of_chemical']] * 1000  # g/cm3 to kg/m3
         self.retention_time_min = parameters[
             TPN['retention_time_min']]
         self.storage_time_days = parameters[
@@ -694,7 +694,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
              ) * self.water_viscosity * self.unit_volume_m3) / 1000
         # TODO: check formula with Greg, i.e. why factor 5? 5 Pumps?
         power_pump_kw = (
-            self.density_chemical * GRAVITY_M_PER_S2 *
+            self.density_chemical_kgm3 * GRAVITY_M_PER_S2 *
             self.volume_chemical_day * 5) / (
                 seconds_per_day * self.efficiency_mixer) / 1000
         return power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw

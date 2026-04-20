@@ -59,3 +59,10 @@ KeyError during construction cost calculation: 'Strainer'.
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
 KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+-- None value found for technology: Pellet softening reactor with lime, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 

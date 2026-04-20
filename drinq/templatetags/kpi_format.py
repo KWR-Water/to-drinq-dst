@@ -15,6 +15,8 @@ def format_kpi_value(value):
     except (TypeError, ValueError):
         return value
     if abs(val) < 1:
+        if val == 0:
+            return "0"
         return f"{val:.3f}"
     else:
         return f"{val:.1f}"
