@@ -282,16 +282,10 @@ class TechnologyPerformanceCalculator:
         self.stages = stages
         self.plant_kpis = plant_kpis
         self.tech_kpinames = tech_kpinames
-        if tech_kpinames is None:
-            self.tech_kpis = {
-                technology: dict() for technology in technologies}
-        else:
-            self.tech_kpis = {
-                technology: {kpi: None for kpi in tech_kpinames}
-                for technology in technologies}
+        self.tech_kpis = {technology: None for technology in technologies}
         self.digested_tech_parameter_list = digested_tech_parameter_list
         self.summed_kpis = dict()
-
+        
     def calculate_kpi(
         self,
     ):
@@ -303,10 +297,8 @@ class TechnologyPerformanceCalculator:
         plant_kpis = self.plant_kpis
         tech_kpilist = {"kpi_list": self.tech_kpinames}
 
-        footprint_area = None
         if technologies is None or stages is None:
             raise ValueError("Technologies and stages must be provided.")
-        footprint_area = {tech: None for tech in technologies}
         for stage in stages:
             for technology in technologies:
                 digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
@@ -331,94 +323,81 @@ class TechnologyPerformanceCalculator:
                             #     strainer = Strainer(**tech_kwargs)
                             #     self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             #     self.tech_parameters[technology] = strainer.parameters  # noqa, E501
-                            case _:
-                                pass
+
                     case 'screening':
-                        match technology.lower():
-                            case 'strainer':
-                                strainer = Strainer(**tech_kwargs)
-                                self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
-                                self.tech_parameters[technology] = strainer.parameters  # noqa, E501
-                            case _:
-                                pass
+                        if 'strainer' in technology.lower():
+                            strainer = Strainer(**tech_kwargs)
+                            self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = strainer.parameters  # noqa, E501
                     case 'coagulation':
-                        match technology.lower():
-                            case str(technology) if (
-                                'coagulant dosing' and 'dynamic mixing'
-                            ) in technology:
-                                coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
-
-                            case str(technology) if (
-                                'cascade' and 'coagulant dosing'
-                            ) in technology:
-                                cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
+                        if ('coagulant dosing' and 'dynamic mixing') in technology.lower():
+                            coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501
+                        elif ('cascade' and 'coagulant dosing') in technology.lower():
+                            cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = cascade_mixer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = cascade_mixer.parameters  # noqa, E501
                     case 'floc removal':
-                        match technology.lower():
-                            case str(technology) if (
-                                'sludge blanket'
-                            ) in technology.lower():
-                                sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict()  # noqa, E501
-                            case str(technology) if ('chain scraped sedimentation') in technology.lower():  # noqa, E501
-                                chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
-                            case str(technology) if (
-                                ('flotation with saturated air') in technology.lower()):
-                                air_flotation_daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = air_flotation_daf.get_kpi_dict()  # noqa, E501
-                            case _:
-                                pass
+                        if 'sludge blanket' in technology.lower():
+                            sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = sludgeblanket_cl.parameters  # noqa, E501
+                        elif 'chain scraped sedimentation' in technology.lower():  # noqa, E501
+                            chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = chain_scraped_sed.parameters  # noqa, E501
+                        elif 'flotation with saturated air' in technology.lower():
+                            daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = daf.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = daf.parameters  # noqa, E501
                     case 'submerged rapid sand filtration':
-                        match technology.lower():
-                            case str(technology) if ((
-                                'rapid sand filtration'
-                            ) and ('submerged') and ('single')
-                            ) in technology.lower():
-                                rsf = RapidSandSingleMediumFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
-
-                            case str(technology) if ((
-                                'rapid sand filtration'
-                            ) and ('submerged') and ('double')
-                            ) in technology.lower():  # noqa, E501
-                                rsf = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
-
-                            case str(technology) if ((
-                                'rapid sand filtration') and ('pressurized')
-                            ) in technology.lower():
-                                rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
+                        if ('rapid sand filtration' in technology.lower() and
+                            'submerged' in technology.lower() and
+                            'single' in technology.lower()):
+                            rsf = RapidSandSingleMediumFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = rsf.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = rsf.parameters  # noqa, E501
+                        elif ('rapid sand filtration' in technology.lower() and
+                              'submerged' in technology.lower() and
+                              'double' in technology.lower()):  # noqa, E501
+                            rsfd = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = rsfd.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = rsfd.parameters  # noqa, E501
+                        elif ('rapid sand filtration' in technology.lower() and
+                              'submerged' in technology.lower() and
+                              'pressurized' in technology.lower()):  # noqa, E501
+                            rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = rsfp.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = rsfp.parameters  # noqa, E501
 
                     case 'omp removal':
-                        match technology.lower():
-                            case str(technology) if ('nanofiltration') in technology.lower():  # noqa, E501
-                                membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
-                            case str(technology) if ('granular activated carbon') in technology.lower():  # noqa, E501
-                                gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = gac_filtration.get_kpi_dict()  # noqa, E501
-                            case str(technology) if ('powdered activated carbon') in technology.lower():  # noqa, E501
-                                pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
+                        if ('nanofiltration') in technology.lower():  # noqa, E501
+                            membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = membr_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = membr_filtration.parameters  # noqa, E501
+                        elif ('granular activated carbon') in technology.lower():  # noqa, E501
+                            gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = gac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = gac_filtration.parameters  # noqa, E501
+                        elif ('powdered activated carbon') in technology.lower():  # noqa, E501
+                            pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = pac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
 
                     case 'softening':
-                        match technology.lower():
-                            case str(technology) if (
-                                ('pellet softening') in technology.lower()
-                            ):
-                                pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
-                            case str(technology) if ('cation exchange') in technology.lower():
-                                ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = ciex.get_kpi_dict()  # noqa, E501
-
-        if footprint_area is None:
-            raise ValueError("Not possible to calculate footprint area (m2).")
-        return footprint_area
-
+                        if ('pellet softening') in technology.lower():
+                            pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = pellet_softening.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = pellet_softening.parameters  # noqa, E501
+                        elif ('cation exchange') in technology.lower():
+                            ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = ciex.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = ciex.parameters  # noqa, E501
+        print("-- Calculated technology KPIs:")
+        for tech, kpis in self.tech_kpis.items():
+            print(f"---- {tech}: {kpis}")
+        
     def sum_kpis(
         self,
         allowed_kpis: list[str] = None,
@@ -432,17 +411,25 @@ class TechnologyPerformanceCalculator:
         if allowed_kpis is None:
             allowed_kpis = TODRINQ_KPINAMES_TOSUM
         for _, kpis in self.tech_kpis.items():
-            for kpi_name, kpi_method in kpis.items():
+            for kpi_name, kpi_value in kpis.items():
                 for kpi in allowed_kpis:
                     if re.search(kpi, kpi_name.lower()) is None:
                         continue  # skip when kpi not in list
-                    if kpi_method is not None:
+                    if kpi_value is not None:
                         if kpi_name in summed_kpis:
                             print(
                                 f'-- Adding to summed KPI: {kpi_name}, tech: {_}')
-                            summed_kpis[kpi_name] += kpi_method()
+                            if kpi_value is None:
+                                logger.warn(
+                                    f"---- Warning: None value for {kpi_name} in technology {_}, skipping addition to summed KPI.")  # noqa, E501
+                                continue
+                            if callable(kpi_value):
+                                logger.error(
+                                    f"---- Error: Callable value for {kpi_name} in technology {_}, skipping addition to summed KPI.")  # noqa, E501
+                                raise ValueError(f"Callable value for {kpi_name} in technology {_} is not supported.")  # noqa, E501
+                            summed_kpis[kpi_name] += kpi_value
                         else:
-                            summed_kpis[kpi_name] = kpi_method()
+                            summed_kpis[kpi_name] = kpi_value
         self.summed_kpis = summed_kpis
         # return summed_kpis
 

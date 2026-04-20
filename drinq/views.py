@@ -1,12 +1,10 @@
-from webbrowser import get
-import requests
+ 
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
 import logging
 import numpy as np
 from warnings import warn
-# from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.http import (
@@ -14,8 +12,7 @@ from django.http import (
     )
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
-from django.urls import reverse, reverse_lazy        
-from django.conf import settings
+from django.urls import reverse
 
 from drinq.models import (
     Compound,
@@ -40,8 +37,8 @@ from drinq.models import (
     TreatmentPlantTechnologyPropertyValue,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
-    WaterqualityParameter,
     WaterqualityParameterTechnologyJunction,
+    TreatmentPlantTechnologyKPIValue,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -353,21 +350,42 @@ class QuestionsCompleteView(generic.TemplateView):
     def get(self, request: HttpResponse, *args, **kwargs):
         results = QuestionAnswer.objects.filter(
             configuration__id=request.session['configuration_id'])
-        if results.exists():
-            context = self.get_context_data(results=results)
-            # TODO: store the results in the database
-            # Render the template with the context
-            return render(
-                request,
-                template_name=self.template_name,
-                context={'data': context})
-        else:
+        if not results.exists():
             return HttpResponseRedirect(redirect('drinq_redirect'))
+
+        # Parse filter selections from GET
+        selected_techs = []
+        num_stages = 0
+        if 'num_stages' in request.GET:
+            try:
+                num_stages = int(request.GET['num_stages'])
+            except Exception:
+                num_stages = 0
+
+        # Always fill selected_techs to num_stages, using None for missing
+        selected_techs = []
+        for i in range(num_stages):
+            tech_id = request.GET.get(f'stage_{i+1}')
+            if tech_id is not None and tech_id != '':
+                try:
+                    selected_techs.append(int(tech_id))
+                except Exception:
+                    selected_techs.append(None)
+            else:
+                selected_techs.append(None)
+
+        context = self.get_context_data(results=results, selected_techs=selected_techs)
+        # Add num_stages to context for template
+        context['num_stages'] = context.get('num_stages', len(selected_techs))
+        return render(
+            request,
+            template_name=self.template_name,
+            context={'data': context})
 
     def get_context_data(self, **kwargs):
         results = kwargs.get('results', None)
+        selected_techs = kwargs.get('selected_techs', [])
         choices, technologies, treatment_options = {}, [], []
-        # session_key = self.request.session.session_key
         config_id = self.request.session['configuration_id']
         session_key = MultiStepConfiguration.objects.get(
             id=config_id).session_key
@@ -402,19 +420,59 @@ class QuestionsCompleteView(generic.TemplateView):
                         technologies += [technology]
 
             context['technologies'] = technologies
-            (
-                treatment_options,
-                treatment_maps,
-                ) = dst.get_treatment_trains(
-                    technology_tuples=technologies)
-            for option_number, _ in treatment_options.items():
-                treatment_options[option_number]['already_named'] = (
-                    option_number in named_option_ids
+            treatment_options, treatment_maps = dst.get_treatment_trains(
+                technology_tuples=technologies)
+
+
+            # Build available technologies and stage names per step
+            num_stages = len(technologies)
+            stages = []
+            for i in range(num_stages):
+                tech_ids = set()
+                for option in treatment_maps.values():
+                    if (i+1) in option:
+                        tech_ids.add(option[i+1]['technology'])
+                techs = list(Technology.objects.filter(id__in=tech_ids))
+                # Try to get the stage name from the first technology in this step
+                stage_name = f"Stage {i+1}"
+                if techs:
+                    # Try to get the stage via StageTechnologies if available
+                    from drinq.models import StageTechnologies, Stage
+                    stage_obj = (
+                        Stage.objects.filter(
+                            id__in=StageTechnologies.objects.filter(
+                                technology=techs[0]).values_list('stage', flat=True)
+                        ).first()
                     )
+                    if stage_obj:
+                        stage_name = stage_obj.name
+                stages.append({'name': stage_name, 'technologies': techs})
+
+            # Filter treatment options based on selected_techs
+            filtered_options = {}
+            for opt_nr, option in treatment_maps.items():
+                match = True
+                for stage_idx, sel in enumerate(selected_techs):
+                    if sel and option.get(stage_idx+1, {}).get('technology') != sel:
+                        match = False
+                        break
+                if match:
+                    filtered_options[opt_nr] = treatment_options[opt_nr]
+
+            # Mark already named and slugged
+            for option_number, _ in filtered_options.items():
+                filtered_options[option_number]['already_named'] = (
+                    option_number in named_option_ids
+                )
             for plant in slugged_plants:
-                if plant.slug is not None:
-                    treatment_options[plant.option]['slug'] = plant.slug
-            context['treatment_options'] = treatment_options
+                if plant.slug is not None and plant.option in filtered_options:
+                    filtered_options[plant.option]['slug'] = plant.slug
+
+
+            context['treatment_options'] = filtered_options
+            context['stages'] = stages
+            context['selected_techs'] = selected_techs
+            context['num_stages'] = num_stages
             self.request.session['treatment_maps'] = treatment_maps
 
         return context
@@ -756,6 +814,34 @@ class DesignParameterResultsView(generic.DetailView):
         context['properties'] = TreatmentPlantPropertyValue.objects.filter(
             treatmentplant=self.object
         )
+
+        # Gather all technology KPIs for this treatment plant, grouped by technology
+        tech_kpi_qs = TreatmentPlantTechnologyKPIValue.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology', 'kpi')
+
+        # Group by technology
+        from collections import defaultdict
+        tech_kpis = defaultdict(list)
+        for kpi_value in tech_kpi_qs:
+            tech_kpis[kpi_value.technology].append(kpi_value)
+
+        # Get the ordered list of technologies by step from 
+        # TreatmentPlantLayout
+        layout_qs = TreatmentPlantLayout.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology').order_by('step')
+        ordered_techs = [
+            layout.technology for layout in layout_qs
+            if layout.technology is not None]
+
+        # Build an ordered list of (technology, kpis) pairs
+        technology_kpis_ordered = []
+        for tech in ordered_techs:
+            if tech in tech_kpis:
+                technology_kpis_ordered.append((tech, tech_kpis[tech]))
+
+        context['technology_kpis_ordered'] = technology_kpis_ordered
         return context
 
 
@@ -1003,9 +1089,7 @@ class TechnologyPropertiesView(generic.FormView):
                         technology=technology, is_designparameter=False):
                 if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
                     defaultval_tech_props[technology.name].update(
-                        {
-                            def_tp.property.name: def_tp.default_value
-                        })
+                        {def_tp.property.name: def_tp.default_value})
             for isdigested_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_digested=True):
                 digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
@@ -1025,7 +1109,7 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
 
         # Instantiate the Technology Performance Calculator
-        tech_calculator = dac.TechnologyPerformanceCalculator(
+        kpi_calculator = dac.TechnologyPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stage_names,
             technologies=technology_names,
@@ -1036,11 +1120,11 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
         )
-        tech_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
-        tech_calculator.sum_kpis()
+        kpi_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
+        kpi_calculator.sum_kpis()
         
         # Assign the summed technology KPIs to the plant calculator
-        summed_kpis = tech_calculator.summed_kpis
+        summed_kpis = kpi_calculator.summed_kpis
         plant_calculator.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
             TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
         plant_calculator.energyconsumption_kwhrperm3.value = plant_calculator.get_energyconsumption_per_m3()  # noqa, E501
@@ -1053,19 +1137,39 @@ class TechnologyPropertiesView(generic.FormView):
 
         # Save the digested technology properties back to the database
         for tech_name in technology_names:
-            for prop_name in tech_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
+            for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
                 try:
-                    prop_value = tech_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
-                    tech_obj = Technology.objects.get(name=tech_name)
+                    prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
+                    tech = Technology.objects.get(name=tech_name)
                     prop_obj = TechnologyProperty.objects.get(name=prop_name)
                     TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
                         treatmentplant=treatment_plant,
-                        technology=tech_obj,
+                        technology=tech,
                         technologyproperty=prop_obj,
                         defaults={'value': str(prop_value)}
                     )
                 except TechnologyProperty.DoesNotExist:
                     continue
+            for (kpi_name, kpi_value) in (
+                    kpi_calculator.tech_kpis[tech_name].items()):
+                try:
+                    kpi = TechnologyKPI.objects.get(name=kpi_name)
+                    tech = Technology.objects.get(name=tech_name)
+                    if kpi_value is None:
+                        logger.warning(
+                            f"-- None value found for technology: {tech.name}, KPI: {kpi.name}")
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech,
+                        kpi=kpi,
+                        defaults={'value': str(kpi_value)}
+                        )
+                except TechnologyKPI.DoesNotExist:
+                    continue
+        # TODO: show the technology KPIS in the UI as well (currently only plant KPIs are shown in the results page)
+        
+        
 
         # Step 2c: compute plant-wide properties
         # --------------------------------------
