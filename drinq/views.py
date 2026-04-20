@@ -60,10 +60,10 @@ from drinq.api_calculation import (
     WaterqualityParameterData,
     KPI_NOMINAL_FLOW_M3PERH,
     KPI_ENERGY_CONSUMPTION_KWHRPERM3,
-    KPI_CONSTRUCTION_COSTS_EUR,
+    KPI_SPECIFIC_CONSTRUCTION_COSTS,
     KPI_FOOTPRINT_AREA_M2,
-    KPI_OPER_AND_MAINT_COSTS,
-    KPI_INVESTMENT_COSTS,
+    KPI_OPER_AND_MAINT_COSTS_ANN,
+    KPI_INVESTMENT_COSTS_ANN,
     # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
@@ -84,12 +84,12 @@ EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
 INITIAL_TOTAL_STEPS = 4
 DECISION_TREE_MAX_STEPS = 50
 DB_PLANTKPI_MAPPING = {
-    KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate_m3perh'],
-    KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['energy_consumption_kwhperm3'],
-    KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area_m2'],
-    KPI_CONSTRUCTION_COSTS_EUR: TPPN['construction_costs_eurperm3'],
-    KPI_OPER_AND_MAINT_COSTS: TPPN['operation_and_maintenance_costs_eurperyr'],
-    KPI_INVESTMENT_COSTS: TPPN['investment_costs'],
+    KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate'],
+    KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['specific_energy_consumption'],
+    KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area'],
+    KPI_SPECIFIC_CONSTRUCTION_COSTS: TPPN['specific_construction_costs'],
+    KPI_OPER_AND_MAINT_COSTS_ANN: TPPN['operation_and_maintenance_costs_annual'],
+    KPI_INVESTMENT_COSTS_ANN: TPPN['investment_costs_annual'],
     # KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
@@ -1167,9 +1167,6 @@ class TechnologyPropertiesView(generic.FormView):
                         )
                 except TechnologyKPI.DoesNotExist:
                     continue
-        # TODO: show the technology KPIS in the UI as well (currently only plant KPIs are shown in the results page)
-        
-        
 
         # Step 2c: compute plant-wide properties
         # --------------------------------------

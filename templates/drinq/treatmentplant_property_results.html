@@ -8,11 +8,11 @@
 <body class="bg-light">
 <div class="container mt-4">
   <h1 class="mb-3">Treatment Plant KPIs</h1>
-  <p class="lead">Review the calculated KPIs for <strong>{{ object.name }}</strong> based on the design parameters you
+  <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
      provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
     
     <div class="card shadow-sm p-3 bg-white">
-        <h2>Treatment plant KPIs</h2>
+        <h2>Treatment plant KPIs for plant </h2>
         <div class="mb-4">
             <table class="table table-bordered">
                 <tr>
@@ -26,7 +26,7 @@
                     <td>{{ prop.value|format_kpi_value }}</td>
                     <td class="align-top">
                         <div class="form-text text-muted small mt-1">
-                            {{ prop.unit|superscript_exponents|safe }}
+                            {{ prop.property.unit|superscript_exponents|safe }}
                         </div>
                     </td>
                 </tr>

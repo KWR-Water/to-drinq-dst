@@ -25,6 +25,7 @@ from drinq.utils.treatmentkpi import (
     calculate_flow_per_unit,
     INPUT_WQPARAMETER_KEY,
     TARGET_WQPARAMETER_KEY,
+    NOMINAL_FLOW_RATE_NAME,
 )
 from drinq.utils.financial_costs import (
     construction_costs_total,
@@ -51,13 +52,13 @@ TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_HEADLOSS_BAR,
     # TECHKPI_CO2_EMISSIONS_KGPERM3,  # NOT WORKING YET
 ]
-KPI_NOMINAL_FLOW_M3PERH = 'nominal flow rate (m3perh)'
+KPI_NOMINAL_FLOW_M3PERH = NOMINAL_FLOW_RATE_NAME
 KPI_ENERGY_CONSUMPTION_KWHRPERDAY = 'energy consumption (kwhrperday)'
 KPI_ENERGY_CONSUMPTION_KWHRPERM3 = 'energy consumption (kwhrperm3)'
-KPI_FOOTPRINT_AREA_M2 = 'footprint area (m2)'
-KPI_CONSTRUCTION_COSTS_EUR = 'construction costs (eur)'
-KPI_INVESTMENT_COSTS = 'investment costs'
-KPI_OPER_AND_MAINT_COSTS = 'operational and maintenance costs'
+KPI_FOOTPRINT_AREA_M2 = 'footprint area'
+KPI_SPECIFIC_CONSTRUCTION_COSTS = 'construction costs (eur)'
+KPI_INVESTMENT_COSTS_ANN = 'investment costs'
+KPI_OPER_AND_MAINT_COSTS_ANN = 'operation and maintenance costs'
 KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3 = 'co2 emissions from chemicals (kgperm3)'
 
 logger = logging.getLogger(__name__)
@@ -544,7 +545,7 @@ class EnergyCostsPerYearKPI(PlantKPI):
 
 
 class OperAndMaintenanceCostsKPI(PlantKPI):
-    name: str = KPI_OPER_AND_MAINT_COSTS
+    name: str = KPI_OPER_AND_MAINT_COSTS_ANN
     value: float | int | None
     """
     Calculate the operational and maintenance costs per year.
@@ -563,7 +564,7 @@ class OperAndMaintenanceCostsKPI(PlantKPI):
 
 
 class ConstructionCostsKPI(PlantKPI):
-    name: str = KPI_CONSTRUCTION_COSTS_EUR
+    name: str = KPI_SPECIFIC_CONSTRUCTION_COSTS
     value: float | int | None
 
     def calculate_value(
@@ -583,7 +584,7 @@ class ConstructionCostsKPI(PlantKPI):
 
 
 class InvestmentCostsYearKPI(PlantKPI):
-    name: str = KPI_INVESTMENT_COSTS
+    name: str = KPI_INVESTMENT_COSTS_ANN
     value: float | int | None
 
     def calculate_value(
@@ -690,13 +691,13 @@ class TreatmentPlantPerformanceCalculator:
             'footprint_area_m2': KPI_FOOTPRINT_AREA_M2,
             'energyconsumption_kwhrperday': KPI_ENERGY_CONSUMPTION_KWHRPERDAY,
             'energyconsumption_kwhrperm3': KPI_ENERGY_CONSUMPTION_KWHRPERM3,
-            'constructioncosts_eur': KPI_CONSTRUCTION_COSTS_EUR,
-            'investmentcosts_eur': KPI_INVESTMENT_COSTS,
+            'constructioncosts_eur': KPI_SPECIFIC_CONSTRUCTION_COSTS,
+            'investmentcosts_eur': KPI_INVESTMENT_COSTS_ANN,
             'head_loss_bar': TECHKPI_HEADLOSS_BAR,
             # 'mass_of_chemicals_daily_kg': TECHKPI_MASS_OF_CHEMICALS,
             'power_kw': TECHKPI_POWER_KW,
             'co2_emissions_kgperm3': TECHKPI_CO2_EMISSIONS_KGPERM3,
-            'oper_and_maintenancecosts_eurperyear': KPI_OPER_AND_MAINT_COSTS,
+            'oper_and_maintenancecosts_eurperyear': KPI_OPER_AND_MAINT_COSTS_ANN,
         }
 
         # intermediate and final KPI results
@@ -721,13 +722,13 @@ class TreatmentPlantPerformanceCalculator:
                 KPI_ENERGY_CONSUMPTION_KWHRPERM3, None)
         )
         self.constructioncosts_eur = ConstructionCostsKPI(
-            name=KPI_CONSTRUCTION_COSTS_EUR,
+            name=KPI_SPECIFIC_CONSTRUCTION_COSTS,
             value=None, name_in_dbtable=self.db_kpi_mapping.get(
-                KPI_CONSTRUCTION_COSTS_EUR, None)
+                KPI_SPECIFIC_CONSTRUCTION_COSTS, None)
         )
         self.investmentcosts_eur = InvestmentCostsYearKPI(
-            name=KPI_INVESTMENT_COSTS, value=None,
-            name_in_dbtable=self.db_kpi_mapping.get(KPI_INVESTMENT_COSTS, None)
+            name=KPI_INVESTMENT_COSTS_ANN, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(KPI_INVESTMENT_COSTS_ANN, None)
             )  # total investment costs in EUR
         self.head_loss_bar = HeadLossBarKPI(
             name=TECHKPI_HEADLOSS_BAR, value=None,
@@ -753,9 +754,9 @@ class TreatmentPlantPerformanceCalculator:
                 TECHKPI_CO2_EMISSIONS_KGPERM3, None)
         )
         self.oper_and_maintenancecosts_eurperyear = OperAndMaintenanceCostsKPI(
-            name=KPI_OPER_AND_MAINT_COSTS, value=None,
+            name=KPI_OPER_AND_MAINT_COSTS_ANN, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(
-                KPI_OPER_AND_MAINT_COSTS, None)
+                KPI_OPER_AND_MAINT_COSTS_ANN, None)
         )
         self.plant_kpis = plant_kpis
 

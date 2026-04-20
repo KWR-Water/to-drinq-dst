@@ -51,7 +51,7 @@ with open("drinq/utils/treatmentpropertyname.json", "r") as file:
 with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
     TPPN = json.load(file)
 
-NOMINAL_FLOW_RATE_NAME = TPPN['nominal_flow_rate_m3perh']
+NOMINAL_FLOW_RATE_NAME = TPPN['nominal_flow_rate']
 
 
 def match_tech_kpi(kpi_fullname: str) -> str:
