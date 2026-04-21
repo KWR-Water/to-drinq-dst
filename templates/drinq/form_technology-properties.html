@@ -87,7 +87,6 @@
               {% for form in waterquality_forms_by_tech|dict_get:tech %}
                 <tr>
                   <td>
-                    {{ form.instance.wq_tech_parameter.id }}
                     {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
                   </td>
                   <td>
