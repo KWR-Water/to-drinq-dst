@@ -677,24 +677,6 @@ class TechnologyKPI(models.Model):
         return f"{self.name} ({self.unit})"
 
 
-class TechnologyKPIJunction(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    technology = models.ForeignKey(
-        Technology, on_delete=models.CASCADE, db_column='technology')
-    kpi = models.ForeignKey(
-        TechnologyKPI, on_delete=models.CASCADE, db_column='kpi')
-
-    class Meta:
-        # managed = False
-        db_table = 'technology_kpi_junction'
-        verbose_name_plural = "technology KPI junctions"
-
-    def __str__(self):
-        tech = Technology.objects.get(pk=self.technology)
-        kpi = TechnologyKPI.objects.get(pk=self.kpi)
-        return f"Technology: {tech.name}, KPI: {kpi.name}"
-
-
 class TreatmentPlantTechnologyKPIValue(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     treatmentplant = models.ForeignKey(
@@ -707,13 +689,13 @@ class TreatmentPlantTechnologyKPIValue(models.Model):
 
     class Meta:
         # managed = False
-        db_table = 'treatmentplant_technologykpi_value'
+        db_table = 'treatmentplant_techkpivalue'
         verbose_name_plural = "treatment plant technology KPI values"
 
     def __str__(self):
-        tech = Technology.objects.get(pk=self.technology)
-        kpi = TechnologyKPI.objects.get(pk=self.kpi)
-        return f"Treatment plant: {self.treatmentplant}, KPI: {kpi.name} of technology {tech}, value: {self.value}"  # noqa: E501
+        kpi = self.kpi
+        tech = self.technology
+        return f"Treatment plant: {self.treatmentplant}, KPI: {kpi.name} of technology {tech.name}, value: {self.value}"  # noqa: E501
 
 
 class ConfiguredTechnologies(models.Model):

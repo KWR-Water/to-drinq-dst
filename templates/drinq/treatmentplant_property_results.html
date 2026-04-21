@@ -1,26 +1,74 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% load kpi_format %}
+{% load unit_format %}
 
 {% block content %}
 <!-- templates/drinq/treatmentplant_property_results.html -->
 <body class="bg-light">
-<div class="container mt-5">
-    <h2>Processed results for {{ object.name }}</h2>
-    <table>
-        <tr>
-            <th>Property</th>
-            <th>Value</th>
-            <th>Unit</th>
-        </tr>
-        {% for prop in properties %}
-        <tr>
-            <td>{{ prop.property.name }}</td>
-            <td>{{ prop.value }}</td>
-            <td>{{ prop.unit }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+<div class="container mt-4">
+  <h1 class="mb-3">Treatment Plant KPIs</h1>
+  <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
+     provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
+    
+    <div class="card shadow-sm p-3 bg-white">
+        <h2>Treatment plant KPIs for plant </h2>
+        <div class="mb-4">
+            <table class="table table-bordered">
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                    <th>Unit</th>
+                </tr>
+                {% for prop in properties %}
+                <tr>
+                    <td>{{ prop.property.name }}</td>
+                    <td>{{ prop.value|format_kpi_value }}</td>
+                    <td class="align-top">
+                        <div class="form-text text-muted small mt-1">
+                            {{ prop.property.unit|superscript_exponents|safe }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+
+        {% if technology_kpis_ordered %}
+        <div class="mt-5">
+            <h3>KPIs per Technology</h3>
+            <div class="mb-4">
+                {% for technology, kpis in technology_kpis_ordered %}
+                    <h4>{{ technology.name }}</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>KPI</th>
+                                <th>Value</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for kpi_value in kpis %}
+                            <tr>
+                                <td>{{ kpi_value.kpi.name }}</td>
+                                <td>{{ kpi_value.value|format_kpi_value }}</td>
+                                <td class="align-top">
+                                    <div class="form-text text-muted small mt-1">
+                                        {{ kpi_value.kpi.unit|superscript_exponents|safe }}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="mt-5"><em>No technology KPIs available for this plant.</em></div>
+        {% endif %}
+    </div>
 </div>
 </body>
 

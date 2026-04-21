@@ -1,146 +1,68 @@
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 15
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 13
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 4
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 9
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-form_valid called
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-formset.is_valid(): True, waterquality_formset.is_valid(): False
-Formset or waterquality_formset invalid. formset errors: [{}, {}, {}, {}], waterquality_formset errors: [{'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}]
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-form_valid called
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-formset.is_valid(): True, waterquality_formset.is_valid(): False
-Formset or waterquality_formset invalid. formset errors: [{}, {}, {}, {}], waterquality_formset errors: [{'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}]
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 13
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 16
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
-get_waterquality_formset called for plant id 16
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 17
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 0
-form_valid called
-get_waterquality_formset called for plant id 17
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 0
-formset.is_valid(): True, waterquality_formset.is_valid(): True
-get_waterquality_formset called for plant id 18
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 17
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 0
-form_valid called
-get_waterquality_formset called for plant id 17
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 0
-formset.is_valid(): True, waterquality_formset.is_valid(): True
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 18
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 19
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 3
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 8
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 19
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 20
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 3
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 8
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
-get_waterquality_formset called for plant id 20
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
-get_waterquality_formset called for plant id 21
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 4
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 9
-Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 21
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
-get_waterquality_formset called for plant id 21
-Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
-get_waterquality_formset called for plant id 21
-Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily mass of chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area for chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: chemical solution concentration
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: head loss
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: power
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily energy consumption
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area
+-- None value found for technology: Sludge blanket clarification, KPI: daily mass of chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area for chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: chemical solution concentration
+-- None value found for technology: Sludge blanket clarification, KPI: head loss
+-- None value found for technology: Sludge blanket clarification, KPI: power
+-- None value found for technology: Sludge blanket clarification, KPI: daily energy consumption
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily mass of chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: footprint area for chemicals
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: chemical solution concentration
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: head loss
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: power
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: daily energy consumption
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area
+-- None value found for technology: Sludge blanket clarification, KPI: daily mass of chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: footprint area for chemicals
+-- None value found for technology: Sludge blanket clarification, KPI: chemical solution concentration
+-- None value found for technology: Sludge blanket clarification, KPI: head loss
+-- None value found for technology: Sludge blanket clarification, KPI: power
+-- None value found for technology: Sludge blanket clarification, KPI: daily energy consumption
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Cascade with coagulant dosing with ferric chloride, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 
+-- None value found for technology: Strainer, KPI: CO2 emissions
+-- None value found for technology: Sludge blanket clarification, KPI: CO2 emissions
+-- None value found for technology: Pellet softening reactor with lime, KPI: CO2 emissions
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97)
+KeyError during construction cost calculation: 'Strainer'. 

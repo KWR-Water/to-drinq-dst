@@ -3,6 +3,46 @@
 
 {% block content %}
 
+{% load list_index %}
+
+<h1 class="mb-4">Preliminary treatment design options</h1>
+<p class="card-text">
+    You have completed the multi-step design of a water treatment. Based on your inputs for the questionnaire, a number of preliminary treatment design 
+    options is generated and each treatment plant design gets a number (Option 1, 2, 3, etc.). This list can be very large, dependent on 
+    the inputs. Below, you can narrow down the list by filtering on technology preferences for each <b>stage</b>, shown in bold typeface. After 
+    filtering, you can view the different options and name them. Once named, it will be stored within the plant configuration profile 
+    for further analysis.
+</p>
+<form method="get" id="filter-form" class="mb-4">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">Filter the treatment options</h3>
+            <p class="card-text">Use the dropdowns per stage to filter the treatment options based
+                on the technology preferences. You can select "All" to include all technologies for 
+                that stage.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1em; align-items: center; width: 100%;">
+                {% for stage in data.stages %}
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                        <label for="stage_{{forloop.counter0}}"><strong>{{ stage.name }}</strong></label>
+                        <select name="stage_{{forloop.counter}}" id="stage_{{forloop.counter0}}">
+                            <option value="">All</option>
+                            {% for tech in stage.technologies %}
+                                <option value="{{ tech.id }}" {% if data.selected_techs|index:forloop.counter0|stringformat:'s' == tech.id|stringformat:'s' %}selected{% endif %}>{{ tech.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endfor %}
+                <input type="hidden" name="num_stages" value="{{ data.num_stages }}">
+                <div style="flex: 1 1 auto;"></div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; width: 200px;">
+                    <button type="submit" class="btn btn-primary ml-2" style="width: 100px;">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
 <!-- templates/form_complete.html -->
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -27,12 +67,13 @@
     </style>
 </head>
 
-<h1>Preliminary treatment design options</h1>
+<h2>View and name the treatment design options</h2>
 <p class="card-text">
-    You have completed the multi-step design of a water treatment. Below follow 
-    the different design options, grouped in tables. The first row 
+    The different design options are grouped in tables. The first row 
     after the table header shows the first step of a treatment, after intake of
-    the water source.
+    the water source. Subsequent rows correspond to the second, third, etc. step of the treatment. 
+    The first column shows the step number, the second column shows the technology used in that step, and the third column gives
+    a description of that technology.
 </p>
 
 {% for option_number, option_attr in data.treatment_options.items %}
