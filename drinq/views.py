@@ -1,5 +1,5 @@
 from webbrowser import get
-import requests
+#import requests
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict

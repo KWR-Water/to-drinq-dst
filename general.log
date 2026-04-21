@@ -34,3 +34,113 @@ get_waterquality_formset called for plant id 15
 Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
 get_waterquality_formset called for plant id 15
 Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 13
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 4
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 9
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+form_valid called
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+formset.is_valid(): True, waterquality_formset.is_valid(): False
+Formset or waterquality_formset invalid. formset errors: [{}, {}, {}, {}], waterquality_formset errors: [{'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}]
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+form_valid called
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+formset.is_valid(): True, waterquality_formset.is_valid(): False
+Formset or waterquality_formset invalid. formset errors: [{}, {}, {}, {}], waterquality_formset errors: [{'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}, {'wq_tech_parameter': ['This field is required.'], 'id': ['Select a valid choice. That choice is not one of the available choices.']}]
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 13
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 16
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
+get_waterquality_formset called for plant id 16
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 17
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 0
+form_valid called
+get_waterquality_formset called for plant id 17
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 0
+formset.is_valid(): True, waterquality_formset.is_valid(): True
+get_waterquality_formset called for plant id 18
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 17
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 0
+form_valid called
+get_waterquality_formset called for plant id 17
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 0
+formset.is_valid(): True, waterquality_formset.is_valid(): True
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 18
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 19
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 3
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 8
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 19
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 20
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 3
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 8
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 2
+get_waterquality_formset called for plant id 20
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 2
+get_waterquality_formset called for plant id 21
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 4
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 7
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 9
+Creating missing TreatmentPlantWaterQualityParameterValue for junction id 12
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 21
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
+get_waterquality_formset called for plant id 21
+Returning WaterQualityParameterValueFormSet with GET, queryset count: 4
+get_waterquality_formset called for plant id 21
+Returning WaterQualityParameterValueFormSet with POST data, queryset count: 4
