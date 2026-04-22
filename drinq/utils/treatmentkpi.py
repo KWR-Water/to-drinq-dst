@@ -833,7 +833,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         return power_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 class FlocDynamicMixing(TreatmentKPI):
     """KPI calculations for a Coagulation with Dynamic Mixing treatment unit."""
@@ -1017,7 +1017,7 @@ class MicroStrainer(TreatmentKPI):
         return 0.0  # No chemicals used in Micro strainer
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class Strainer(TreatmentKPI):
@@ -1105,7 +1105,7 @@ class Strainer(TreatmentKPI):
         return 0.0  # No chemicals used in Strainer
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class ChainScrapedSedimentation(TreatmentKPI):
@@ -1198,7 +1198,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class ChlorineDisinfection(TreatmentKPI):
@@ -1313,7 +1313,7 @@ class ChlorineDisinfection(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class ChloramineDisinfection(TreatmentKPI):
@@ -1429,7 +1429,7 @@ class ChloramineDisinfection(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class MembraneFiltration(TreatmentKPI):
@@ -1515,7 +1515,7 @@ class MembraneFiltration(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class IntakePump(TreatmentKPI):
@@ -1529,7 +1529,8 @@ class IntakePump(TreatmentKPI):
         # wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', None)
-        self.flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+        self.nominal_flow_m3perh = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.pipe_diameter_m = parameters[TPN['pipe_diameter_m']]
         self.pipe_length_m = parameters[TPN['pipe_length_m']]
@@ -1603,7 +1604,7 @@ class IntakePump(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
 
 
 class CleanWaterStorageTank(TreatmentKPI):
@@ -1833,7 +1834,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         return self.power__kw() * (self.backwash_duration_min/60) * self.units_per_lane * self.lanes  # Assuming one full backwash (all units one time) per day 
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # TODO
 
 
 class RapidSandDoubleMediumFiltration(TreatmentKPI):
@@ -2003,7 +2004,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             self.lanes)  # Assuming one full backwash (all units one time) per day
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
+        return 0.0  # TODO
 
 
 class RapidSandPressurizedVesselFiltration(TreatmentKPI):
@@ -2129,7 +2130,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         return self.power__kw() * 24    # Assuming 24 hours operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 class RapidSandMovingBedFiltration(TreatmentKPI):
     """KPI calculations for a Rapid Sand Filtration treatment unit."""
@@ -2215,8 +2216,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         return self.power__kw() * 24    # Assuming 24 hours operation
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
-
+        return 0.0 #TODO
 
 class GranularActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Granular Activated Carbon (GAC) treatment unit."""
@@ -2323,8 +2323,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return self.power__kw() * 24 
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
-
+        return 0.0 #TODO
 
 class PowderedActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Powdered Activated Carbon (PAC) treatment unit."""
@@ -2357,7 +2356,8 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.unit_depth_m = parameters[TPN['unit_depth_m']]
         self.silo_height_m = parameters.get(TPN['tank_height_chemical_storage'], 10.0)  # Average Silo Height
-        self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+        self.nominal_flow_m3hr = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.storage_time_days = parameters.get(
@@ -2446,7 +2446,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return self.power__kw() * 24 
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 
 class UVAOPDisinfection(TreatmentKPI):
@@ -2548,7 +2548,7 @@ class UVAOPDisinfection(TreatmentKPI):
         return 0.3 + meters_of_water_to_bar(self.unit_depth_m)  
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 
 class BaffledOzonationContactor(TreatmentKPI):
@@ -2647,7 +2647,7 @@ class BaffledOzonationContactor(TreatmentKPI):
             self.unit_depth_m + self.tank_height_m * 0.5 + 3)  # 3m extra losses
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 
 class PelletSoftening(TreatmentKPI):
@@ -2794,7 +2794,7 @@ class PelletSoftening(TreatmentKPI):
         return self.power__kw() * 24
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 
 class CationIonExchange(TreatmentKPI):
@@ -2923,7 +2923,7 @@ class CationIonExchange(TreatmentKPI):
         return self.power__kw() * 24
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0 #TODO
 
 
 class AnionicIEX(TreatmentKPI):
@@ -2952,7 +2952,8 @@ class AnionicIEX(TreatmentKPI):
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.nominal_flow_m3perh = plant_kpis.get('NOMINAL_FLOW_RATE_NAME', None)
+        self.nominal_flow_m3hr = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
         self.doc_in = self.parameters.get(TPN['influent_doc_mgL'], None)
@@ -3045,7 +3046,7 @@ class AnionicIEX(TreatmentKPI):
         return self.power__kw() * 24
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0  # TODO
+        return 0.0  # TODO
 
 
 class AirFlotationDAF(TreatmentKPI):
@@ -3156,7 +3157,7 @@ class AirFlotationDAF(TreatmentKPI):
         return self.power__kw() * 24.0
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
+        return 0.0  # TODO  
 
 
 class SludgeBlanketClarifier(TreatmentKPI):
@@ -3275,7 +3276,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         return self.power__kw() * 24.0
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
+        return 0.0  # TODO
 
 
 class PowderedActivatedCarbonFiltration(TreatmentKPI):
@@ -3378,4 +3379,4 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return self.power__kw() * 24 
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation 
+        return 0.0  # TODO 
