@@ -629,6 +629,8 @@ class CoagulationDynamicMixing(TreatmentKPI):
     tanks_area_m2: float
     volume_chemical_day: float
     chemicals_area_m2: float
+    chemical_emission_factor: float
+    emission_factor_electricity:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -642,6 +644,9 @@ class CoagulationDynamicMixing(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.conc_chem_mgL = parameters[
             TPN['target_concentration_of_dosing_chemical_mg_per_l']]
         self.solution_wwperc = parameters[
@@ -732,7 +737,13 @@ class CoagulationDynamicMixing(TreatmentKPI):
         return power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO: placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
@@ -758,6 +769,8 @@ class CoagulationInlineMixing(TreatmentKPI):
     tanks_area_m2: float
     volume_chemical_day: float
     chemicals_area_m2: float
+    chemical_emission_factor: float
+    emission_factor_electricity:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -770,6 +783,9 @@ class CoagulationInlineMixing(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.conc_chem_mgL = parameters[
             TPN['target_concentration_of_dosing_chemical_mg_per_l']]
         self.solution_wwperc = parameters[
@@ -845,7 +861,13 @@ class CoagulationInlineMixing(TreatmentKPI):
         return self.power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO: placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
@@ -862,6 +884,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
     target_chemical_concentration_mgL: float
     power_efficiency_mixer: float
     emission_factor_electricity: float
+    chemical_emission_factor:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -870,6 +893,9 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         plant_kpis = self.plant_kpis
 
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.weir_height = parameters[TPN['weir_height']]
@@ -985,8 +1011,8 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.nominal_flow_m3hr / 24  # kg CO2 eq per m3
-        return specific_co2_emissions
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
@@ -1000,6 +1026,7 @@ class MicroStrainer(TreatmentKPI):
     flow_per_lane_m3perh: float
     headloss_coefficient: float
     area: float  # equal to footprint area, used for cost calculations
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1012,6 +1039,8 @@ class MicroStrainer(TreatmentKPI):
             EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.screen_velocity_mpersec = parameters[TPN['velocity_bar_screen']]
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
@@ -1300,6 +1329,7 @@ class ChlorineDisinfection(TreatmentKPI):
     chlorine_solution_w_w: float
     chlorine_concentration_mgL: float
     emission_factor_electricity: float
+    chemical_emission_factor : float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1310,6 +1340,7 @@ class ChlorineDisinfection(TreatmentKPI):
 
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.tank_height_m = parameters[
@@ -1403,8 +1434,8 @@ class ChlorineDisinfection(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
-        return specific_co2_emissions
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class ChloramineDisinfection(TreatmentKPI):
@@ -1425,6 +1456,8 @@ class ChloramineDisinfection(TreatmentKPI):
     chlorine_disinfection: ChlorineDisinfection
     ammonia_dosing_mgperltr: float
     ammonia_concentration_mgperltr: float
+    chemical_emission_factor : float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1441,6 +1474,9 @@ class ChloramineDisinfection(TreatmentKPI):
                 TPN['target_residual_concentration_mgL']],
             chlorine_to_ammonia_ratio=5,
         )
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)        
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None))
@@ -1519,7 +1555,13 @@ class ChloramineDisinfection(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO: placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class MembraneFiltration(TreatmentKPI):
@@ -1609,6 +1651,17 @@ class MembraneFiltration(TreatmentKPI):
 
 class IntakePump(TreatmentKPI):
     """KPI calculations for an Intake Pump."""
+    pipe_length_m: float
+    pipe_roughness: float
+    lanes: int
+    units_per_lane: int
+    flow_m3perh: float
+    flow_per_lane_m3perh: float
+    motor_efficiency: float
+    pipe_roughness: float
+    retention_time_min: float
+    power_efficiency: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1627,6 +1680,7 @@ class IntakePump(TreatmentKPI):
         self.power_efficiency = parameters[TPN['power_efficiency']] / 100
         self.motor_efficiency = parameters[TPN['motor_efficiency']] / 100
         self.level_difference_m = parameters[TPN['level_difference_m']]
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)        
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -1692,7 +1746,13 @@ class IntakePump(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO: placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class CleanWaterStorageTank(TreatmentKPI):
@@ -1705,6 +1765,7 @@ class CleanWaterStorageTank(TreatmentKPI):
     flow_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1717,6 +1778,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         self.tank_height_m = parameters[TPN['tank height']]
         self.retention_time_hrs = parameters[TPN['retention_time_hr']]
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
         self.number_of_units = self.units_per_lane * self.lanes
         self.flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -1763,7 +1825,13 @@ class CleanWaterStorageTank(TreatmentKPI):
         return 0.0  # No power used in Clean Water Storage Tank
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class RapidSandSingleMediumFiltration(TreatmentKPI):
@@ -1800,6 +1868,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     backwash_water_area_m2: float 
     backwash_area_m2: float
     backwash_pump_head_m: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1811,6 +1880,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         self.flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.lanes = design_parameters.get('number of lanes', None)
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -1920,7 +1990,13 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         return self.power__kw() * (self.backwash_duration_min/60) * self.units_per_lane * self.lanes  # Assuming one full backwash (all units one time) per day 
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class RapidSandDoubleMediumFiltration(TreatmentKPI):
@@ -1956,6 +2032,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     backwash_water_area_m2: float
     backwash_area_m2: float
     backwash_pump_head_m: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1967,6 +2044,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', None)
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)           
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -2089,7 +2167,13 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             self.lanes)  # Assuming one full backwash (all units one time) per day
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class RapidSandPressurizedVesselFiltration(TreatmentKPI):
@@ -2117,6 +2201,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     backwash_water_area_m2: float 
     backwash_area_m2: float
     backwash_pump_head_m: float
+    emission_factor_electricity: float
     
     def __post_init__(self):
         super().__post_init__()
@@ -2128,6 +2213,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', None)
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -2214,7 +2300,13 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         return self.power__kw() * 24    # Assuming 24 hours operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 class RapidSandMovingBedFiltration(TreatmentKPI):
     """KPI calculations for a Rapid Sand Filtration treatment unit."""
@@ -2231,6 +2323,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
     unit_height_m: float
     unit_kw :float
     tanks_area_m2: float
+    emission_factor_electricity: float
     
     def __post_init__(self):
         super().__post_init__()
@@ -2242,6 +2335,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', None)
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['units_per_lane']]
@@ -2299,7 +2393,13 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         return self.power__kw() * 24    # Assuming 24 hours operation
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 class GranularActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Granular Activated Carbon (GAC) treatment unit."""
@@ -2318,6 +2418,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     unit_area_m2: float
     unit_depth_m: float
     tanks_area_m2: float
+    emission_factor_electricity: float
     
     def __post_init__(self):
         super().__post_init__()
@@ -2329,6 +2430,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.lanes = design_parameters.get('number of lanes', None)
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -2378,13 +2480,13 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return np.ceil(self.tanks_area_m2 * 1.1)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        pass  # TODO
+        return 0.0
 
     def daily_mass_of_chemicals__kg(self) -> float:
-        pass  # TODO
+        returm 0.0  
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        pass  # TODO
+        return 0.0  
 
     def hydraulic_headloss__bar(self) -> float:
         headloss = calculate_headloss_over_filtration_media(
@@ -2405,7 +2507,13 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return self.power__kw() * 24 
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 class PowderedActivatedCarbonFiltration(TreatmentKPI):
     """KPI calculations for a Powdered Activated Carbon (PAC) treatment unit."""
@@ -2426,6 +2534,8 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     unit_depth_m: float
     tanks_area_m2: float
     power_mixing_intensity_wperm3:float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2440,6 +2550,9 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         self.silo_height_m = parameters.get(TPN['tank_height_chemical_storage'], 10.0)  # Average Silo Height
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.storage_time_days = parameters.get(
@@ -2527,7 +2640,13 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return self.power__kw() * 24 
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class UVAOPDisinfection(TreatmentKPI):
@@ -2545,6 +2664,8 @@ class UVAOPDisinfection(TreatmentKPI):
     exposure_time_sec: float
     lane_volume_m3: float
     lane_area_m2: float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2558,6 +2679,9 @@ class UVAOPDisinfection(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)          
         self.tank_height_m = parameters[TPN['tank_height']]
         self.chemicals_tank_height_m = parameters[
             TPN['tank_height_chemical_storage']]
@@ -2628,7 +2752,13 @@ class UVAOPDisinfection(TreatmentKPI):
         return 0.3 + meters_of_water_to_bar(self.unit_depth_m)  
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class BaffledOzonationContactor(TreatmentKPI):
@@ -2645,6 +2775,8 @@ class BaffledOzonationContactor(TreatmentKPI):
     lane_area_m2: float
     tank_area_m2: float
     equipment_area_m2: float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2655,6 +2787,9 @@ class BaffledOzonationContactor(TreatmentKPI):
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/self.units_per_lane 
@@ -2726,8 +2861,13 @@ class BaffledOzonationContactor(TreatmentKPI):
             self.unit_depth_m + self.tank_height_m * 0.5 + 3)  # 3m extra losses
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
-
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 class PelletSoftening(TreatmentKPI):
     """KPI calculations for a Pellet Reactor Softening unit."""
@@ -2748,6 +2888,8 @@ class PelletSoftening(TreatmentKPI):
     lime_req_kgperday: float
     pellets_out_kg: float
     seed_req_kg: float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2760,6 +2902,9 @@ class PelletSoftening(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * self.units_per_lane)
         self.total_hardness_in_mgliter = wq_parameters['total hardness'][
@@ -2872,7 +3017,13 @@ class PelletSoftening(TreatmentKPI):
         return self.power__kw() * 24
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class CationIonExchange(TreatmentKPI):
@@ -2903,7 +3054,9 @@ class CationIonExchange(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None) 
         self.cycle_h = parameters.get(TPN['regeneration_duration'], 10.0)
         self.tank_height_m = parameters.get(TPN['tank_height'], 4.0)
         self.storage_days = parameters.get(TPN['storage_time_of_chemicals_days'], 30)
@@ -2966,7 +3119,7 @@ class CationIonExchange(TreatmentKPI):
         waste_storage_vol = v_resin_total * regens_per_day * bv_waste_factor * (8/24) # Storage for 8 hours of waste production to even out flow
         area_waste_tank = waste_storage_vol / 3.0 # 3m deep tank
         
-        return np.ceil((area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25)
+        return np.ceil((area_tanks_m2 + self.footprint_area_for_chemicals__m2() + area_waste_tank) * 1.25)
 
     def hydraulic_headloss__bar(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
@@ -2987,7 +3140,7 @@ class CationIonExchange(TreatmentKPI):
 
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_cap) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.bed_depth
+        a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_backflow_rate= 1.2* self.flow_per_unit_m3hr/ a_unit # 1.2 times the normal flow
         h_backwash_m = 1.5 * headloss_m
         power_backwash_kW = 0.25 * (24 / self.cycle_h) * (unit_backflow_rate/ 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * h_backwash) / (eff * 1000) # 15 minutes backwashing for every regenetation
@@ -2998,7 +3151,13 @@ class CationIonExchange(TreatmentKPI):
         return self.power__kw() * 24
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0 #TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class AnionicIEX(TreatmentKPI):
@@ -3017,6 +3176,8 @@ class AnionicIEX(TreatmentKPI):
     unit_depth_m: float
     unit_area_m2: float
     unit_diam_m: float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3029,6 +3190,9 @@ class AnionicIEX(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
+        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
         self.doc_in = self.parameters.get(TPN['influent_doc_mgL'], None)
@@ -3120,7 +3284,13 @@ class AnionicIEX(TreatmentKPI):
         return self.power__kw() * 24
     
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
 class AirFlotationDAF(TreatmentKPI):
@@ -3135,6 +3305,7 @@ class AirFlotationDAF(TreatmentKPI):
     powereff_compressor: float
     total_suspended_solids_mgL: float
     unit_area_m2: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3145,6 +3316,7 @@ class AirFlotationDAF(TreatmentKPI):
         
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
@@ -3230,7 +3402,13 @@ class AirFlotationDAF(TreatmentKPI):
         return self.power__kw() * 24.0
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO  
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions  
 
 
 class SludgeBlanketClarifier(TreatmentKPI):
@@ -3248,6 +3426,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
     sludge_density_kg_m3: float
     power_density_wperm3: float
     tank_height_m: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3258,6 +3437,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane = self.nominal_flow_m3perh / self.lanes
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
@@ -3348,107 +3528,10 @@ class SludgeBlanketClarifier(TreatmentKPI):
         return self.power__kw() * 24.0
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO
-
-
-class PowderedActivatedCarbonFiltration(TreatmentKPI):
-    """KPI calculations for a Powdered Activated Carbon (PAC) treatment unit."""
-    tank_height_m: float
-    silo_height_m: float
-    lanes: int
-    units_per_lane: int
-    nominal_flow_m3perh: float
-    flow_per_lane_m3perh: float
-    storage_time_days: float
-    pac_dosage_mgL: float
-    pac_bulk_density_kgm3: float
-    slurry_concentration_w_w: float
-    power_total_kw: float
-    retention_time_min: float
-    unit_volume_m3: float
-    unit_area_m2: float
-    unit_depth_m: float
-    tanks_area_m2: float
-
-    def __post_init__(self):
-        super().__post_init__()
-        parameters = self.parameters
-        design_parameters = self.design_parameters
-        plant_kpis = self.plant_kpis
-        # wq_parameters = self.wq_parameters
-
-        self.lanes = design_parameters.get('number of lanes', None)
-
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.unit_depth_m = parameters[TPN['unit_depth_m']]
-        self.silo_height_m = parameters.get(TPN['silo_height'], 10.0) # Average Silo Height
-        self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
-        self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, self.nominal_flow_m3perh)
-        self.storage_time_days = parameters.get(
-            TPN['storage_time_of_chemicals_days'],30)
-        self.pac_dosage_mgL = parameters[
-            TPN['pac_dosage_mgL']]
-        self.slurry_tank_height_m = parameters[TPN['slurry_tank_height_m']]
-        self.pac_bulk_density_kgm3 = parameters[
-            TPN['pac_bulk_density']]  # 450 kg/m3
-        self.slurry_concentration_w_w = parameters[
-            TPN['PAC_slurry_concentration']] / 100.0
-        self.retention_time_min = parameters[TPN['retention_time_min']]
-        # Total installed power for the PAC unit (mixing + pumps):
-        self.power_total_kw = parameters[TPN['power']]
-
-    def __repr__(self):
-        return f"PAC unit (tank height (m)={self.tank_height_m}, " \
-            f"silo height (m)={self.silo_height_m}, " \
-            f"dosage (mg/L)={self.pac_dosage_mgL}, " \
-            f"nominal flow (m3/hr)={self.nominal_flow_m3perh})"
-
-    def daily_mass_of_chemicals__kg(self) -> float:
-        """Calculates total dry PAC required per day."""
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        return hourly_mass * 24
-
-    def footprint_area_for_chemicals__m2(self) -> float:
-        """Calculates the area required for the PAC storage silo."""
-        safety_factor = 1.2 # Factor for PAC aeration/fluffing
-        total_mass_stored = self.daily_mass_of_chemicals__kg() * self.storage_time_days
-        required_volume_m3 = (total_mass_stored / self.pac_bulk_density_kgm3) * safety_factor
-        return required_volume_m3 / self.silo_height_m
-
-    def footprint_area__m2(self) -> float:
-        """Total area including Contact Basin and Silo storage."""
-        unit_volume_m3 = calculate_unit_volume_m3(
-            flow_per_lane_m3h=self.flow_per_lane_m3perh,
-            units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
-        unit_area_m2 = calculate_unit_area_tank(
-            unit_volume_m3=unit_volume_m3,
-            unit_height_m=self.unit_depth_m)
-        storage_area_m2 = self.footprint_area_for_chemicals__m2()
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        v_slurry_batch = (hourly_mass * 8) / (self.slurry_concentration_w_w * 1000)
-        slurry_area_m2 = v_slurry_batch / self.slurry_tank_height_m
-        return np.ceil((unit_area_m2 * self.lanes + storage_area_m2) * 1.1)
-
-    def hydraulic_headloss__bar(self) -> float:
-        """Headloss through the contact basin baffles."""
-        return 0.03 + meters_of_water_to_bar(self.unit_depth_m)  # Approx 0.3m converted to bar
-
-    def power__kw(self) -> float:
-        unit_volume_m3 = calculate_unit_volume_m3(
-            flow_per_lane_m3h=self.flow_per_lane_m3perh,
-            units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
-        p_mixing_contact = v_contact * self.lanes * 0.02
-        hourly_mass = (self.nominal_flow_m3perh * self.pac_dosage_mgL) / 1000
-        v_slurry_batch = hourly_mass / (self.slurry_concentration_w_w * 1000)
-        p_mixing_slurry = v_slurry_batch * 0.75 /8 # Assuming 8 hours of operation.
-        p_pumps = 0.04 * self.lane # Estimation
-        return p_mixing_contact + p_mixing_slurry + p_pumps
-
-    def daily_energy_consumption__kwh(self) -> float:
-        return self.power__kw() * 24 
-
-    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO 
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
