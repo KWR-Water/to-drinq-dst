@@ -400,10 +400,6 @@ class TechnologyPerformanceCalculator:
                             pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
-                        elif ('powdered activated carbon') in technology.lower():  # noqa, E501
-                            pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = pac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
-                            self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
                         elif ('ozone') in technology.lower():  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
