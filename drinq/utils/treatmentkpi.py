@@ -2985,7 +2985,7 @@ class CationIonExchange(TreatmentKPI):
 
     def __repr__(self):
         return f"Ion Exchange bed height (m)={self.tank_height_m }, " \
-                f"unit diameter (m)={self.unit_diam_m}, " \
+                #f"unit diameter (m)={self.unit_diam_m}, " \
                 f"delta C (eq/m3)={self.delta_c_eq_m3}, " \
                 f"cycle time (h)={self.cycle_h}, " \
                 f"resin capacity (eq/L)={self.resin_capacity_eqperliter}."
