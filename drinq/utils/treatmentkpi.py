@@ -19,7 +19,7 @@ import json
 
 
 # NOTE: The keys of these mappings SHOULD BE in sync with
-# the database table "technologykpi"!
+# the database table!
 TECH_KPI_MAPPINGS = {
     'footprint area': 'footprint_area__m2',
     'footprint area for chemicals': 'footprint_area_for_chemicals__m2',
@@ -28,7 +28,7 @@ TECH_KPI_MAPPINGS = {
     'chemical solution concentration': 'chemical_solution_concentration__mg_per_l',  # noqa, E501
     'head loss': 'hydraulic_headloss__bar',
     'power': 'power__kw',
-    'co2 emissions': 'co2_emissions__kg_co2_eq_per_m3',
+    'CO2 equivalent emissions': 'co2_emissions__kg_co2_eq_per_m3',
 }
 
 INPUT_WQPARAMETER_KEY = 'input_parameter'
@@ -52,6 +52,8 @@ with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
     TPPN = json.load(file)
 
 NOMINAL_FLOW_RATE_NAME = TPPN['nominal_flow_rate']
+EMISSION_FACTOR_ELEC_NAME = 'emission factor (electricity)'
+NR_OF_LANES_NAME = 'number of lanes'
 
 
 def match_tech_kpi(kpi_fullname: str) -> str:
@@ -67,10 +69,10 @@ def match_tech_kpi(kpi_fullname: str) -> str:
     raise ValueError(f"KPI '{kpi_fullname}' not found in available KPIs.")
 
 
-def get_value_of_dictionary_with_lower_key_str(
-        dictionary: dict[str, str],
-        value: str,
-        ) -> str:
+def get_value_from_dictionary_lower_str(
+    dictionary: dict[str, str],
+    value: str,
+) -> str:
     """Get value from dictionary with case-insensitive key matching.
 
     Args:
@@ -653,8 +655,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -717,6 +718,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
     power_for_dosing_kw: float
     target_chemical_concentration_mgL: float
     power_efficiency_mixer: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -724,7 +726,9 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
 
-        self.lanes = design_parameters.get('number of lanes', None)
+        self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -761,6 +765,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         self.casc_lane_width_m = np.sqrt(self.unit_volume_m3 / (
             self.tank_height) / 3)  # assuming 1/3 of area per lane
 
+
     def __repr__(self):
         return f"CascadeMixerCoagulationDosing(tank height (m)={self.chemical_tank_height}, " \
                 f"retention time (min)={self.retention_time_min}, " \
@@ -768,8 +773,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -833,7 +837,13 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         return power_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3hr / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class MicroStrainer(TreatmentKPI):
@@ -852,7 +862,9 @@ class MicroStrainer(TreatmentKPI):
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
 
-        self.lanes = design_parameters.get('number of lanes', None)
+        self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.screen_velocity_mpersec = parameters[TPN['velocity_bar_screen']]
@@ -871,7 +883,7 @@ class MicroStrainer(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
+        function_name = TECH_KPI_MAPPINGS.get(
             TECH_KPI_MAPPINGS, kpi)
         if function_name is not None:
             return getattr(self, function_name)()
@@ -920,7 +932,13 @@ class MicroStrainer(TreatmentKPI):
         return 0.0  # No chemicals used in Micro strainer
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class Strainer(TreatmentKPI):
@@ -934,6 +952,7 @@ class Strainer(TreatmentKPI):
     lanes: int
     flow_per_lane_m3perh: float
     headloss_coefficient: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -941,7 +960,9 @@ class Strainer(TreatmentKPI):
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
 
-        self.lanes = design_parameters.get('number of lanes', None)
+        self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.bar_spacing = parameters[TPN['bar_spacing']]
         self.bar_width = parameters[TPN['bar_width']]
         self.blockage_factor = parameters[TPN['blockage_factor']]
@@ -962,8 +983,7 @@ class Strainer(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1008,7 +1028,14 @@ class Strainer(TreatmentKPI):
         return 0.0  # No chemicals used in Strainer
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError(
+                f"Emission factor for electricity is not set for {self.__class__.__name__}.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class ChainScrapedSedimentation(TreatmentKPI):
@@ -1022,6 +1049,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
     scraper_power_per_m2: float
     total_suspended_solids: float
     overflow_rate_m3_per_m2_per_h: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1030,8 +1058,9 @@ class ChainScrapedSedimentation(TreatmentKPI):
         plant_kpis = self.plant_kpis
         wq_parameters = self.wq_parameters
 
-        self.lanes = design_parameters.get('number of lanes', None)
+        self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_m3perh = plant_kpis.get(
             'nominal flow rate (m3/hr)', None)
         self.flow_m3persec = self.flow_m3perh / 3600
@@ -1041,7 +1070,8 @@ class ChainScrapedSedimentation(TreatmentKPI):
         self.scraper_power_per_m2 = parameters[TPN['scraper_power_coefficient']]
         self.total_suspended_solids = wq_parameters[INPUT_WQPARAMETER_KEY].get(
             'total suspended solids (mg/l)', 0)
-        self.overflow_rate_m3_per_m2_per_h = parameters[TPN['surface_overflow_rate']]
+        self.overflow_rate_m3_per_m2_per_h = parameters[
+            TPN['surface_overflow_rate']]
         self.unit_area_m2 = (self.flow_per_lane_m3perh /
                              self.overflow_rate_m3_per_m2_per_h)
         # TODO: verify formula with Greg
@@ -1056,8 +1086,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1101,7 +1130,13 @@ class ChainScrapedSedimentation(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class ChlorineDisinfection(TreatmentKPI):
@@ -1119,6 +1154,7 @@ class ChlorineDisinfection(TreatmentKPI):
     chlorine_dosing_mgL: float
     chlorine_solution_w_w: float
     chlorine_concentration_mgL: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1128,7 +1164,9 @@ class ChlorineDisinfection(TreatmentKPI):
         _ = self.wq_parameters  # Unused variable, but may be needed for future calculations
 
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.lanes = design_parameters.get('number of lanes', None)
+        self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.tank_height_m = parameters[
             TPN['tank_height']]
         self.chemicals_tank_height_m = parameters[
@@ -1162,8 +1200,7 @@ class ChlorineDisinfection(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1216,7 +1253,13 @@ class ChlorineDisinfection(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class ChloramineDisinfection(TreatmentKPI):
@@ -1269,8 +1312,7 @@ class ChloramineDisinfection(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1376,8 +1418,7 @@ class MembraneFiltration(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1443,8 +1484,7 @@ class IntakePump(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1543,8 +1583,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1685,8 +1724,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1852,8 +1890,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -1989,8 +2026,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2081,8 +2117,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2181,8 +2216,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2283,8 +2317,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
                        
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2400,8 +2433,7 @@ class UVAOPDisinfection(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2494,8 +2526,7 @@ class Ozonation(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2635,8 +2666,7 @@ class PelletSoftening(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2696,7 +2726,7 @@ class PelletSoftening(TreatmentKPI):
         return self.power__kw() * 24
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        pass  # Placeholder for CO2 emissions calculation
+        return 0.0  # Placeholder for CO2 emissions calculation
 
 
 class CationIonExchange(TreatmentKPI):
@@ -2751,8 +2781,7 @@ class CationIonExchange(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2875,8 +2904,7 @@ class AnionicIEX(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -2997,8 +3025,7 @@ class AirFlotationDAF(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:
@@ -3112,8 +3139,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = get_value_of_dictionary_with_lower_key_str(
-            TECH_KPI_MAPPINGS, kpi)
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
         if function_name is not None:
             return getattr(self, function_name)()
         else:

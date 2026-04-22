@@ -29,7 +29,7 @@
     font-family: 'PT Sans', cursive;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 750px) {
     table {
         max-width: 800px;
         width: 100%;

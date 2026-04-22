@@ -43,23 +43,25 @@ TECHKPI_FOOTPRINT_AREA_M2 = 'footprint area'
 TECHKPI_MASS_OF_CHEMICALS = 'mass of chemicals'
 TECHKPI_POWER_KW = 'power'
 TECHKPI_HEADLOSS_BAR = 'head loss'
-TECHKPI_CO2_EMISSIONS_KGPERM3 = 'co2 emissions'
+TECHKPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
 
 TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_FOOTPRINT_AREA_M2,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_POWER_KW,
     TECHKPI_HEADLOSS_BAR,
-    # TECHKPI_CO2_EMISSIONS_KGPERM3,  # NOT WORKING YET
+    TECHKPI_CO2_EMISSIONS_KGPERM3,  # NOT WORKING YET
 ]
+
+# Below follow the database names for the KPIs
 KPI_NOMINAL_FLOW_M3PERH = NOMINAL_FLOW_RATE_NAME
 KPI_ENERGY_CONSUMPTION_KWHRPERDAY = 'energy consumption (kwhrperday)'
-KPI_ENERGY_CONSUMPTION_KWHRPERM3 = 'energy consumption (kwhrperm3)'
+KPI_ENERGY_CONSUMPTION_KWHRPERM3 = 'specific energy consumption'
 KPI_FOOTPRINT_AREA_M2 = 'footprint area'
-KPI_SPECIFIC_CONSTRUCTION_COSTS = 'construction costs (eur)'
-KPI_INVESTMENT_COSTS_ANN = 'investment costs'
-KPI_OPER_AND_MAINT_COSTS_ANN = 'operation and maintenance costs'
-KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3 = 'co2 emissions from chemicals (kgperm3)'
+KPI_SPECIFIC_CONSTRUCTION_COSTS = 'construction costs'
+KPI_INVESTMENT_COSTS_ANN = 'investment costs (annual)'
+KPI_OPER_AND_MAINT_COSTS_ANN = 'operation and maintenance costs (annual)'
+KPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
 
 logger = logging.getLogger(__name__)
 
@@ -414,14 +416,14 @@ class TechnologyPerformanceCalculator:
         for _, kpis in self.tech_kpis.items():
             for kpi_name, kpi_value in kpis.items():
                 for kpi in allowed_kpis:
-                    if re.search(kpi, kpi_name.lower()) is None:
+                    if re.search(kpi, kpi_name) is None:
                         continue  # skip when kpi not in list
                     if kpi_value is not None:
                         if kpi_name in summed_kpis:
                             print(
                                 f'-- Adding to summed KPI: {kpi_name}, tech: {_}')
                             if kpi_value is None:
-                                logger.warn(
+                                logger.warning(
                                     f"---- Warning: None value for {kpi_name} in technology {_}, skipping addition to summed KPI.")  # noqa, E501
                                 continue
                             if callable(kpi_value):
@@ -493,7 +495,7 @@ class EnergyConsumptionPerDayKPI(PlantKPI):
 
 
 class EnergyConsumptionPerM3KPI(PlantKPI):
-    name: str = 'energy consumption (kwhrperm3)'
+    name: str = 'specific energy consumption'
     value: float | int | None
 
     def calculate_value(
@@ -740,9 +742,9 @@ class TreatmentPlantPerformanceCalculator:
         #         TECHKPI_MASS_OF_CHEMICALS, None)
         # )
         self.co2_emmissions_chemicals_kgperm3 = CO2EmissionsPerM3KPI(
-            name=KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3, value=None,
+            name=KPI_CO2_EMISSIONS_KGPERM3, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(
-                KPI_CO2_EMISSIONS_CHEMICALS_KGPERM3, None)
+                KPI_CO2_EMISSIONS_KGPERM3, None)
         )
         self.power_kw = PowerKWKPI(
             name=TECHKPI_POWER_KW, value=None,
