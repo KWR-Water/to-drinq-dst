@@ -3023,7 +3023,7 @@ class CationIonExchange(TreatmentKPI):
     def footprint_area__m2(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.bed_depth
+        a_unit = resin_volume_unit__m3/ self.tank_height_m
         area_tanks_m2 = a_unit * self.lanes * self.units_per_lane
         
         v_resin_total = resin_volume_unit__m3 * self.lanes * (self.units_per_lane-1)
