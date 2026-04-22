@@ -10,7 +10,8 @@
   <h1 class="mb-3">Treatment Plant KPIs</h1>
   <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
      provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
-    
+    <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+    <p></p>
     <div class="card shadow-sm p-3 bg-white">
         <h2>Treatment plant KPIs for plant </h2>
         <div class="mb-4">
@@ -33,7 +34,6 @@
                 {% endfor %}
             </table>
         </div>
-        <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
 
         {% if technology_kpis_ordered %}
         <div class="mt-5">
@@ -70,6 +70,7 @@
         {% endif %}
     </div>
 </div>
+<br>
 </body>
 
 {% endblock %}

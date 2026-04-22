@@ -64,6 +64,7 @@ from drinq.api_calculation import (
     KPI_FOOTPRINT_AREA_M2,
     KPI_OPER_AND_MAINT_COSTS_ANN,
     KPI_INVESTMENT_COSTS_ANN,
+    KPI_CO2_EMISSIONS_KGPERM3,
     # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
@@ -90,6 +91,7 @@ DB_PLANTKPI_MAPPING = {
     KPI_SPECIFIC_CONSTRUCTION_COSTS: TPPN['specific_construction_costs'],
     KPI_OPER_AND_MAINT_COSTS_ANN: TPPN['operation_and_maintenance_costs_annual'],
     KPI_INVESTMENT_COSTS_ANN: TPPN['investment_costs_annual'],
+    KPI_CO2_EMISSIONS_KGPERM3: TPPN['co2_equivalent_emissions'],
     # KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
