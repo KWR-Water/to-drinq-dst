@@ -2973,9 +2973,8 @@ class CationIonExchange(TreatmentKPI):
         self.tank_height_m = parameters.get(TPN['tank_height'], 4.0)
         self.storage_days = parameters.get(TPN['storage_time_of_chemicals_days'], 30)
 
-        self.hardness_in = wq_parameters['input_parameter']['total hardness']
-        self.target_hardness = wq_parameters[
-            'target_parameter']['total hardness']
+        self.hardness_in = wq_parameters['total hardness']['input_parameter']
+        self.target_hardness = wq_parameters['total hardness']['target_parameter']
         
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
