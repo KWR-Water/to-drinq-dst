@@ -348,8 +348,14 @@ class QuestionsCompleteView(generic.TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpResponse, *args, **kwargs):
-        results = QuestionAnswer.objects.filter(
-            configuration__id=request.session['configuration_id'])
+        session_key = kwargs.get('session_key', None)
+        configuration = MultiStepConfiguration.objects.get(
+                session_key=session_key)
+        try:
+            results = QuestionAnswer.objects.filter(
+                configuration__id=configuration.id)
+        except QuestionAnswer.DoesNotExist:
+            results = QuestionAnswer.objects.none()
         if not results.exists():
             return HttpResponseRedirect(redirect('drinq_redirect'))
 
@@ -374,7 +380,8 @@ class QuestionsCompleteView(generic.TemplateView):
             else:
                 selected_techs.append(None)
 
-        context = self.get_context_data(results=results, selected_techs=selected_techs)
+        context = self.get_context_data(
+            results=results, selected_techs=selected_techs)
         # Add num_stages to context for template
         context['num_stages'] = context.get('num_stages', len(selected_techs))
         return render(
