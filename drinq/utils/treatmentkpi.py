@@ -2267,7 +2267,8 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             TPN['pac_dosage_concentration']]
         self.slurry_tank_height_m = parameters.get(
             TPN['slurry_tank_height_m'], 2.5)
-        self.pac_bulk_density_g_cm3 = parameters[TPN['mass_density_of_chemical']]
+        self.pac_bulk_density_g_cm3 = parameters[
+            TPN['mass_density_of_chemical']]
         # Convert from w/w% to w/w fraction
         self.slurry_concentration_w_w = parameters[
             TPN['pac_slurry_concentration']] / 100
@@ -2300,6 +2301,9 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         hourly_mass = (self.nominal_flow_m3perh *
                        self.pac_dosage_mg_liter) / 1000
         return hourly_mass * 24
+    
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return 0.0  # TODO
 
     def footprint_area_for_chemicals__m2(self) -> float:
         """Calculates the area required for the PAC storage silo."""

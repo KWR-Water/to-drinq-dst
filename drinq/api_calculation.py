@@ -334,7 +334,7 @@ class TechnologyPerformanceCalculator:
                         if ('coagulant dosing' and 'dynamic mixing') in technology.lower():
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
-                            self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501
+                            self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501                            
                         elif ('cascade' and 'coagulant dosing') in technology.lower():
                             cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = cascade_mixer.get_kpi_dict(**tech_kpilist)  # noqa, E501

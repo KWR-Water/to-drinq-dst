@@ -28,3 +28,12 @@
 .h4, h4 {
     font-family: 'PT Sans', cursive;
 }
+
+@media (min-width: 700px) {
+    table {
+        max-width: 800px;
+        width: 100%;
+        margin-left: 0;
+        margin-right: auto;
+    }
+}
