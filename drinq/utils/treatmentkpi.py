@@ -542,6 +542,37 @@ def movingbedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
     unit_kwatt = int(np.ceil(power_of_unit))
     return unit_depth_m, unit_area_m2, unit_kwatt
 
+def inlinepipesize(flow_per_unit_m3hr: float) -> float:
+    V = flow_per_unit_m3hr
+    motorpower_kW = np.array([
+        0.35, 0.55, 0.75, 1, 1.5, 2.25, 2.25, 2.25, 3.7, 7.5, 15, 22
+    ])
+    length_m = np.array([
+        0.3, 0.35, 0.4, 0.5, 0.6, 0.65, 0.7, 0.8, 0.85, 0.9, 1.2, 1.25
+    ])
+    diameters_mm = np.array([
+        110, 170, 220, 270, 360, 410, 460, 510, 510, 610, 710, 910
+    ])
+    volume_range_m3 = np.array([
+            (0.001, 0.03), (0.03, 0.08), (0.08, 0.15), (0.15, 0.29),
+            (0.29, 0.61), (0.61, 0.86), (0.86, 1.16), (1.16, 1.63),
+            (1.63, 1.74), (1.74, 2.63), (2.63, 4.75), (4.75, 8.13)
+    ])
+    lower_bounds = volume_range_m3[:, 0]
+    upper_bounds = volume_range_m3[:, 1]
+    mask = (lower_bounds < V) & (upper_bounds >= V)
+    if not np.any(mask):
+        print("No suitable vessel found for the given flow rate.")
+        return None, None
+    idx = np.argmax(mask)  # first match
+    L = length_m[idx]
+    D = diameters_mm[idx]
+    Dm = D / 1000  # diameter in meters
+    unit_depth_m = int(np.ceil(1.1 * Dm))
+    unit_area_m2 = int(D*L)
+    powermixing_kW=motorpower_kW[idx]
+    return unit_area_m2,powermixing_kW
+
 
 def reactor_dimensions(
     flow_per_unit_m3hr: float,
@@ -705,6 +736,118 @@ class CoagulationDynamicMixing(TreatmentKPI):
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
 
+class CoagulationInlineMixing(TreatmentKPI):
+    """KPI calculations for a Coagulation with Inline Mixing treatment unit."""
+    tank_height: float
+    chem_tank_height: float
+    lanes: int
+    nominal_flow_m3hr: float
+    units_per_lane: int
+    conc_chem_mgL: float
+    solution_wwperc: float
+    density_chemical_kgm3: float
+    retention_time_min: float
+    storage_time_days: float
+    efficiency_mixer: float
+    mixer_velocity_grad: float
+    water_viscosity: float
+    flow_per_lane: float
+    unit_volume_m3: float
+    unit_area_m2: float
+    tanks_area_m2: float
+    volume_chemical_day: float
+    chemicals_area_m2: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        design_parameters = self.design_parameters
+        plant_kpis = self.plant_kpis
+
+        self.chem_tank_height = parameters[TPN['tank_height_chemical_storage']]
+        self.lanes = design_parameters.get('number of lanes', None)
+        self.nominal_flow_m3hr = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
+        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.conc_chem_mgL = parameters[
+            TPN['target_concentration_of_dosing_chemical_mg_per_l']]
+        self.solution_wwperc = parameters[
+            TPN['chemical_dosing_solution_concentration_w_per_wpercent']]
+        self.density_chemical_kgm3 = parameters[
+            TPN['mass_density_of_chemical']] * 1000  # g/cm3 to kg/m3
+        self.storage_time_days = parameters[
+            TPN['storage_time_of_chemicals_days']]
+        self.flow_per_lane = calculate_flow_per_lane(
+            self.lanes, self.nominal_flow_m3hr)
+        self.flow_per_unit_m3hr=self.flow_per_lane/self.units_per_lane
+        self.unit_area_m2,self.power_kw_unit = inlinepipesize(flow_per_unit_m3hr = self.flow_per_unit_m3hr) 
+        self.tanks_area_m2 = (
+            self.unit_area_m2 * self.units_per_lane * self.lanes)
+        self.volume_chemical_day = calculate_dosing_volume__m3perday_perunit(
+            concentration_mgL=self.conc_chem_mgL,
+            flow_per_lane_m3hr=self.flow_per_lane,
+            units_per_lane=1,
+            solution_concentration_w_w_percent=self.solution_wwperc,
+        ) * self.lanes  # m3/day
+        self.chemicals_area_m2 = calculate_chemical_storage_area__m2(
+            daily_volume_m3perday=self.volume_chemical_day,
+            storage_time_days=self.storage_time_days,
+            tank_height_m=self.chem_tank_height,
+        )
+
+    def __repr__(self):
+        return f"CoagulationDynamicMixing(tank height (m)={self.tank_height}, " \
+                f"retention time (min)={self.retention_time_min}, " \
+                f"nominal flow (m3/hr)={self.nominal_flow_m3hr})"
+
+    def get_kpi(self, kpi: str) -> float:
+        """Get the value for a KPI"""
+        function_name = get_value_of_dictionary_with_lower_key_str(
+            TECH_KPI_MAPPINGS, kpi)
+        if function_name is not None:
+            return getattr(self, function_name)()
+        else:
+            raise ValueError(
+                f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
+
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
+
+    def footprint_area__m2(self) -> float:
+        return np.ceil(self.tanks_area_m2 + self.chemicals_area_m2)
+
+    def footprint_area_for_chemicals__m2(self) -> float:
+        return self.chemicals_area_m2
+
+    def daily_mass_of_chemicals__kg(self) -> float:
+        dosing_per_lane = calculate_dosing_mass__perday_perunit(
+            concentration_mgL=self.conc_chem_mgL,  # noqa, E501
+            flow_per_lane_m3hr=self.flow_per_lane,
+            units_per_lane=self.units_per_lane,
+        )
+        return dosing_per_lane * self.lanes
+
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return self.conc_chem_mgL
+
+    def hydraulic_headloss__bar(self) -> float:
+        return 1 + (0.001 * self.tanks_area_m2) + self.tank_height
+
+    def power__kw(self) -> float:
+        
+        power_pump_kw = (
+            self.density_chemical_kgm3 * GRAVITY_M_PER_S2 *
+            self.volume_chemical_day * 5) / (
+                seconds_per_day * self.efficiency_mixer) / 1000
+        return self.power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
+
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
+        return 0.0  # TODO: placeholder for CO2 emissions calculation
+
+    def daily_energy_consumption__kwh(self) -> float:
+        return self.power__kw() * 24  # Assuming continuous operation
 
 class CascadeMixerCoagulationDosing(TreatmentKPI):
     """KPI calculations for a Cascade treatment unit."""
