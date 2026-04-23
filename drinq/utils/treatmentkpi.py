@@ -1566,13 +1566,32 @@ class ChloramineDisinfection(TreatmentKPI):
 
 class MembraneFiltration(TreatmentKPI):
     """KPI calculations for a Membrane Filtration treatment unit."""
+    tank_height_m: float
+    units_per_lane: float
+    lanes: int
+    units_per_lane: int
+    flow_rate_m3perh: float
+    flow_m3perh: float
+    flow_per_lane_m3perh: float
+    flow_per_unit_m3perh: float
+    membranes_per_vessel: int
+    recovery_rate: float
+    membrane_flux_literperm2perh: float
+    membrane_area_m2: float
+    operating_pressure_bar : float
+    power_efficiency_pump: float
+    vessels_per_unit: int
+    pressure_vessel_orientation: int
+    permeate_flow_per_unit_m3perh : float
+    area_per_unit_m2 : float
+    emission_factor_electricity: float    
+
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
         # wq_parameters = self.wq_parameters
-
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.flow_rate_m3perh = plant_kpis.get(
@@ -1646,7 +1665,13 @@ class MembraneFiltration(TreatmentKPI):
         return self.power__kw() * 24  # Assuming continuous operation
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
-        return 0.0  # TODO: placeholder for CO2 emissions calculation
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
 
 
 class IntakePump(TreatmentKPI):
