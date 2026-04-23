@@ -2483,7 +2483,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return 0.0
 
     def daily_mass_of_chemicals__kg(self) -> float:
-        returm 0.0  
+        return 0.0  
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  
