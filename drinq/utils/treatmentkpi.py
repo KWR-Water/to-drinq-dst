@@ -28,7 +28,7 @@ TECH_KPI_MAPPINGS = {
     'chemical solution concentration': 'chemical_solution_concentration__mg_per_l',  # noqa, E501
     'head loss': 'hydraulic_headloss__bar',
     'power': 'power__kw',
-    'CO2 equivalent emissions': 'co2_emissions__kg_co2_eq_per_m3',
+    'CO2 emissions': 'co2_emissions__kg_co2_eq_per_m3',
 }
 
 INPUT_WQPARAMETER_KEY = 'input_parameter'
