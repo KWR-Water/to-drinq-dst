@@ -2674,7 +2674,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3hr / 24
 
 
-class UVAOPDisinfection(TreatmentKPI):
+class UVAOP(TreatmentKPI):
     """KPI calculations for a UV/H2O2 Advanced Oxidation Process (AOP) unit."""
     tank_height_m: float
     chemicals_tank_height_m: float
@@ -3551,6 +3551,97 @@ class SludgeBlanketClarifier(TreatmentKPI):
     def daily_energy_consumption__kwh(self) -> float:
         """Calculated as power * 24 per spreadsheet."""
         return self.power__kw() * 24.0
+
+    def co2_emissions__kg_co2_eq_per_m3(self) -> float:
+        if self.emission_factor_electricity is None:
+            raise ValueError("Emission factor for electricity is not set.")
+        co2_emissions = (
+            self.daily_energy_consumption__kwh() *
+            self.emission_factor_electricity)
+        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        return specific_co2_emissions
+
+class UVdisinfection(TreatmentKPI):
+    """KPI calculations for a UV/H2O2 Advanced Oxidation Process (AOP) unit."""
+    tank_height_m: float
+    UV_dose_mjpercm2: float
+    lanes: int
+    units_per_lane: int
+    nominal_flow_m3perh: float
+    flow_per_lane_m3perh: float
+    energy_per_m3_kwh: float
+    exposure_time_sec: float
+    unit_volume_m3: float
+    lane_area_m2: float
+    chemical_emission_factor: float
+    emission_factor_electricity: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        parameters = self.parameters
+        plant_kpis = self.plant_kpis
+        design_parameters = self.design_parameters
+        # wq_parameters = self.wq_parameters
+        
+        self.lanes = design_parameters.get('number of lanes', None)
+        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.nominal_flow_m3perh = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)
+        self.flow_per_lane_m3perh = calculate_flow_per_lane(
+            self.lanes, self.nominal_flow_m3perh)
+        self.flow_per_unit_m3perh = self.flow_per_lane_m3perh / self.units_per_lane
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None) 
+        self.UV_dose_mjpercm2 = parameters[TPN['UV_dose'],40]
+        self.average_intensity_mWpercm2 = parameters[TPN['average_intensity'],10]               
+        self.exposure_time_sec = self.UV_dose_mjpercm2 / self.average_intensity_mWpercm2
+        self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec
+
+    def __repr__(self):
+        return f"UV AOP tank height (m)={self.tank_height_m}, " \
+               f"chemicals tank height (m)={self.chemicals_tank_height_m}, " \
+               f"dosage HO2 (mg/L)={self.h2o2_dosing_mgL}."
+
+    def get_kpi(self, kpi: str) -> float:
+        """Get the value for a KPI"""
+        function_name = TECH_KPI_MAPPINGS.get(kpi, None)
+        if function_name is not None:
+            return getattr(self, function_name)()
+        else:
+            raise ValueError(
+                f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
+
+    def get_kpi_dict(self, kpi_list=None):
+        if kpi_list:
+            return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
+        return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
+
+    def daily_mass_of_chemicals__kg(self) -> float:
+        return 0.0
+
+    def footprint_area_for_chemicals__m2(self) -> float:
+        return 0.0
+
+    def footprint_area__m2(self) -> float:
+        self.lane_volume_m3 = (
+            self.flow_per_lane_m3perh / 3600) * (
+            self.exposure_time_sec * 4)  # safty factor of 4
+        self.lane_area_m2 = self.lane_volume_m3 / self.tank_height_m
+        return np.ceil(
+            self.lane_area_m2 * self.lanes +
+            self.footprint_area_for_chemicals__m2())
+
+    def power__kw(self) -> float:
+        """Total power for UV lamps in AOP mode."""
+        return (
+            self.flow_per_lane_m3perh * self.energy_per_m3_kwh *
+            self.lanes + 0.1)  # Estimation of H202 dosage pumps of 0.1kW
+
+    def daily_energy_consumption__kwh(self) -> float:
+        return self.power__kw() * 24
+
+    def hydraulic_headloss__bar(self) -> float:
+        return 0.3 + meters_of_water_to_bar(self.unit_depth_m)  
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
