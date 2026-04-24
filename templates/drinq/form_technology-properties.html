@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load dict_extras %}
+{% load unit_format %}
 
 {% block content %}
 <body class="bg-light">
@@ -64,7 +65,7 @@
                   </td>
                   <td class="align-top">
                     <div class="form-text text-muted small mt-1">
-                      {% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}
+                      {% if item.prop_unit %}{{ item.prop_unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
                     </div>
                   </td>
                   <td class="align-top text-muted small mt-1">
@@ -135,7 +136,7 @@
                         </td>
                         <td class="align-top">
                           <div class="form-text text-muted small mt-1">
-                            {{ form.instance.wq_tech_parameter.waterqualityparameter.unit }}
+                            {{ form.instance.wq_tech_parameter.waterqualityparameter.unit|superscript_exponents|safe }}
                           </div>
                         </td>
                         <td class="align-top">
