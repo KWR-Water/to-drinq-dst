@@ -1199,7 +1199,8 @@ class TechnologyPropertiesView(generic.FormView):
                             logger.warning(
                                 f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
                                 f" for technology_id={tech_id} and "
-                                f"technologyproperty={tccp.technologyproperty}"
+                                f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
+                                f"construction cost calculation"
                             )
                             warn(
                                 f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
