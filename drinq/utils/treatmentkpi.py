@@ -3572,8 +3572,7 @@ class UVdisinfection(TreatmentKPI):
     energy_per_m3_kwh: float
     exposure_time_sec: float
     unit_volume_m3: float
-    lane_area_m2: float
-    chemical_emission_factor: float
+    power_per_m3_kW: float
     emission_factor_electricity: float
 
     def __post_init__(self):
@@ -3593,14 +3592,16 @@ class UVdisinfection(TreatmentKPI):
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.UV_dose_mjpercm2 = parameters[TPN['UV_dose'],40]
-        self.average_intensity_mWpercm2 = parameters[TPN['average_intensity'],10]               
+        self.average_intensity_mWpercm2 = parameters[TPN['average_intensity'],10] 
+        self.tank_height_m = parameters.get(TPN['tank_height'], 0.15)  # m  
+        self.power_per_m3_kW = parameters.get(TPN['tank_height'], 0.040)  # kW/m3            
         self.exposure_time_sec = self.UV_dose_mjpercm2 / self.average_intensity_mWpercm2
         self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec
 
     def __repr__(self):
-        return f"UV AOP tank height (m)={self.tank_height_m}, " \
-               f"chemicals tank height (m)={self.chemicals_tank_height_m}, " \
-               f"dosage HO2 (mg/L)={self.h2o2_dosing_mgL}."
+        return f"UV tank height (m)={self.tank_height_m}, " \
+               f"Power required per m3 of water (kW/m3)={self.power_per_m3_kW}, " \
+               f"UV dose for disinfection (mJ/cm2)={self.UV_dose_mjpercm2}."
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -3623,25 +3624,19 @@ class UVdisinfection(TreatmentKPI):
         return 0.0
 
     def footprint_area__m2(self) -> float:
-        self.lane_volume_m3 = (
-            self.flow_per_lane_m3perh / 3600) * (
-            self.exposure_time_sec * 4)  # safty factor of 4
-        self.lane_area_m2 = self.lane_volume_m3 / self.tank_height_m
-        return np.ceil(
-            self.lane_area_m2 * self.lanes +
-            self.footprint_area_for_chemicals__m2())
+        unit_area_m2 = self.unit_volume_m3 / self.tank_height_m
+        UV_area_m2 = unit_area_m2 * self.units_per_lane * self.lanes 
+        return np.ceil(1.1 * UV_area_m2)
 
     def power__kw(self) -> float:
-        """Total power for UV lamps in AOP mode."""
-        return (
-            self.flow_per_lane_m3perh * self.energy_per_m3_kwh *
-            self.lanes + 0.1)  # Estimation of H202 dosage pumps of 0.1kW
+        power_kW = self.power_per_m3_kW * self.nominal_flow_m3perh
+        return np.ceil(power_kW)
 
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24
 
     def hydraulic_headloss__bar(self) -> float:
-        return 0.3 + meters_of_water_to_bar(self.unit_depth_m)  
+        return 0.1 + meters_of_water_to_bar(self.unit_depth_m)  
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
