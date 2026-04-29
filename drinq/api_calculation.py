@@ -196,7 +196,7 @@ def technology_selector(
         case 'flocculation':
             for technology in technology_options:
                 match technology.lower():
-                    case 'dynamic mixer':
+                    case 'dynamic mixing':
                         selected_technology = technology
                     case _:
                         pass
