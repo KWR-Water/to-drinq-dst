@@ -895,7 +895,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.weir_height = parameters[TPN['weir_height']]
