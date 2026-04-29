@@ -1336,7 +1336,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
     """KPI calculations for a Chain Scraped Sedimentation treatment unit."""
     lanes: int
     units_per_lane: int
-    flow_m3perh: float
+    nominal_flow_m3perh: float
     flow_m3persec: float
     flow_per_lane_m3perh: float
     retention_time_min: float
@@ -1351,12 +1351,11 @@ class ChainScrapedSedimentation(TreatmentKPI):
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
         wq_parameters = self.wq_parameters
-
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
-        self.flow_m3perh = plant_kpis.get(
-            'nominal flow rate (m3/hr)', None)
+        self.nominal_flow_m3perh = plant_kpis.get(
+            NOMINAL_FLOW_RATE_NAME, None)
         self.flow_m3persec = self.flow_m3perh / 3600
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
@@ -1429,7 +1428,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -1690,7 +1689,7 @@ class MembraneFiltration(TreatmentKPI):
     units_per_lane: float
     lanes: int
     units_per_lane: int
-    flow_rate_m3perh: float
+    nominal_flow_m3perh: float
     flow_m3perh: float
     flow_per_lane_m3perh: float
     flow_per_unit_m3perh: float
@@ -1714,7 +1713,7 @@ class MembraneFiltration(TreatmentKPI):
         # wq_parameters = self.wq_parameters
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.flow_rate_m3perh = plant_kpis.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.number_of_units = self.units_per_lane * self.lanes
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -1790,7 +1789,7 @@ class MembraneFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -1800,7 +1799,7 @@ class IntakePump(TreatmentKPI):
     pipe_roughness: float
     lanes: int
     units_per_lane: int
-    flow_m3perh: float
+    nominal_flow_m3perh: float
     flow_per_lane_m3perh: float
     motor_efficiency: float
     pipe_roughness: float
@@ -1896,7 +1895,7 @@ class IntakePump(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -1907,7 +1906,7 @@ class CleanWaterStorageTank(TreatmentKPI):
     retention_time_hrs: float
     units_per_lane: int
     number_of_units: int
-    flow_m3perh: float
+    nominal_flow_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
     emission_factor_electricity: float
@@ -1925,7 +1924,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
         self.number_of_units = self.units_per_lane * self.lanes
-        self.flow_m3perh = plant_kpis.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.unit_volume_m3 = (
             self.retention_time_hrs * self.flow_m3perh) / (
@@ -1975,7 +1974,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -2002,6 +2001,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     efficiency_backwash_pump: float
     water_density_kg_per_m3: float
     water_viscosity: float
+    nominal_flow_m3perh:float
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
@@ -2022,7 +2022,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         plant_kpis = self.plant_kpis
         # wq_parameters = self.wq_parameters
 
-        self.flow_m3perh = plant_kpis.get(
+        self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.lanes = design_parameters.get('number of lanes', None)
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
@@ -2140,7 +2140,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -2317,7 +2317,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -2327,6 +2327,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     lanes: int
     nominal_flow_m3perh: float
     units_per_lane: int
+    nominal_flow_m3perh:float
     flow_per_unit_m3hr: float
     filter_bed_pressure_head_m: float
     power_lane_kw: float
@@ -2543,7 +2544,7 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 class GranularActivatedCarbonFiltration(TreatmentKPI):
@@ -2556,6 +2557,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     gac_porosity: float
     effective_particle_diameter: float
     filter_bed_depth_m: float
+    nominal_flow_m3perh:float
     flow_per_lane_m3perh: float
     superficial_velocity: float
     flow_per_unit_m3hr: float
@@ -2657,7 +2659,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 class PowderedActivatedCarbonFiltration(TreatmentKPI):
@@ -3444,6 +3446,7 @@ class AirFlotationDAF(TreatmentKPI):
     air_solids_ratio: float
     recirculation_ratio: float
     air_density: float
+    nominal_flow_m3perh:float
     retention_time_min: float
     pressure_difference_kpa: float
     bubble_diameter_m: float
@@ -3552,7 +3555,7 @@ class AirFlotationDAF(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions  
 
 
@@ -3563,6 +3566,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
     units_per_lane: int
     nominal_flow_m3perh: float
     flow_per_lane: float
+    nominal_flow_m3perh:float
     flow_per_unit: float
     retention_time_h: float
     unit_depth_input_m: float
@@ -3678,7 +3682,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
 class UVdisinfection(TreatmentKPI):
@@ -3764,5 +3768,5 @@ class UVdisinfection(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
