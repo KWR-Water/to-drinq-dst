@@ -1112,7 +1112,7 @@ class FlocculationDynamicMixing(TreatmentKPI):
         seconds_per_day = 86400
         unit1_volume_m3=self.flow_per_unit_m3hr/(self.retention_time_tank1_min/60)
         unit2_volume_m3=self.unit_volume_m3 - unit1_volume_m3
-        power_kw_unit_tank1 = 
+        power_kw_unit_tank1 = (
             (
                 (1/self.efficiency_mixer) * self.mixer_tank1_velocity_grad**2
              ) * self.water_viscosity * unit1_volume_m3) / 1000
