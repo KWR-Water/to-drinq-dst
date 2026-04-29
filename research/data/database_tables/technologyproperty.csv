@@ -1,4 +1,4 @@
-﻿id,name,unit,description,category,parent_property
+id,name,unit,description,category,parent_property
 1,volume,m^3,volume of the asset,1,
 2,lower bound of flow rate (m3/hr),m^3/hour,lower value of the feasibile range of flow rates,1,
 3,upper bound of flow rate (m3/hr),m^3/hour,upper value of the feasibile range of flow rates,1,
@@ -27,7 +27,7 @@
 26,chemical dosing solution concentration (w/w%),%,concentration of chemical in dosing solution (in w/w%),4,
 27,target residual concentration (mg/l),g/m^3,nominal (design) value for residuals of chemical agents per unit water volume,4,
 28,UV dose,mJ/cm^2,nominal design value for low pressure UV dose (typically between 30 and 70 mJ/cm2),3,
-29,UV power intensity,,nominal design value for UV power intensity (typically between 30 and 40 mW/cm2),3,
+29,UV intensity,mW/cm2,nominal design value for UV power intensity (typically 10 mW/cm2),1,
 30,dynamic mixer unit department volume,m^2,volume of the asset's unit department,1,
 31,lower bound surface overflow rate,m^3/m^2/hour,lower bound of surface overflow rate (m3/m2/hr),1,110
 32,upper bound surface overflow rate,m^3/m^2/hour,upper bound of surface overflow rate (m3/m2/hr),1,110
@@ -55,10 +55,10 @@
 54,upper bound pipe diameter,m,upper bound pipe diameter,1,106
 55,lower bound pipe length,m,lower bound inlet pipe length,1,107
 56,upper bound pipe length,m,upper bound pipe length,1,107
-57,lower bound pipe roughness,,lower bound pipe roughness,1,
-58,upper bound pipe roughness,,upper bound pipe roughness,1,
-59,lower bound level difference,m,lower bound level difference,1,
-60,upper bound level difference,m,upper bound level difference,1,
+57,lower bound pipe roughness,,lower bound pipe roughness,1,111
+58,upper bound pipe roughness,,upper bound pipe roughness,1,111
+59,lower bound level difference,m,lower bound level difference,1,160
+60,upper bound level difference,m,upper bound level difference,1,160
 61,power efficiency of pump(s),%,"power efficiency of pumps, a value between 0 and 1",3,
 62,motor efficiency of pump(s),%,"motor efficiency of pumps, a value between 0 and 1",3,
 63,lower bound screen velocity,m/s,lower bound screen velocity,1,109
@@ -80,8 +80,8 @@
 79,upper bound number of UV lamps,,upper bound number of UV lamps,2,115
 80,lower bound projected irradiated area,m^2,lower bound projected irradiated area,1,
 81,energy intensity,kWh/m^3,energy intensity of UV lamps energy consumption,2,
-82,lower bound of energy intensity,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,
-83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,
+82,lower bound of energy intensity,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,81
+83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,81
 84,bar spacing,m,space between bar screens or grid screens (m),1,103
 85,lower bound NF flow recovery rate,,lower bound NF flow recovery rate,1,116
 86,upper bound NF flow recovery rate,,upper bound NF flow recovery rate,1,116
@@ -160,7 +160,7 @@
 159,target upflow velocity,m/h,setpoint for upflow velocity,1,
 160,level difference,m,level difference,1,
 161,UV power per m3,kW/m^3,power required per m3 of produced water (kW/m^3),3,
-162,lower bound UV dose,mJ/cm^2,lower bound of UV dose (mJ/cm^2),1,
-163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),1,
-164,lower bound UV power per m3,kW/m^3,lower bound of UV power per m3 (kW/m^3),3,
-165,upper bound UV power per m3,kW/m^3,upper bound of UV power per m3 (kW/m^3),3,
+162,lower bound UV dose,mJ/cm^2,lower bound of UV dose (mJ/cm^2),1,28
+163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),,28
+164,lower bound UV power per m3,kW/m^3,lower bound of UV power intensity (kW/m^3),3,161
+165,upper bound UV power per m3,kW/m^3,upper bound of UV power intensity (kW/m^3),3,161
