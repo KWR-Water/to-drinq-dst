@@ -783,7 +783,7 @@ class CoagulationInlineMixing(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.conc_chem_mgL = parameters[
@@ -1460,7 +1460,7 @@ class ChlorineDisinfection(TreatmentKPI):
 
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.tank_height_m = parameters[
@@ -1594,7 +1594,7 @@ class ChloramineDisinfection(TreatmentKPI):
                 TPN['target_residual_concentration_mgL']],
             chlorine_to_ammonia_ratio=5,
         )
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)        
         self.lanes = design_parameters.get('number of lanes', None)
@@ -2695,7 +2695,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         self.silo_height_m = parameters.get(TPN['tank_height_chemical_storage'], 10.0)  # Average Silo Height
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -2824,7 +2824,7 @@ class UVAOP(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)          
         self.tank_height_m = parameters[TPN['tank_height']]
@@ -2932,7 +2932,7 @@ class BaffledOzonationContactor(TreatmentKPI):
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
@@ -3047,7 +3047,7 @@ class PelletSoftening(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
@@ -3199,7 +3199,7 @@ class CationIonExchange(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.cycle_h = parameters.get(TPN['regeneration_duration'], 10.0)
@@ -3335,7 +3335,7 @@ class AnionicIEX(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
