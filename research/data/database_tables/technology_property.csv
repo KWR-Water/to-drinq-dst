@@ -441,4 +441,5 @@ id,technology,property,defaultvalue,is_designparameter,is_digested
 440,52,34,30,0,0
 441,52,33,20,0,0
 442,52,34,30,0,0
-443,52,1,0,0,1
+443,52,19,3,0,0
+444,52,1,0,0,1

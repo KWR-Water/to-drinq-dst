@@ -813,7 +813,7 @@ class CoagulationInlineMixing(TreatmentKPI):
         )
 
     def __repr__(self):
-        return f"CoagulationDynamicMixing(tank height (m)={self.tank_height}, " \
+        return f"CoagulationInlineMixing(tank height (m)={self.tank_height}, " \
                 f"retention time (min)={self.retention_time_min}, " \
                 f"nominal flow (m3/hr)={self.nominal_flow_m3hr})"
 
@@ -1052,6 +1052,7 @@ class FlocculationDynamicMixing(TreatmentKPI):
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
+        self.tank_height = parameters[TPN['tank_height']]
         self.retention_time_tank1_min = parameters[
             TPN['retention_time_tank1_min'],20]
         self.retention_time_tank2_min = parameters[
