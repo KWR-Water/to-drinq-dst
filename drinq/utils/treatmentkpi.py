@@ -644,7 +644,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         self.nominal_flow_m3hr = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa, E501
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.chemical_emission_factor = parameters[TPN['chemical emission factor']]
+        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.conc_chem_mgL = parameters[
