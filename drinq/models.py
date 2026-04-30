@@ -642,9 +642,9 @@ class TechnologyConstructionCostParameter(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE, db_column='technology')
-    a = models.FloatField(blank=True, null=False)
-    b = models.FloatField(blank=True, null=False)
-    c = models.FloatField(blank=True, null=False)
+    a = models.FloatField(blank=True, null=False, default=0.0)
+    b = models.FloatField(blank=True, null=False, default=0.0)
+    c = models.FloatField(blank=True, null=False, default=0.0)
     plantproperty = models.ForeignKey(
         'TreatmentPlantProperty', on_delete=models.CASCADE,
         db_column='plantproperty', blank=True, null=True)
