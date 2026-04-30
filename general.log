@@ -1,5 +1,4 @@
--- None value found for technology: Sludge blanket clarification, KPI: CO2 equivalent emissions
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=2 and technologyproperty=area [unit m^2] (id: 97)
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=45 and technologyproperty=area [unit m^2] (id: 97)
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97)
-KeyError during construction cost calculation: 'Strainer'. 
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+KeyError during construction cost calculation: 'Pellet softening reactor with lime'. 
