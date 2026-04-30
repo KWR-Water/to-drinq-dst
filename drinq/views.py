@@ -18,6 +18,7 @@ from drinq.models import (
     Compound,
     CompoundCas,
     Technology,
+    TechnologyRelatedtechnology,
     StageTechnologies,
     Stage,
     DecidingFactor,
@@ -1183,6 +1184,12 @@ class TechnologyPropertiesView(generic.FormView):
         # compute construction costs if possible (replicate existing helper)
         constrcosts = {}
         for tech_id in tech_ids:
+            related_tech_id = None
+            try:
+                related_technology = TechnologyRelatedtechnology.objects.get(technology_id=tech_id)
+                related_tech_id = related_technology.id
+            except TechnologyRelatedtechnology.DoesNotExist:
+                related_technology = None
             try:
                 tccp = TechnologyConstructionCostParameter.objects.filter(
                     technology_id=tech_id).first()
@@ -1242,6 +1249,67 @@ class TechnologyPropertiesView(generic.FormView):
                     f"technology_id={tech_id}"
                     )
                 continue
+            # Now try the same for the related technology
+            if related_tech_id is not None:
+                try:
+                    tccp = TechnologyConstructionCostParameter.objects.filter(
+                        technology_id=related_tech_id).first()
+                    if tccp:
+                        if tccp.technologyproperty:
+                            try:
+                                techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
+                                    treatmentplant=treatment_plant,
+                                    technology_id=related_tech_id,
+                                    technologyproperty=tccp.technologyproperty
+                                ).value
+                            except TreatmentPlantTechnologyPropertyValue.DoesNotExist:  # noqa, E501
+                                # TODO: raise the error in future versions
+                                logger.warning(
+                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
+                                    f" for technology_id={related_tech_id} and "
+                                    f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
+                                    f"construction cost calculation"
+                                )
+                                warn(
+                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
+                                    f" for technology_id={related_tech_id} and "
+                                    f"technologyproperty={tccp.technologyproperty}"
+                                    )
+                                techprop_value = None
+                            if techprop_value is None:
+                                continue
+                            constrcosts[Technology.objects.get(id=related_tech_id).name] = {
+                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                                'technologyproperty': tccp.technologyproperty.name,
+                                'technologyproperty_value': techprop_value,
+                                'plantproperty': None,
+                                'plantproperty_value': None,
+                            }
+                        else:
+                            if tccp.plantproperty:
+                                try:
+                                    plantprop_value = plant_calculator.plant_kpis.get(  # noqa, E501
+                                        tccp.plantproperty.name, None)
+                                except TreatmentPlantProperty.DoesNotExist:
+                                    plantprop_value = None
+                                if plantprop_value is None:
+                                    logger.warning(
+                                        f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                        f" for construction cost calculation ")
+                                    continue
+                                constrcosts[Technology.objects.get(id=related_tech_id).name] = {  # noqa, E501
+                                    'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                                    'technologyproperty': None,
+                                    'technologyproperty_value': None,
+                                    'plantproperty': tccp.plantproperty.name,
+                                    'plantproperty_value': plantprop_value
+                                }
+                except TechnologyConstructionCostParameter.DoesNotExist:
+                    logger.warning(
+                        f"No construction cost parameters found for "
+                        f"technology_id={related_tech_id}"
+                        )
+                    continue
         try:
             plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
         except KeyError as ke:
