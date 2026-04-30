@@ -33,14 +33,14 @@ with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
 
 
 PLANT_PROPERTIES_TO_CALCULATE = [
-    TPPN["nominal_flow_rate_m3perh"],
-    TPPN["footprint_area_m2"],
-    TPPN["volume_m3"],
-    TPPN["construction_costs_eurperm3"],
-    TPPN["investment_costs"],
-    TPPN["operation_and_maintenance_costs_eurperyr"],
-    TPPN["energy_consumption_kwhperm3"],
-    TPPN["co2_equivalent_emissions_kgperm3"],
+    TPPN["nominal_flow_rate"],
+    TPPN["footprint_area"],
+    TPPN["volume"],
+    TPPN["specific_construction_costs"],
+    TPPN["investment_costs_annual"],
+    TPPN["operation_and_maintenance_costs_annual"],
+    TPPN["specific_energy_consumption"],
+    TPPN["co2_equivalent_emissions"],
 ]
 
 

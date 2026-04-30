@@ -1,12 +1,10 @@
-from webbrowser import get
-import requests
+ 
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
 import logging
 import numpy as np
 from warnings import warn
-# from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.http import (
@@ -14,8 +12,7 @@ from django.http import (
     )
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
-from django.urls import reverse, reverse_lazy        
-from django.conf import settings
+from django.urls import reverse
 
 from drinq.models import (
     Compound,
@@ -40,8 +37,8 @@ from drinq.models import (
     TreatmentPlantTechnologyPropertyValue,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
-    WaterqualityParameter,
     WaterqualityParameterTechnologyJunction,
+    TreatmentPlantTechnologyKPIValue,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -50,8 +47,8 @@ from drinq.forms import (
     SessionSelectForm,
     TreatmentDesignSelectionForm,
     DesignParameterValueFormSet,
-    TechnologyPropertyValueFormSet,
-    TechnologyPropertyValueForm,
+    TreatmentPlantTechPropertyValueFormSet,
+    TreatmentTechPropertyValueForm,
     WaterQualityParameterValueFormSet,
     build_technology_property_initials,
     )
@@ -63,10 +60,11 @@ from drinq.api_calculation import (
     WaterqualityParameterData,
     KPI_NOMINAL_FLOW_M3PERH,
     KPI_ENERGY_CONSUMPTION_KWHRPERM3,
-    KPI_CONSTRUCTION_COSTS_EUR,
+    KPI_SPECIFIC_CONSTRUCTION_COSTS,
     KPI_FOOTPRINT_AREA_M2,
-    KPI_OPER_AND_MAINT_COSTS,
-    KPI_INVESTMENT_COSTS,
+    KPI_OPER_AND_MAINT_COSTS_ANN,
+    KPI_INVESTMENT_COSTS_ANN,
+    KPI_CO2_EMISSIONS_KGPERM3,
     # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
@@ -87,12 +85,13 @@ EXCLUDE_KEY = ['csrfmiddlewaretoken', 'next']
 INITIAL_TOTAL_STEPS = 4
 DECISION_TREE_MAX_STEPS = 50
 DB_PLANTKPI_MAPPING = {
-    KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate_m3perh'],
-    KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['energy_consumption_kwhperm3'],
-    KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area_m2'],
-    KPI_CONSTRUCTION_COSTS_EUR: TPPN['construction_costs_eurperm3'],
-    KPI_OPER_AND_MAINT_COSTS: TPPN['operation_and_maintenance_costs_eurperyr'],
-    KPI_INVESTMENT_COSTS: TPPN['investment_costs'],
+    KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate'],
+    KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['specific_energy_consumption'],
+    KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area'],
+    KPI_SPECIFIC_CONSTRUCTION_COSTS: TPPN['specific_construction_costs'],
+    KPI_OPER_AND_MAINT_COSTS_ANN: TPPN['operation_and_maintenance_costs_annual'],
+    KPI_INVESTMENT_COSTS_ANN: TPPN['investment_costs_annual'],
+    KPI_CO2_EMISSIONS_KGPERM3: TPPN['co2_equivalent_emissions'],
     # KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
@@ -351,23 +350,51 @@ class QuestionsCompleteView(generic.TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpResponse, *args, **kwargs):
-        results = QuestionAnswer.objects.filter(
-            configuration__id=request.session['configuration_id'])
-        if results.exists():
-            context = self.get_context_data(results=results)
-            # TODO: store the results in the database
-            # Render the template with the context
-            return render(
-                request,
-                template_name=self.template_name,
-                context={'data': context})
-        else:
+        session_key = kwargs.get('session_key', None)
+        configuration = MultiStepConfiguration.objects.get(
+                session_key=session_key)
+        try:
+            results = QuestionAnswer.objects.filter(
+                configuration__id=configuration.id)
+        except QuestionAnswer.DoesNotExist:
+            results = QuestionAnswer.objects.none()
+        if not results.exists():
             return HttpResponseRedirect(redirect('drinq_redirect'))
+
+        # Parse filter selections from GET
+        selected_techs = []
+        num_stages = 0
+        if 'num_stages' in request.GET:
+            try:
+                num_stages = int(request.GET['num_stages'])
+            except Exception:
+                num_stages = 0
+
+        # Always fill selected_techs to num_stages, using None for missing
+        selected_techs = []
+        for i in range(num_stages):
+            tech_id = request.GET.get(f'stage_{i+1}')
+            if tech_id is not None and tech_id != '':
+                try:
+                    selected_techs.append(int(tech_id))
+                except Exception:
+                    selected_techs.append(None)
+            else:
+                selected_techs.append(None)
+
+        context = self.get_context_data(
+            results=results, selected_techs=selected_techs)
+        # Add num_stages to context for template
+        context['num_stages'] = context.get('num_stages', len(selected_techs))
+        return render(
+            request,
+            template_name=self.template_name,
+            context={'data': context})
 
     def get_context_data(self, **kwargs):
         results = kwargs.get('results', None)
+        selected_techs = kwargs.get('selected_techs', [])
         choices, technologies, treatment_options = {}, [], []
-        # session_key = self.request.session.session_key
         config_id = self.request.session['configuration_id']
         session_key = MultiStepConfiguration.objects.get(
             id=config_id).session_key
@@ -402,19 +429,59 @@ class QuestionsCompleteView(generic.TemplateView):
                         technologies += [technology]
 
             context['technologies'] = technologies
-            (
-                treatment_options,
-                treatment_maps,
-                ) = dst.get_treatment_trains(
-                    technology_tuples=technologies)
-            for option_number, _ in treatment_options.items():
-                treatment_options[option_number]['already_named'] = (
-                    option_number in named_option_ids
+            treatment_options, treatment_maps = dst.get_treatment_trains(
+                technology_tuples=technologies)
+
+
+            # Build available technologies and stage names per step
+            num_stages = len(technologies)
+            stages = []
+            for i in range(num_stages):
+                tech_ids = set()
+                for option in treatment_maps.values():
+                    if (i+1) in option:
+                        tech_ids.add(option[i+1]['technology'])
+                techs = list(Technology.objects.filter(id__in=tech_ids))
+                # Try to get the stage name from the first technology in this step
+                stage_name = f"Stage {i+1}"
+                if techs:
+                    # Try to get the stage via StageTechnologies if available
+                    from drinq.models import StageTechnologies, Stage
+                    stage_obj = (
+                        Stage.objects.filter(
+                            id__in=StageTechnologies.objects.filter(
+                                technology=techs[0]).values_list('stage', flat=True)
+                        ).first()
                     )
+                    if stage_obj:
+                        stage_name = stage_obj.name
+                stages.append({'name': stage_name, 'technologies': techs})
+
+            # Filter treatment options based on selected_techs
+            filtered_options = {}
+            for opt_nr, option in treatment_maps.items():
+                match = True
+                for stage_idx, sel in enumerate(selected_techs):
+                    if sel and option.get(stage_idx+1, {}).get('technology') != sel:
+                        match = False
+                        break
+                if match:
+                    filtered_options[opt_nr] = treatment_options[opt_nr]
+
+            # Mark already named and slugged
+            for option_number, _ in filtered_options.items():
+                filtered_options[option_number]['already_named'] = (
+                    option_number in named_option_ids
+                )
             for plant in slugged_plants:
-                if plant.slug is not None:
-                    treatment_options[plant.option]['slug'] = plant.slug
-            context['treatment_options'] = treatment_options
+                if plant.slug is not None and plant.option in filtered_options:
+                    filtered_options[plant.option]['slug'] = plant.slug
+
+
+            context['treatment_options'] = filtered_options
+            context['stages'] = stages
+            context['selected_techs'] = selected_techs
+            context['num_stages'] = num_stages
             self.request.session['treatment_maps'] = treatment_maps
 
         return context
@@ -756,6 +823,34 @@ class DesignParameterResultsView(generic.DetailView):
         context['properties'] = TreatmentPlantPropertyValue.objects.filter(
             treatmentplant=self.object
         )
+
+        # Gather all technology KPIs for this treatment plant, grouped by technology
+        tech_kpi_qs = TreatmentPlantTechnologyKPIValue.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology', 'kpi')
+
+        # Group by technology
+        from collections import defaultdict
+        tech_kpis = defaultdict(list)
+        for kpi_value in tech_kpi_qs:
+            tech_kpis[kpi_value.technology].append(kpi_value)
+
+        # Get the ordered list of technologies by step from 
+        # TreatmentPlantLayout
+        layout_qs = TreatmentPlantLayout.objects.filter(
+            treatmentplant=self.object
+        ).select_related('technology').order_by('step')
+        ordered_techs = [
+            layout.technology for layout in layout_qs
+            if layout.technology is not None]
+
+        # Build an ordered list of (technology, kpis) pairs
+        technology_kpis_ordered = []
+        for tech in ordered_techs:
+            if tech in tech_kpis:
+                technology_kpis_ordered.append((tech, tech_kpis[tech]))
+
+        context['technology_kpis_ordered'] = technology_kpis_ordered
         return context
 
 
@@ -779,15 +874,13 @@ class TechnologyPropertiesView(generic.FormView):
     redirect to the results page.
     """
     template_name = 'drinq/form_technology-properties.html'
-    form_class = TechnologyPropertyValueFormSet
+    form_class = TreatmentPlantTechPropertyValueFormSet
 
     def get_treatment_plant(self):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
     def get_form(self, form_class=None):
         treatment_plant = self.get_treatment_plant()
-        # Only include properties where is_digested is False
-        # Get all property IDs for this plant's technologies where is_digested is False
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list('technology', flat=True)
         non_digested_prop_ids = TechnologyPropertyJunction.objects.filter(
@@ -799,94 +892,79 @@ class TechnologyPropertiesView(generic.FormView):
         )
         initial = []
         if not queryset.exists():
+            # Build initial data for new forms, but do NOT include 'id'
             initial = build_technology_property_initials(treatment_plant)
 
-        # If there are no persisted rows, create a dynamic formset with
-        # `extra=len(initial)` so the provided initial entries are
-        # rendered as editable forms.
-        if not queryset.exists() and initial:
-            DynamicTechFormSet = modelformset_factory(
-                TreatmentPlantTechnologyPropertyValue,
-                form=TechnologyPropertyValueForm,
-                extra=len(initial)
-            )
-            if self.request.method == 'POST':
-                return DynamicTechFormSet(
-                    self.request.POST, queryset=queryset, initial=initial)
-            return DynamicTechFormSet(queryset=queryset, initial=initial)
-
+        prefix = "techprop"
         if self.request.method == 'POST':
-            return TechnologyPropertyValueFormSet(
-                self.request.POST, queryset=queryset, initial=initial)
-        return TechnologyPropertyValueFormSet(
-            queryset=queryset, initial=initial)
+            total_forms = int(self.request.POST.get(f'{prefix}-TOTAL_FORMS', '0'))
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=total_forms,
+            )
+            formset = DynamicFormSet(
+                self.request.POST,
+                queryset=queryset,
+                initial=initial,
+                prefix=prefix)
+            return formset
+        # For GET: if queryset is empty and initial is non-empty, set extra
+        if not queryset.exists() and initial:
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=len(initial),
+            )
+            return DynamicFormSet(
+                queryset=queryset, initial=initial, prefix=prefix)
+        return TreatmentPlantTechPropertyValueFormSet(
+            queryset=queryset, initial=initial, prefix=prefix)
 
     def get_waterquality_formset(self):
         """Return a formset for water quality parameter values for this plant."""
-
         treatment_plant = self.get_treatment_plant()
-        logger.debug(
-            "get_waterquality_formset called for plant id %s", treatment_plant.id)
-        # Get all technologies for this plant
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list('technology', flat=True)
-        # Get all relevant water quality parameter junctions for these technologies
         wqtech_junctions = WaterqualityParameterTechnologyJunction.objects.filter(
             technology__in=tech_ids
         ).select_related('waterqualityparameter')
-        # Get or create value objects for this plant and these parameters
         qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
             treatmentplant=treatment_plant,
             wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
         )
-        # If not all exist, create missing ones with default values
         existing_ids = set(
             qs.values_list('wq_tech_parameter_id', flat=True))
         for junction in wqtech_junctions:
             if junction.id not in existing_ids:
-                logger.debug("Creating missing TreatmentPlantWaterQualityParameterValue for junction id %s", junction.id)
                 TreatmentPlantWaterQualityParameterValue.objects.create(
                     treatmentplant=treatment_plant,
                     wq_tech_parameter=junction,
                     value=junction.default_value
                 )
-        # Re-query to get all
         qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
             treatmentplant=treatment_plant,
             wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
         )
+        prefix = "waterquality"
         try:
             if self.request.method == 'POST':
-                logger.debug("Returning WaterQualityParameterValueFormSet with POST data, queryset count: %d", qs.count())
                 return WaterQualityParameterValueFormSet(
-                    self.request.POST, queryset=qs)
-            logger.debug("Returning WaterQualityParameterValueFormSet with GET, queryset count: %d", qs.count())
-            return WaterQualityParameterValueFormSet(queryset=qs)
+                    self.request.POST, queryset=qs, prefix=prefix)
+            return WaterQualityParameterValueFormSet(
+                queryset=qs, prefix=prefix)
         except Exception as e:
             logger.error("Exception in get_waterquality_formset: %s", e, exc_info=True)
             raise
 
     def form_valid(self, formset):
-        logger.debug("form_valid called")
         treatment_plant = self.get_treatment_plant()
-        try:
-            waterquality_formset = self.get_waterquality_formset()
-        except Exception as e:
-            logger.error("Exception in get_waterquality_formset during form_valid: %s", e, exc_info=True)
-            raise
+        waterquality_formset = self.get_waterquality_formset()
         valid_tech = formset.is_valid()
         valid_wq = waterquality_formset.is_valid()
-        logger.debug("formset.is_valid(): %s, waterquality_formset.is_valid(): %s", valid_tech, valid_wq)
         if not (valid_tech and valid_wq):
-            logger.warning("Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
-            print("=== TechnologyPropertyValueFormSet errors ===")
-            print(formset.errors)
-            print("=== WaterQualityParameterValueFormSet errors ===")
-            print(waterquality_formset.errors)
-            print("=== TechnologyPropertyValueFormSet non_form_errors ===")
-            print(formset.non_form_errors())
-            print("=== WaterQualityParameterValueFormSet non_form_errors ===")
-            print(waterquality_formset.non_form_errors())
+            logger.warning(
+                "Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
             return self.form_invalid(formset)
 
         # Step 1: Save all form data
@@ -1020,9 +1098,7 @@ class TechnologyPropertiesView(generic.FormView):
                         technology=technology, is_designparameter=False):
                 if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
                     defaultval_tech_props[technology.name].update(
-                        {
-                            def_tp.property.name: def_tp.default_value
-                        })
+                        {def_tp.property.name: def_tp.default_value})
             for isdigested_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_digested=True):
                 digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
@@ -1042,7 +1118,7 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
 
         # Instantiate the Technology Performance Calculator
-        tech_calculator = dac.TechnologyPerformanceCalculator(
+        kpi_calculator = dac.TechnologyPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stage_names,
             technologies=technology_names,
@@ -1053,11 +1129,11 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
         )
-        tech_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
-        tech_calculator.sum_kpis()
+        kpi_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
+        kpi_calculator.sum_kpis()
         
         # Assign the summed technology KPIs to the plant calculator
-        summed_kpis = tech_calculator.summed_kpis
+        summed_kpis = kpi_calculator.summed_kpis
         plant_calculator.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
             TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
         plant_calculator.energyconsumption_kwhrperm3.value = plant_calculator.get_energyconsumption_per_m3()  # noqa, E501
@@ -1070,18 +1146,35 @@ class TechnologyPropertiesView(generic.FormView):
 
         # Save the digested technology properties back to the database
         for tech_name in technology_names:
-            for prop_name in tech_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
+            for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
                 try:
-                    prop_value = tech_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
-                    tech_obj = Technology.objects.get(name=tech_name)
+                    prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
+                    tech = Technology.objects.get(name=tech_name)
                     prop_obj = TechnologyProperty.objects.get(name=prop_name)
                     TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
                         treatmentplant=treatment_plant,
-                        technology=tech_obj,
+                        technology=tech,
                         technologyproperty=prop_obj,
                         defaults={'value': str(prop_value)}
                     )
                 except TechnologyProperty.DoesNotExist:
+                    continue
+            for (kpi_name, kpi_value) in (
+                    kpi_calculator.tech_kpis[tech_name].items()):
+                try:
+                    kpi = TechnologyKPI.objects.get(name=kpi_name)
+                    tech = Technology.objects.get(name=tech_name)
+                    if kpi_value is None:
+                        logger.warning(
+                            f"-- None value found for technology: {tech.name}, KPI: {kpi.name}")
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech,
+                        kpi=kpi,
+                        defaults={'value': str(kpi_value)}
+                        )
+                except TechnologyKPI.DoesNotExist:
                     continue
 
         # Step 2c: compute plant-wide properties
@@ -1106,7 +1199,8 @@ class TechnologyPropertiesView(generic.FormView):
                             logger.warning(
                                 f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
                                 f" for technology_id={tech_id} and "
-                                f"technologyproperty={tccp.technologyproperty}"
+                                f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
+                                f"construction cost calculation"
                             )
                             warn(
                                 f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
@@ -1150,11 +1244,11 @@ class TechnologyPropertiesView(generic.FormView):
                 continue
         try:
             plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
-        except KeyError or Exception:
+        except KeyError as ke:
             # TODO: raise the error in future versions
             # perf_indic.update({TPPN['construction_costs_eurperm3']: None})
             logger.warning(
-                "Failed to calculate construction costs", exc_info=True)
+                f"KeyError during construction cost calculation: {ke}. ")  # noqa, E501
 
         # Calculate investment and maintenance costs
         # TODO: implement
@@ -1217,7 +1311,16 @@ class TechnologyPropertiesView(generic.FormView):
         # return self.form_invalid(formset)
 
     def form_invalid(self, formset):
-        return self.render_to_response(self.get_context_data(formset=formset))
+        # Ensure waterquality_formset is POST-bound for error display
+        waterquality_formset = self.get_waterquality_formset()
+        # Debug logging for errors
+        print("=== form_invalid called ===")
+        print("formset.errors:", formset.errors)
+        print("formset.non_form_errors:", formset.non_form_errors())
+        print("waterquality_formset.errors:", waterquality_formset.errors)
+        print("waterquality_formset.non_form_errors:", waterquality_formset.non_form_errors())
+        return self.render_to_response(self.get_context_data(
+            formset=formset, waterquality_formset=waterquality_formset))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1240,8 +1343,7 @@ class TechnologyPropertiesView(generic.FormView):
 
         # For each form in the formset, determine its technology and attach
         # the form along with the human-readable property name
-        for form in formset.forms:
-            # determine technology id from instance (saved) or initial
+        for idx, form in enumerate(formset.forms):
             tech_id = None
             if getattr(form.instance, 'technology', None):
                 tech_id = form.instance.technology.id

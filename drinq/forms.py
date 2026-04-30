@@ -268,7 +268,7 @@ class PlantDesignParametersForm(forms.ModelForm):
         return DesignParameterValueFormSet(queryset=qs, initial=initial)
 
 
-class TechnologyPropertyValueForm(forms.ModelForm):
+class TreatmentTechPropertyValueForm(forms.ModelForm):
     class Meta:
         model = TreatmentPlantTechnologyPropertyValue
         fields = ['technology', 'technologyproperty', 'value']
@@ -279,9 +279,9 @@ class TechnologyPropertyValueForm(forms.ModelForm):
         }
 
 
-TechnologyPropertyValueFormSet = forms.modelformset_factory(
+TreatmentPlantTechPropertyValueFormSet = forms.modelformset_factory(
     TreatmentPlantTechnologyPropertyValue,
-    form=TechnologyPropertyValueForm,
+    form=TreatmentTechPropertyValueForm,
     extra=0
 )
 

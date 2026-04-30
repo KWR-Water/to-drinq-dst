@@ -1,11 +1,39 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% load unit_format %}
+
+<head>
+    <title>Design Parameter Input</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        @media (min-width: 800px) {
+            table {
+                max-width: 900px;
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
 
 {% block content %}
 
 <body class="bg-light">
 
-<h1 class="mb-4">Design Parameter Input</h1>
+<h1 class="mb-4">Specify Plant Design Parameters</h1>
 <div class="container mt-5">
     <p>Name of the treatment plant: <strong>{{ treatment_plant.name }}</strong></p>
     <p>Configuration: <strong>{{ treatment_plant.configuration.name }}</strong></p>
@@ -24,11 +52,12 @@
             {{ formset.management_form }}
             <input type="hidden" name="treatmentplant_id" value="{{ treatment_plant.id }}">
             <input type="hidden" name="configuration_id" value="{{ treatment_plant.configuration.id }}">
-            <table class="table table-striped">
+            <table class="table table-striped table-bordered">
                 <thead>
                 <tr>
                     <th>Parameter</th>
                     <th>Value</th>
+                    <th>Unit</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -36,7 +65,7 @@
                 <tr>
                     <td>{{ form.instance.designparameter.name }}</td>
                     <td>
-                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" or form.instance.designparameter.name == "interest rate" or form.instance.designparameter.name == "energy price (EUR/kWh)" %}
+                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" or form.instance.designparameter.name == "interest rate" or form.instance.designparameter.name == "emission factor (electricity)" %}
                             <input type="number"
                                 step="any"
                                 name="{{ form.value.html_name }}"
@@ -53,6 +82,11 @@
                         {# keep hidden fields so Django can bind/update instances #}
                         {{ form.designparameter }}
                         {{ form.id }}
+                    </td>
+                    <td>
+                          <div class="form-text text-muted small mt-1">
+                            {{ form.instance.designparameter.unit|default_if_none:''|superscript_exponents|safe }}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

@@ -12,9 +12,7 @@
     <form method="post">
       {% csrf_token %}
 
-
       {{ formset.management_form }}
-      {# Ensure waterquality_formset management form is present for POST #}
       {{ waterquality_formset.management_form }}
 
       {# Display formset errors #}
@@ -34,30 +32,42 @@
       <div class="mb-4">
         <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
         <h5 class="mb-2">Operational conditions</h5>
+        {% comment %} <div class="alert alert-info small">DEBUG: {{ items|length }} items for this technology.<br>Items: {{ items|safe }}</div> {% endcomment %}
         <div class="table-responsive">
-          <table class="table table-bordered table-sm">
+          <table class="table table-bordered table-striped table-sm">
             <thead class="thead-light">
               <tr>
-                <th style="width:30%">Property</th>
+                <th style="width:25%">Property</th>
                 <th style="width:10%">Value</th>
-                <th style="width:60%">Description</th>
+                <th style="width:10%">Unit</th>
+                <th style="width:55%">Description</th>
               </tr>
             </thead>
             <tbody>
               {% for item in items %}
+                {{ item.form.technology }}
+                {{ item.form.technologyproperty }}
+                  {% if item.form.id.value %}
+                    {{ item.form.id }}
+                  {% endif %}
                 {% if not item.is_digested %}
                 <tr>
                   <td class="align-top">{{ item.prop_name }}</td>
                   <td>
-                    <input type="number" step="any" name="{{ item.form.value.html_name }}" class="form-control form-control-sm tech-property-value" value="{{ item.form.value.value|default_if_none:item.form.value.initial|default:0 }}">
-                    {{ item.form.technology }}
-                    {{ item.form.technologyproperty }}
-                    {% if item.form.id %}{{ item.form.id }}{% endif %}
+                    {{ item.form.value }}
+                    {% if item.form.value.errors %}
+                      <div class="text-danger small">{{ item.form.value.errors }}</div>
+                    {% endif %}
+                    {% for hidden in item.form.hidden_fields %}
+                      {% if hidden.name != 'id' %}{{ hidden }}{% endif %}
+                    {% endfor %}
+                  </td>
+                  <td class="align-top">
                     <div class="form-text text-muted small mt-1">
                       {% if item.prop_unit %}{{ item.prop_unit }}{% else %}&nbsp;{% endif %}
                     </div>
                   </td>
-                  <td class="align-top text-muted">
+                  <td class="align-top text-muted small mt-1">
                     {% if item.prop_help %}{{ item.prop_help }}{% endif %}
                   </td>
                 </tr>
@@ -66,52 +76,82 @@
             </tbody>
           </table>
         </div>
-      </div>
 
-      {# Per-technology water quality parameter table using canonical Django formset rendering #}
-      {% if waterquality_forms_by_tech and waterquality_forms_by_tech|dict_get:tech %}
-      <div class="mb-4">
-        <h5 class="mb-2">Water quality parameters</h5>
-        <div class="table-responsive">
-          <table class="table table-bordered table-sm">
-            <thead class="thead-light">
-              <tr>
-                <th style="width:30%">Parameter</th>
-                <th style="width:15%">Value, untreated water</th>
-                <th style="width:15%">Value, target water</th>
-                <th style="width:30%">Description</th>
-                <th style="width:10%">Unit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for form in waterquality_forms_by_tech|dict_get:tech %}
-                <tr>
-                  <td>
-                    {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
-                  </td>
-                  <td>
-                    {% if form.instance.wq_tech_parameter.waterqualityparameter.is_input_parameter %}
-                      <input type="number" step="any" name="{{ form.value.html_name }}" class="form-control form-control-sm waterquality-parameter-value" value="{{ form.value.value|default_if_none:form.value.initial|default:0 }}">
-                    {% else %}
-                      <span class="text-muted">{{ form.instance.value }}</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if form.instance.wq_tech_parameter.waterqualityparameter.is_target_value %}
-                      <input type="number" step="any" name="{{ form.target_value.html_name }}" class="form-control form-control-sm waterquality-parameter-target-value" value="{{ form.target_value.value|default_if_none:form.target_value.initial|default:0 }}">
-                    {% else %}
-                      <span class="text-muted">{{ form.instance.target_value }}</span>
-                    {% endif %}
-                  </td>
-                  <td>{{ form.instance.wq_tech_parameter.waterqualityparameter.description }}</td>
-                  <td>{{ form.instance.wq_tech_parameter.waterqualityparameter.unit }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+        {# Per-technology water quality parameter table using grouped forms #}
+        {% with wq_forms=waterquality_forms_by_tech|dict_get:tech %}
+          {% if wq_forms and wq_forms|length > 0 %}
+            <div class="mb-4">
+              <h5 class="mb-2">Water quality parameters</h5>
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                  <thead class="thead-light">
+                    <tr>
+                      <th style="width:25%">Parameter</th>
+                      <th style="width:10%">Value (untreated water)</th>
+                      <th style="width:10%">Value (target quality)</th>
+                      <th style="width:10%">Unit</th>
+                      <th style="width:45%">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for form in wq_forms %}
+                      <tr>
+                        <td>
+                          {% if form.id %}
+                            {{ form.id }}
+                          {% endif %}
+                          {{ form.wq_tech_parameter }}
+                          {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
+                          {% if form.wq_tech_parameter.errors %}
+                            <div class="text-danger small">{{ form.wq_tech_parameter.errors }}</div>
+                          {% endif %}
+                          {% if form.non_field_errors %}
+                            <div class="text-danger small">{{ form.non_field_errors }}</div>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <div class="form-text text-muted small mt-1">
+                          {% if form.instance.wq_tech_parameter.is_inputparameter %}
+                            {{ form.value }}
+                            {% if form.value.errors %}
+                              <div class="text-danger small">{{ form.value.errors }}</div>
+                            {% endif %}
+                          {% else %}
+                            &mdash;
+                          {% endif %}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="form-text text-muted small mt-1">
+                            {% if form.instance.wq_tech_parameter.is_targetparameter %}
+                              {{ form.value }}
+                              {% if form.value.errors %}
+                                <div class="text-danger small">{{ form.value.errors }}</div>
+                              {% endif %}
+                            {% else %}
+                              &mdash;
+                            {% endif %}
+                          </div>
+                        </td>
+                        <td class="align-top">
+                          <div class="form-text text-muted small mt-1">
+                            {{ form.instance.wq_tech_parameter.waterqualityparameter.unit }}
+                          </div>
+                        </td>
+                        <td class="align-top">
+                          <div class="form-text text-muted small mt-1">
+                            {{ form.instance.wq_tech_parameter.waterqualityparameter.description }}
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
       </div>
-      {% endif %}
       {% endfor %}
 
       <div class="d-flex justify-content-between">
@@ -121,6 +161,7 @@
     </form>
   </div>
 </div>
+<br>
 </body>
 
 {% endblock %}
