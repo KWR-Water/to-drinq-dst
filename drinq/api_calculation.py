@@ -8,8 +8,11 @@ from drinq.utils.treatmentkpi import (
     Strainer,
     CascadeMixerCoagulationDosing, 
     CoagulationDynamicMixing,
+    CoagulationInlineMixing,
+    FlocculationDynamicMixing,
     ChlorineDisinfection,
     ChloramineDisinfection,
+    UVdisinfection,
     ChainScrapedSedimentation,
     SludgeBlanketClarifier,
     AirFlotationDAF,
@@ -17,10 +20,16 @@ from drinq.utils.treatmentkpi import (
     PowderedActivatedCarbonFiltration,
     PelletSoftening,
     CationIonExchange,
+    AnionicIEX,
+    UVAOP,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
+    RapidSandMovingBedFiltration,
+    BaffledOzonationContactor,
     MembraneFiltration,
+    CleanWaterStorageTank,
+    IntakePump,
     calculate_water_demand_m3hr_for_population,
     calculate_flow_per_unit,
     INPUT_WQPARAMETER_KEY,
@@ -187,7 +196,7 @@ def technology_selector(
         case 'flocculation':
             for technology in technology_options:
                 match technology.lower():
-                    case 'dynamic mixer':
+                    case 'dynamic mixing':
                         selected_technology = technology
                     case _:
                         pass
@@ -332,15 +341,27 @@ class TechnologyPerformanceCalculator:
                             strainer = Strainer(**tech_kwargs)
                             self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
+
                     case 'coagulation':
-                        if ('coagulant dosing' and 'dynamic mixing') in technology.lower():
+                        if  ("dynamic mixing" in technology.lower()) and ("coagulant dosing" in technology.lower()):
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
-                            self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501                            
+                            self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
+                        elif  ("inline mixing" in technology.lower()) and ("coagulant dosing" in technology.lower()):
+                            coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
                         elif ('cascade' and 'coagulant dosing') in technology.lower():
                             cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = cascade_mixer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = cascade_mixer.parameters  # noqa, E501
+
+                    case 'flocculation':
+                        if ('dynamic mixing') in technology.lower():
+                            floc_dynmixer = FlocDynamicMixing(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
+
                     case 'floc removal':
                         if 'sludge blanket' in technology.lower():
                             sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
@@ -354,6 +375,7 @@ class TechnologyPerformanceCalculator:
                             daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = daf.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = daf.parameters  # noqa, E501
+
                     case 'submerged rapid sand filtration':
                         if ('rapid sand filtration' in technology.lower() and
                             'submerged' in technology.lower() and
@@ -387,6 +409,14 @@ class TechnologyPerformanceCalculator:
                             pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
+                        elif ('UV' and 'H2O2') in technology.lower():  # noqa, E501
+                            uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = uv_aop.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = uv_aop.parameters  # noqa, E501
+                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                            ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
 
                     case 'softening':
                         if ('pellet softening') in technology.lower():
@@ -397,6 +427,25 @@ class TechnologyPerformanceCalculator:
                             ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ciex.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = ciex.parameters  # noqa, E501
+
+                    case 'disinfection':
+                        if ('chlorination') in technology.lower():  # noqa, E501
+                            cl_dis = ChlorineDisinfection(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = cl_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = cl_dis.parameters  # noqa, E501
+                        elif ('chloramination') in technology.lower():  # noqa, E501
+                            clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = clm_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = clm_dis.parameters  # noqa, E501
+                        elif ('UV' and 'disinfection') in technology.lower():  # noqa, E501
+                            uv_dis = UVdisinfection(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = uv_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = uv_dis.parameters  # noqa, E501
+                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                            ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
+
         print("-- Calculated technology KPIs:")
         for tech, kpis in self.tech_kpis.items():
             print(f"---- {tech}: {kpis}")
