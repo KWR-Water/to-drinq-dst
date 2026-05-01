@@ -3238,19 +3238,19 @@ class CationIonExchange(TreatmentKPI):
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     def daily_mass_of_chemicals__kg(self) -> float:
-        """Calculates chemicals in and pellets out per day."""
+        """Calculates chemicals in """
         """Total salt consumed by the whole plant per day."""
         daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow * 24
         salt_ratio = 0.20  # kg NaCl per eq removed (avg range 0.16-0.24)
         return daily_removal_eq * salt_ratio
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        salt_vol = (self.daily_mass_of_chemicals__kg * self.storage_days) / self.nacl_density 
+        salt_vol = (self.daily_mass_of_chemicals__kg() * self.storage_days) / self.nacl_density 
         area_salt = salt_vol / 2.5 # 2.5m stacking height
         return area_salt
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        nacl_mgperl = 1000 * self.daily_mass_of_chemicals__kg / (
+        nacl_mgperl = 1000 * self.daily_mass_of_chemicals__kg() / (
             self.nominal_flow_m3perh * 24)
         return nacl_mgperl
 
