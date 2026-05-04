@@ -22,6 +22,8 @@ from drinq.utils.treatmentkpi import (
     CationIonExchange,
     AnionicIEX,
     UVAOP,
+    LamellaClarifierSlope,
+    LamellaClarifierHorizontal,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
