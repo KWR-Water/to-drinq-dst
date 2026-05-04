@@ -3866,7 +3866,8 @@ class LamellaClarifierSlope(TreatmentKPI):
     def hydraulic_headloss__bar(self) -> float:
         mathfactor =  1.285 - 0.013 * self.plate_angle # transform the angle to calculation factor
         unit_area_m2 = 1.1 * (self.flow_per_unit / self.surface_overflow_rate) * mathfactor 
-        return meters_of_water_to_bar(1.1 * (self.tank_height_m + 0.01 *unit_area_m2)
+        tank_height_m = 1 + (unit_area_m2**2 *0.6) 
+        return meters_of_water_to_bar(1.1 * (tank_height_m + 0.001 *unit_area_m2))
 
     def power__kw(self) -> float:
         """Power for sludge scrapers/pumps based on sludge production."""
@@ -3990,7 +3991,8 @@ class LamellaClarifierHorizontal(TreatmentKPI):
 
     def hydraulic_headloss__bar(self) -> float:
         unit_area_m2 = 1.1 * (self.flow_per_unit / self.surface_overflow_rate)
-        return meters_of_water_to_bar(1.1 * (self.tank_height_m + 0.01 *unit_area_m2)
+        tank_height=1
+        return meters_of_water_to_bar(1.1 * (tank_height_m + 0.001 *unit_area_m2))
 
     def power__kw(self) -> float:
         """Power for sludge scrapers/pumps based on sludge production."""
