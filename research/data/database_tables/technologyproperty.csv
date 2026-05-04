@@ -164,3 +164,4 @@ id,name,unit,description,category,parent_property
 163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),,28
 164,lower bound UV power per m3,kW/m^3,lower bound of UV power intensity (kW/m^3),3,161
 165,upper bound UV power per m3,kW/m^3,upper bound of UV power intensity (kW/m^3),3,161
+166,sludge tank depth,m,depth of the sludge tank,1,

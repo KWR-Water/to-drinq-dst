@@ -375,6 +375,14 @@ class TechnologyPerformanceCalculator:
                             daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = daf.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = daf.parameters  # noqa, E501
+                        elif ('lamella' in technology.lower()) and ('sloped plates' in technology.lower()):
+                            lamella_slope = LamellaClarifierSlope(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_slope.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = lamella_slope.parameters  # noqa, E501
+                        elif ('lamella' in technology.lower()) and ('horizontal' in technology.lower()):
+                            lamella_horizontal = LamellaClarifierHorizontal(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = llamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = lamella_horizontal.parameters  # noqa, E501
 
                     case 'submerged rapid sand filtration':
                         if ('rapid sand filtration' in technology.lower() and
