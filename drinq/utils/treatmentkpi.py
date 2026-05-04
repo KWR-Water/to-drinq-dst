@@ -885,6 +885,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
     power_efficiency_mixer: float
     emission_factor_electricity: float
     chemical_emission_factor:float
+    chemical_tank_height: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -917,7 +918,6 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        
         self.retention_time_min = parameters[
             TPN['retention_time_min']]
         self.number_of_cascade_stages = parameters[
@@ -3593,7 +3593,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
         self.surface_overflow_rate = parameters[
             TPN['surface_overflow_rate']]  # m3/m2/h
-        self.retention_time_min = parameters.get(TPN['retention_time'], 30.0)  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
+        self.retention_time_min = parameters.get(TPN['retention_time_min'], 30.0)  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
         self.tank_height_m = parameters.get(TPN['tank_height'], None)  # m
         self.sludge_tank_height_m = parameters.get(TPN['sludge_tank_height'])  # m
         self.tss_in_mgl = wq_parameters[
@@ -3607,7 +3607,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
     
     def __repr__(self):
         return f"Sludge Blanket Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
-            f"retention time (h)={self.retention_time_min}, " \
+            f"retention time (min)={self.retention_time_min}, " \
             f"TSS in (mg/L)={self.tss_in_mgl}, " \
             f"TSS out (mg/L)={self.tss_out_mgl}, " \
             f"sludge density (kg/m3)={self.sludge_density_kg_m3}"
