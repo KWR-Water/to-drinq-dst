@@ -3584,7 +3584,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
         wq_parameters = self.wq_parameters
-        
+        print(parameters.keys())
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
@@ -3593,9 +3593,9 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
         self.surface_overflow_rate = parameters[
             TPN['surface_overflow_rate']]  # m3/m2/h
-        self.retention_time_min = parameters [TPN['retention_time_min'], 120.0]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
-        self.tank_height_m = parameters [TPN['tank_height'], 3]  # m
-        self.sludge_tank_height_m = parameters [TPN['sludge_tank_height'], 3] # m
+        self.retention_time_min = parameters [TPN['retention_time_min']]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
+        self.tank_height_m = parameters [TPN['tank_height']]  # m
+        self.sludge_tank_height_m = parameters.get ('sludge_tank_height') # m
         self.tss_in_mgl = wq_parameters[
             'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
         self.tss_out_mgl = wq_parameters[
@@ -3641,8 +3641,8 @@ class SludgeBlanketClarifier(TreatmentKPI):
         """Total Area = Clarifier Area + Sludge Thickening Area."""
         unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         unit_volume_m3 = self.flow_per_unit * (self.retention_time_min/60)
-        unit_depth_m = max(self.tank_height_m, self.unit_volume_m3 / self.unit_area_m2)
-        clarifiers_area_total = self.unit_area_m2 * self.units_per_lane * self.lanes 
+        unit_depth_m = max(self.tank_height_m, unit_volume_m3 /unit_area_m2)
+        clarifiers_area_total = unit_area_m2 * self.units_per_lane * self.lanes 
         daily_sludge_vol = self.sludge_production_kg() / self.sludge_density_kg_m3
         sludge_area_m2 = daily_sludge_vol / self.sludge_tank_height_m
         return 1.2 * (clarifiers_area_total + sludge_area_m2)  # 20% access factor
