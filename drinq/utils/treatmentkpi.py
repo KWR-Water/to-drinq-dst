@@ -3595,7 +3595,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['surface_overflow_rate']]  # m3/m2/h
         self.retention_time_min = parameters [TPN['retention_time_min']]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
         self.tank_height_m = parameters [TPN['tank_height']]  # m
-        self.sludge_tank_height_m = parameters.[TPN['sludge_tank_height']] # m
+        self.sludge_tank_height_m = parameters[TPN['sludge_tank_height']] # m
         self.tss_in_mgl = wq_parameters[
             'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
         self.tss_out_mgl = wq_parameters[
