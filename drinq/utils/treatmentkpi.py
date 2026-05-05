@@ -3804,7 +3804,7 @@ class LamellaClarifierSlope(TreatmentKPI):
             TPN['surface_overflow_rate']]  # m3/m2/h
         self.plate_angle = parameters.get(TPN['plate_angle'], 50) 
         self.sludge_tank_height_m = parameters.get(TPN['sludge_tank_height'])  # m
-        self.scraper_power_coeff_kWperm2 = parameters.get(TPN['scraper_power_coeff'])  
+        self.sscraper_power_coefficient = parameters.get(TPN['scraper_power_coeff'])  
         self.backwash_filtration_rate = parameters.get(TPN['backwash_filtration_rate'])  
         self.backwash_duration_min = parameters.get(TPN['backwash_duration'])  
         self.backwash_tank_height_m = parameters.get(TPN['backwash_tank_height'])  
