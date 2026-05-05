@@ -3658,7 +3658,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         """Power for sludge scrapers/pumps based on sludge production."""
         unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         unit_volume_m3 = self.flow_per_unit * (self.retention_time_min/60)
-        pulsator_kw = unit_volume_m3 * units_per_lane * self.lanes * self.power_density_wperm3 /1000
+        pulsator_kw = unit_volume_m3 * self.units_per_lane * self.lanes * self.power_density_wperm3 /1000
         daily_sludge_vol_m3 = self.sludge_production_kg() / self.sludge_density_kg_m3
         head = 10 # assuming 10 meters of pressure head
         power_eff = 0.6 # assuming 60% pump efficiency
