@@ -3240,7 +3240,7 @@ class CationIonExchange(TreatmentKPI):
     def daily_mass_of_chemicals__kg(self) -> float:
         """Calculates chemicals in """
         """Total salt consumed by the whole plant per day."""
-        daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow * 24
+        daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
         salt_ratio = 0.20  # kg NaCl per eq removed (avg range 0.16-0.24)
         return daily_removal_eq * salt_ratio
 
