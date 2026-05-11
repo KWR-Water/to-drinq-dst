@@ -573,7 +573,7 @@ def inlinepipesize(flow_per_unit_m3hr: float) -> float:
     unit_depth_m = int(np.ceil(1.1 * Dm))
     unit_area_m2 = int(D*L)
     powermixing_kW=motorpower_kW[idx]
-    return unit_area_m2,powermixing_kW
+    return unit_area_m2,powermixing_kW, unit_length
 
 
 def reactor_dimensions(
@@ -657,7 +657,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
             TPN['retention_time_min']]
         self.storage_time_days = parameters[
             TPN['storage_time_of_chemicals_days']]
-        self.efficiency_mixer = parameters[TPN['power_efficiency_of_mixers']] / 100  # noqa, E501
+        self.efficiency_mixer = parameters[TPN['power_efficiency_of_mixers']]   # noqa, E501
         self.mixer_velocity_grad = parameters[TPN['mixer_velocity_gradient']]
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
@@ -721,20 +721,23 @@ class CoagulationDynamicMixing(TreatmentKPI):
         return self.conc_chem_mgL
 
     def hydraulic_headloss__bar(self) -> float:
-        return 1 + (0.001 * self.tanks_area_m2) + self.tank_height
+        total_headloss=(0.001 * self.tanks_area_m2) + self.tank_height
+        return meters_of_water_to_bar(total_headloss) 
 
     def power__kw(self) -> float:
         seconds_per_day = 86400
+        dosing_head_m = self.chem_tank_height + 2.0
+        flow_chemical_m3_s = self.volume_chemical_day / seconds_per_day
         power_kw_unit = (
             (
                 (1/self.efficiency_mixer) * self.mixer_velocity_grad**2
-             ) * self.water_viscosity * self.unit_volume_m3) / 1000
-        # TODO: check formula with Greg, i.e. why factor 5? 5 Pumps?
+             ) * WATER_VISCOSITY_N_S_PER_M2 * self.unit_volume_m3) / 1000
+
         power_pump_kw = (
             self.density_chemical_kgm3 * GRAVITY_M_PER_S2 *
-            self.volume_chemical_day * 5) / (
-                seconds_per_day * self.efficiency_mixer) / 1000
-        return power_kw_unit * self.units_per_lane * self.lanes + power_pump_kw
+            flow_chemical_m3_s * dosing_head_m) / (self.efficiency_mixer * 1000)
+        print("power of coag dosing pump",power_pump_kw)
+        return (power_kw_unit * self.units_per_lane * self.lanes) + power_pump_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
@@ -797,7 +800,7 @@ class CoagulationInlineMixing(TreatmentKPI):
         self.flow_per_lane = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.flow_per_unit_m3hr=self.flow_per_lane/self.units_per_lane
-        self.unit_area_m2,self.power_kw_unit = inlinepipesize(flow_per_unit_m3hr = self.flow_per_unit_m3hr) 
+        self.unit_area_m2,self.power_kw_unit,self.unit_length = inlinepipesize(flow_per_unit_m3hr = self.flow_per_unit_m3hr) 
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.volume_chemical_day = calculate_dosing_volume__m3perday_perunit(
@@ -850,7 +853,8 @@ class CoagulationInlineMixing(TreatmentKPI):
         return self.conc_chem_mgL
 
     def hydraulic_headloss__bar(self) -> float:
-        return 1 + (0.001 * self.tanks_area_m2) + self.tank_height
+        total_headloss=(0.001 * self.unit_length) + self.tank_height
+        return meters_of_water_to_bar(total_headloss) 
 
     def power__kw(self) -> float:
         
@@ -897,8 +901,6 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
-        self.emission_factor_electricity = design_parameters.get(
-            EMISSION_FACTOR_ELEC_NAME, None)
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -3122,7 +3124,7 @@ class PelletSoftening(TreatmentKPI):
 
     def footprint_area_for_chemicals__m2(self) -> float:
         lime_depth_m = 2.5
-        lime_density_kgm3 = self.rho_lime_gcm3 / 1000
+        lime_density_kgm3 = self.rho_lime_gcm3 * 1000
         lime_vol = (
             self.lime_req_kgperday * self.storage_days_chemicals
             ) / lime_density_kgm3
@@ -3146,18 +3148,18 @@ class PelletSoftening(TreatmentKPI):
 
     def hydraulic_headloss__bar(self) -> float:
         hl_m = self.h_static_m * (1 - self.porosity_static) * (
-            (self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
+            (self.rho_pellet - DENS_WATER_KG_PER_M3) / DENS_WATER_KG_PER_M3)
         total_lift = hl_m + self.unit_depth_m + 2.0 
         return meters_of_water_to_bar(total_lift)
  
     def power__kw(self) -> float:
         """Power based on overcoming bed headloss + lift height."""
         hl_m = self.h_static_m * (1 - self.porosity_static) * (
-            (self.rho_pellet - GRAVITY_M_PER_S2) / GRAVITY_M_PER_S2)
+            (self.rho_pellet - DENS_WATER_KG_PER_M3) / DENS_WATER_KG_PER_M3)
         total_lift = hl_m + self.unit_depth_m + 2  # 2m friction margin
         power = (
             (self.nominal_flow_m3perh / 3600) * self.rho_water *
-            GRAVITY_M_PER_S2 * total_lift) / self.power_efficiency_pumps / 1000
+            GRAVITY_M_PER_S2 * total_lift) / (self.power_efficiency_pumps * 1000)
         return power
 
     def daily_energy_consumption__kwh(self) -> float:
@@ -3175,7 +3177,7 @@ class PelletSoftening(TreatmentKPI):
 
 class CationIonExchange(TreatmentKPI):
     """KPI calculations for Ion Exchange Softening with Brine Regeneration."""
-    bed_height_m: float
+    tank_height_m: float
     unit_area_m2: float
     unit_diam_m: float
     lanes: int
@@ -3270,27 +3272,29 @@ class CationIonExchange(TreatmentKPI):
 
     def hydraulic_headloss__bar(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
-        resin_volume_unit__m3 = (eq_per_cycle / self.resin_cap) / 1000.0 * 1.1 
+        resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
         a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_surface_rate = self.flow_per_unit_m3hr / a_unit
+        unit_surface_rate_mps = unit_surface_rate / 3600
         resin_porocity = 0.4
         bead_diameter = 0.0007 # 7mm bead diameter
-        term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate     
-        term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate**2   
-        DP_m = (term_laminar + term_turbulent) * self.bed_height_m
-        return meters_of_water_to_bar (self.bed_height_m + DP_m) 
+        term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
+        term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
+        pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
+        headloss_bar = pressure_drop_pa / 100000
+        return headloss_bar + meters_of_water_to_bar(self.tank_height_m )  
 
     def power__kw(self) -> float:
         eff = 0.75
-        headloss_m=self.hydraulic_headloss__bar * METER_PER_BAR
-        power_service_kW=(self.nominal_flow / 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * headloss_m) / (eff * 1000)
+        headloss_m=self.hydraulic_headloss__bar () * METER_PER_BAR
+        power_service_kW=(self.nominal_flow_m3perh / 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * headloss_m) / (eff * 1000)
 
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
-        resin_volume_unit__m3 = (eq_per_cycle / self.resin_cap) / 1000.0 * 1.1 
+        resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
         a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_backflow_rate= 1.2* self.flow_per_unit_m3hr/ a_unit # 1.2 times the normal flow
         h_backwash_m = 1.5 * headloss_m
-        power_backwash_kW = 0.25 * (24 / self.cycle_h) * (unit_backflow_rate/ 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * h_backwash) / (eff * 1000) # 15 minutes backwashing for every regenetation
+        power_backwash_kW = 0.25 * (24 / self.cycle_h) * (unit_backflow_rate/ 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * h_backwash_m) / (eff * 1000) # 15 minutes backwashing for every regenetation
         power_kW = power_service_kW + power_backwash_kW 
         return power_kW
 
@@ -3407,17 +3411,17 @@ class AnionicIEX(TreatmentKPI):
     def hydraulic_headloss__bar(self) -> float:
         """Calculates pressure drop using the Ergun Equation + Internal Losses."""
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
-        resin_volume_unit__m3 = (eq_per_cycle / self.resin_cap) / 1000.0 * 1.1 
+        resin_volume_unit__m3 = (eq_per_cycle / self.resin_doc_capacity_gl) / 1000.0 * 1.1 
         a_unit = resin_volume_unit__m3/ self.bed_depth
         unit_surface_rate=self.flow_per_unit_m3hr/ a_unit
-
+        unit_surface_rate_mps = unit_surface_rate / 3600
         resin_porocity = 0.4
         bead_diameter = 0.0007 # 7mm bead diameter
-        term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate     
-        term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate**2   
-        hydr_pressure_m = (term_laminar + term_turbulent) * self.unit_depth_m
-        
-        return meters_of_water_to_bar(self.unit_depth_m + hydr_pressure_m)
+        term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
+        term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
+        pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
+        headloss_bar = pressure_drop_pa / 100000
+        return headloss_bar + meters_of_water_to_bar(self.tank_height_m ) 
 
     def power__kw(self) -> float:
         """Total power for service pumps and regeneration pumps."""
@@ -3804,8 +3808,8 @@ class LamellaClarifierSlope(TreatmentKPI):
             TPN['surface_overflow_rate']]  # m3/m2/h
         self.plate_angle = parameters.get(TPN['plate_angle'], 50) 
         self.sludge_tank_height_m = parameters.get(TPN['sludge_tank_height'])  # m
-        self.sscraper_power_coefficient = parameters.get(TPN['scraper_power_coeff'])  
-        self.backwash_filtration_rate = parameters.get(TPN['backwash_filtration_rate'])  
+        self.scraper_power_coeff_kWperm2 = parameters.get(TPN['scraper_power_coefficient'])  
+        self.backwash_hydraulic_loading_rate = parameters.get(TPN['backwash_hydraulic_loading_rate'])  
         self.backwash_duration_min = parameters.get(TPN['backwash_duration'])  
         self.backwash_tank_height_m = parameters.get(TPN['backwash_tank_height'])  
         self.tss_in_mgl = wq_parameters[

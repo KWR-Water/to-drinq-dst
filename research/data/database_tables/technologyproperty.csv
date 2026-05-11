@@ -130,7 +130,7 @@ id,name,unit,description,category,parent_property
 129,sand density,kg/m^3,density of sand,1,
 130,anthracite density,kg/m^3,density of anthracite,1,
 131,backwash duration,minutes,backwash duration (min.),1,
-132,backwash filtration rate,m^3/m^2/hour,backwash filtration rate (m3/m2/h),1,
+132,backwash hydraulic loading  rate,m^3/m^2/hour,backwash hydraulic loading  rate (m3/m2/h),1,
 133,sand media grain size,mm,sand media grain size,1,
 134,anthracite media grain size,mm,anthracite media grain size,1,
 135,sand filter bed height,m,sand filter bed height,1,
