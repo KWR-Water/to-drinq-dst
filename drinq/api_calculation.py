@@ -22,6 +22,8 @@ from drinq.utils.treatmentkpi import (
     CationIonExchange,
     AnionicIEX,
     UVAOP,
+    LamellaClarifierSlope,
+    LamellaClarifierHorizontal,
     RapidSandDoubleMediumFiltration,
     RapidSandSingleMediumFiltration,
     RapidSandPressurizedVesselFiltration,
@@ -343,11 +345,11 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'coagulation':
-                        if  ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        if ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
-                        elif  ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        elif ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
@@ -358,7 +360,7 @@ class TechnologyPerformanceCalculator:
 
                     case 'flocculation':
                         if ('dynamic mixing') in technology.lower():
-                            floc_dynmixer = FlocDynamicMixing(**tech_kwargs)  # noqa, E501
+                            floc_dynmixer = FlocculationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
 
@@ -375,6 +377,14 @@ class TechnologyPerformanceCalculator:
                             daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = daf.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = daf.parameters  # noqa, E501
+                        elif ('lamella' in technology.lower()) and ('sloped plates' in technology.lower()):
+                            lamella_slope = LamellaClarifierSlope(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_slope.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = lamella_slope.parameters  # noqa, E501
+                        elif ('lamella' in technology.lower()) and ('horizontal' in technology.lower()):
+                            lamella_horizontal = LamellaClarifierHorizontal(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = llamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = lamella_horizontal.parameters  # noqa, E501
 
                     case 'submerged rapid sand filtration':
                         if ('rapid sand filtration' in technology.lower() and

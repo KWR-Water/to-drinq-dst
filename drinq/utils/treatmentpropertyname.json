@@ -157,5 +157,12 @@
   "pac_slurry_concentration": "PAC slurry concentration",
   "static_height_of_pellet_bed": "static height of pellet bed",
   "lime_dosage_mass_fraction": "lime dosage mass fraction",
-  "target_upflow_velocity": "target upflow velocity"
+  "target_upflow_velocity": "target upflow velocity",
+  "level_difference": "level difference",
+  "power_per_m3": "UV power per m3",
+  "lower_bound_uv_dose": "lower bound uv dose",
+  "upper_bound_uv_dose": "upper bound uv dose",
+  "lower_bound_power_per_m3": "lower bound UV power per m3",
+  "upper_bound_power_per_m3": "upper bound uUV power per m3",
+  "sludge_tank_height": "sludge tank height"
 }

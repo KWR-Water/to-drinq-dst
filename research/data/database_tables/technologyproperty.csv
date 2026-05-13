@@ -130,7 +130,7 @@ id,name,unit,description,category,parent_property
 129,sand density,kg/m^3,density of sand,1,
 130,anthracite density,kg/m^3,density of anthracite,1,
 131,backwash duration,minutes,backwash duration (min.),1,
-132,backwash filtration rate,m^3/m^2/hour,backwash filtration rate (m3/m2/h),1,
+132,backwash hydraulic loading  rate,m^3/m^2/hour,backwash hydraulic loading  rate (m3/m2/h),1,
 133,sand media grain size,mm,sand media grain size,1,
 134,anthracite media grain size,mm,anthracite media grain size,1,
 135,sand filter bed height,m,sand filter bed height,1,
@@ -140,7 +140,7 @@ id,name,unit,description,category,parent_property
 139,PAC porosity,,porosity of powedered activated carbon,4,
 140,mass density of pellets,kg/m^3,mass density of pellets for softening (g/cm3),4,
 141,mass density of air,g/cm^3,mass density of air (g/cm3),1,
-142,mass density of TSS,g/cm^3,mass density of total suspended solids (g/cm3),1,
+142,mass density of TSS,kg/m^3,mass density of total suspended solids (g/cm3),1,
 143,chemical dosage factor,%,percentage of chemical required per kg of a parameter,1,
 144,pellet porosity static,m,pellets at initial condition of the processing,2,
 145,pellet porosity expanded,,pellets at final condition of the processing,3,
@@ -164,3 +164,4 @@ id,name,unit,description,category,parent_property
 163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),,28
 164,lower bound UV power per m3,kW/m^3,lower bound of UV power intensity (kW/m^3),3,161
 165,upper bound UV power per m3,kW/m^3,upper bound of UV power intensity (kW/m^3),3,161
+166,sludge tank height,m,height of the sludge tank,1,
