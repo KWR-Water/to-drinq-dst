@@ -345,11 +345,11 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'coagulation':
-                        if  ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        if ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
-                        elif  ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        elif ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
@@ -360,7 +360,7 @@ class TechnologyPerformanceCalculator:
 
                     case 'flocculation':
                         if ('dynamic mixing') in technology.lower():
-                            floc_dynmixer = FlocDynamicMixing(**tech_kwargs)  # noqa, E501
+                            floc_dynmixer = FlocculationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
 
