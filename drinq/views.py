@@ -1130,7 +1130,7 @@ class TechnologyPropertiesView(generic.FormView):
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
         )
-        kpi_calculator.calculate_kpi()  # TODO: debug. Microstrainer works!
+        kpi_calculator.calculate_kpi()  # TODO: debugging
         kpi_calculator.sum_kpis()
         
         # Assign the summed technology KPIs to the plant calculator

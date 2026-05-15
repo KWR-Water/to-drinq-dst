@@ -333,10 +333,6 @@ class TechnologyPerformanceCalculator:
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
-                            # case 'strainer':
-                            #     strainer = Strainer(**tech_kwargs)
-                            #     self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
-                            #     self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'screening':
                         if 'strainer' in technology.lower():

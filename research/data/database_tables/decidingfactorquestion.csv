@@ -1,15 +1,19 @@
-﻿id;name;text;categoricalvariable
-1;q_sourcewater;What is the source of the intake water?;1
-2;q_algae;does the intake water has high concentrations of algae?;1
-3;q_pac;powdered activated carbon (PAC) required to remove micropollutants?;1
-4;q_mfuf;MF/UF required to remove NOM?;1
-5;q_hardness__mfuf;Is hardness is more or less than threshold value (typically 1.5 mmol/l)?;1
-6;q_nom__mfuf;Are NOM concentrations more than threshold?;1
-7;q_omp__mfuf;Are micropollutant concentrations higher than threshold value?;1
-8;q_turbidity;Is turbidity more or less than threshold value?;1
-9;q_nom__notmfuf;Are NOM concentrations more than threshold?;1
-10;q_hardness__notmfuf;Is hardness is more or less than threshold value (typically 1.5 mmol/l)?;1
-11;q_omp;Are micropollutant concentrations higher than threshold value?;1
-12;q_disinfection;Is disinfection required?;1
-100000;q_parent_test;Parent deciding factor, test1;1
-100010;q_parent_test2;Parent deciding factor, test2;1
+id,name,text,categoricalvariable
+1,q_sourcewater,What is the source of the intake water?,1
+2,q_algae,does the intake water have high concentrations of algae?,1
+3,q_pac,powdered activated carbon (PAC) required to remove micropollutants?,1
+4,q_mfuf,Is MF/UF required to remove NOM?,1
+5,q_hardness__mfuf,Is hardness is more or less than threshold value (typically 1.5 mmol/l)?,1
+6,q_nom__mfuf,"Are NOM concentrations high, i.e. more than a typical threshold?",1
+7,q_omp__mfuf,Are micropollutant concentrations higher than threshold value?,1
+8,q_turbidity,Is turbidity more or less than threshold value?,1
+9,q_nom__notmfuf,"Are NOM concentrations high, i.e. more than a typical threshold?",1
+10,q_hardness__notmfuf,Is hardness is more or less than threshold value (typically 1.5 mmol/l)?,1
+11,q_omp__all,Are micropollutant concentrations higher than threshold value?,1
+12,q_disinfection__ozon,"Is disinfection, or additional OMP removal, by ozonation required?",1
+13,q_disinfection__notozon,"Is disinfection, excluding the application of ozonation, required?",1
+14,q_cleanwaterstorage,Are reservoir tanks needed for clean water storage?,1
+100000,q_parent_test,"Parent deciding factor, test1",1
+100010,q_parent_test2,"Parent deciding factor, test2",1
+100011,parent_question,Is this a parent deciding factor?,1
+100012,child_question,Is this a another question?,1
