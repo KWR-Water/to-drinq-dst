@@ -1585,7 +1585,7 @@ class ChloramineDisinfection(TreatmentKPI):
     chlorine_disinfection: ChlorineDisinfection
     ammonia_dosing_mgperltr: float
     ammonia_concentration_mgperltr: float
-    chemical_emission_factor : float
+    chemical_emission_factor: float
     emission_factor_electricity: float
 
     def __post_init__(self):
@@ -1603,7 +1603,8 @@ class ChloramineDisinfection(TreatmentKPI):
                 TPN['target_residual_concentration_mgL']],
             chlorine_to_ammonia_ratio=5,
         )
-        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
+        self.chemical_emission_factor = parameters[
+            TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)        
         self.lanes = design_parameters.get('number of lanes', None)
@@ -1619,6 +1620,12 @@ class ChloramineDisinfection(TreatmentKPI):
             1000 * 1.19)
         self.volume_ammonia_m3day = self.daily_mass_of_chemicals__kg() / (
             1000 * 0.68)
+    
+    def __repr__(self):
+        return f"ChloramineDisinfection(tank height (m)={self.tank_height_m}, " \
+                f"chemical tank height (m)={self.chemicals_tank_height_m}, " \
+                f"retention time (min)={self.retention_time_min}, " \
+                f"nominal flow (m3/hr)={self.flow_m3perh})"
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -1707,13 +1714,13 @@ class MembraneFiltration(TreatmentKPI):
     recovery_rate: float
     membrane_flux_literperm2perh: float
     membrane_area_m2: float
-    operating_pressure_bar : float
+    operating_pressure_bar: float
     power_efficiency_pump: float
     vessels_per_unit: int
     pressure_vessel_orientation: int
-    permeate_flow_per_unit_m3perh : float
-    area_per_unit_m2 : float
-    emission_factor_electricity: float    
+    permeate_flow_per_unit_m3perh: float
+    area_per_unit_m2: float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1727,9 +1734,9 @@ class MembraneFiltration(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.number_of_units = self.units_per_lane * self.lanes
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, self.flow_rate_m3perh)
+            self.lanes, self.nominal_flow_m3perh)
         self.membranes_per_vessel = parameters[
-            TPN['membranes_per_pressure_vessel']]                                               
+            TPN['membranes_per_vessel']]                                               
         self.recovery_rate = parameters[TPN['recovery_rate_percent']] / 100
         self.membrane_flux_literperm2perh = parameters[TPN['membrane_flux_lmh']]
         self.membrane_area_m2 = parameters[TPN['membrane_area_m2']]
@@ -1749,8 +1756,13 @@ class MembraneFiltration(TreatmentKPI):
             pressure_vessel_orientation=self.pressure_vessel_orientation,
             membranes_per_vessel=self.membranes_per_vessel,
             vessels_per_unit=self.vessels_per_unit,
-        ) 
+        )
 
+    def __repr__(self):
+        return f"MembraneFiltration(nominal flow (m3/hr)={self.nominal_flow_m3perh}, " \
+               f"operating pressure (bar)={self.operating_pressure_bar}, " \
+               f"recovery rate (%)={self.recovery_rate * 100})"
+                
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
         function_name = TECH_KPI_MAPPINGS.get(kpi, None)
@@ -1799,7 +1811,7 @@ class MembraneFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
+        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # noqa, E501, kg CO2 eq per m3
         return specific_co2_emissions
 
 
@@ -1834,7 +1846,14 @@ class IntakePump(TreatmentKPI):
         self.power_efficiency = parameters[TPN['power_efficiency']] / 100
         self.motor_efficiency = parameters[TPN['motor_efficiency']] / 100
         self.level_difference_m = parameters[TPN['level_difference_m']]
-        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)        
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
+
+    def __repr__(self):
+        return f"IntakePump(lanes={self.lanes}, nominal flow (m3/hr)={self.nominal_flow_m3perh}, " \
+            f"pipe diameter (m)={self.pipe_diameter_m}, pipe length (m)={self.pipe_length_m}, "\
+            f"pipe roughness={self.pipe_roughness}, " \
+            f"level difference (m)={self.level_difference_m})"
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -1928,20 +1947,26 @@ class CleanWaterStorageTank(TreatmentKPI):
         plant_kpis = self.plant_kpis
         # wq_parameters = self.wq_parameters
 
-        self.lanes = design_parameters.get('number of lanes', None)
-        self.tank_height_m = parameters[TPN['tank height']]
-        self.retention_time_hrs = parameters[TPN['retention_time_hr']]
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
-        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
-        self.number_of_units = self.units_per_lane * self.lanes
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
+        self.lanes = design_parameters.get('number of lanes', None)
+        self.tank_height_m = parameters[TPN['tank_height']]
+        self.retention_time_hrs = parameters[TPN['retention_time_hr']]
+        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
+        self.number_of_units = self.units_per_lane * self.lanes
         self.unit_volume_m3 = (
             self.retention_time_hrs * self.flow_m3perh) / (
             3600 * self.number_of_units)
         self.unit_area_m2 = calculate_unit_area_tank(
             unit_volume_m3=self.unit_volume_m3,
             unit_height_m=self.tank_height_m)
+
+    def __repr__(self):
+        return f"CleanWaterStorageTank(tank height (m)={self.tank_height_m}, " \
+               f"retention time (hrs)={self.retention_time_hrs}, " \
+                f"nominal flow (m3/hr)={self.nominal_flow_m3perh})"
         
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
@@ -2011,7 +2036,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     efficiency_backwash_pump: float
     water_density_kg_per_m3: float
     water_viscosity: float
-    nominal_flow_m3perh:float
+    nominal_flow_m3perh: float
     flow_per_lane_m3perh: float
     unit_volume_m3: float
     unit_area_m2: float
@@ -2020,7 +2045,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     backwash_pump_flow_m3_per_h: float
     backwash_pump_head_m: float
     backwash_pump_area_m2: float
-    backwash_water_area_m2: float 
+    backwash_water_area_m2: float
     backwash_area_m2: float
     backwash_pump_head_m: float
     emission_factor_electricity: float
@@ -3605,9 +3630,9 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.flow_per_unit = self.flow_per_lane / self.units_per_lane
         self.surface_overflow_rate = parameters[
             TPN['surface_overflow_rate']]  # m3/m2/h
-        self.retention_time_min = parameters [TPN['retention_time_min']]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
-        self.tank_height_m = parameters [TPN['tank_height']]  # m
-        self.sludge_tank_height_m = parameters[TPN['sludge_tank_height']] # m
+        self.retention_time_min = parameters[TPN['retention_time_min']]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
+        self.tank_height_m = parameters[TPN['tank_height']]  # m
+        self.sludge_tank_height_m = parameters[TPN['tank_height']] # m
         self.tss_in_mgl = wq_parameters[
             'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
         self.tss_out_mgl = wq_parameters[

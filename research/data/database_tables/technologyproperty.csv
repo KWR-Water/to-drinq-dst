@@ -13,7 +13,7 @@ id,name,unit,description,category,parent_property
 12,energy consumption (kWh/m3 water),kWh/m^3,energy consumption (kWh) per m3 water produced,2,
 13,lower bound of dosing flow rate (liter/hr),10^-3 m^3/hour,lower value of the feasibile range of flow rates (liter per hour),4,17
 14,upper bound of dosing flow rate (liter/hr),10^-3 m^3/hour,upper value of the feasibile range of flow rates (liter per hour),4,17
-15,target concentration of dosing chemical (mg/l),g/m^3,nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume,4,
+15,target concentration of dosing chemical,g/m^3,nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume,4,
 16,number of units per lane,,number of units per treatment lane,1,
 17,nominal dosing flow rate,10^-3 m^3/hour,nominal (design) value for dosing flow rate,1,
 18,retention time (min),minutes,retention time of water,1,
@@ -42,7 +42,7 @@ id,name,unit,description,category,parent_property
 41,recirculation ratio,,water recirculation in DAF process,1,
 42,plate spacing,m,space between plates in lamella clarifiers,1,103
 43,upper bound weir_loading,m3/m/day,upper bound of lamella weird loading,1,
-44,backwash tank height,m,backwash tank height,1,19
+44,backwash tank height,m,backwash tank height,1,
 45,upper bound sand filter bed height,m,upper bound rapid sand filtration media height,1,135
 46,lower bound sand filter bed height,m,lower bound rapid sand filtration media height,1,135
 47,lower bound sand grain size,mm,upper bound sand media grain size,1,133
@@ -135,8 +135,8 @@ id,name,unit,description,category,parent_property
 134,anthracite media grain size,mm,anthracite media grain size,1,
 135,sand filter bed height,m,sand filter bed height,1,
 136,anthracite filter bed height,m,anthracite filter bed height,1,
-137,energy consumption per kg ozone,kwH/kg,energy consumption per kg of product (ozone) produced,3,
-138,power density,W/m3,scraper power per unit volume (m3),3,
+137,energy consumption per kg ozone,kWh/kg,energy consumption per kg of product (ozone) produced,3,
+138,power density,W/m3,power per unit volume (m3),3,
 139,PAC porosity,,porosity of powdered activated carbon,4,
 140,mass density of pellets,kg/m^3,mass density of pellets for softening (g/cm3),4,
 141,mass density of air,g/cm^3,mass density of air (g/cm3),1,

@@ -360,6 +360,16 @@ class TechnologyPerformanceCalculator:
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
 
+                    case 'nom removal':
+                        if ('anion exchange') in technology.lower():
+                            anion_iex = AnionicIEX(**tech_kwargs)
+                            self.tech_kpis[technology] = anion_iex.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = anion_iex.parameters  # noqa, E501
+                        if ('ultrafiltration') in technology.lower():
+                            ultrafiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = ultrafiltration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = ultrafiltration.parameters  # noqa, E501
+
                     case 'floc removal':
                         if 'sludge blanket' in technology.lower():
                             sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
@@ -379,7 +389,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = lamella_slope.parameters  # noqa, E501
                         elif ('lamella' in technology.lower()) and ('horizontal' in technology.lower()):
                             lamella_horizontal = LamellaClarifierHorizontal(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = llamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = lamella_horizontal.parameters  # noqa, E501
 
                     case 'submerged rapid sand filtration':
@@ -451,6 +461,12 @@ class TechnologyPerformanceCalculator:
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
+  
+                    case 'clean water storage':
+                        if ('clean water storage tank' in technology.lower()):
+                            storage_tank = CleanWaterStorageTank(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = storage_tank.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = storage_tank.parameters  # noqa, E501
 
         print("-- Calculated technology KPIs:")
         for tech, kpis in self.tech_kpis.items():
