@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
+
 import logging
 import numpy as np
 from warnings import warn
@@ -38,6 +39,8 @@ from drinq.models import (
     TreatmentPlantTechnologyPropertyValue,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
+    TechnologyChemicalagentJunction,
+    ChemicalagentPrice,
     WaterqualityParameterTechnologyJunction,
     TreatmentPlantTechnologyKPIValue,
 )
@@ -61,17 +64,23 @@ from drinq.api_calculation import (
     WaterqualityParameterData,
     KPI_NOMINAL_FLOW_M3PERH,
     KPI_ENERGY_CONSUMPTION_KWHRPERM3,
-    KPI_SPECIFIC_CONSTRUCTION_COSTS,
+    KPI_CONSTRUCTION_COSTS,
     KPI_FOOTPRINT_AREA_M2,
     KPI_OPER_AND_MAINT_COSTS_ANN,
     KPI_INVESTMENT_COSTS_ANN,
+    KPI_LEVELIZED_COST_OF_WATER,
+    KPI_LEVELIZED_CHEMICAL_COSTS,
     KPI_CO2_EMISSIONS_KGPERM3,
-    # KPI_MASS_OF_CHEMICALS,
     TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY,
     TECHKPI_FOOTPRINT_AREA_M2,
-    # TECHKPI_MASS_OF_CHEMICALS,
     TECHKPI_POWER_KW,
     TECHKPI_CO2_EMISSIONS_KGPERM3,
+    TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
+    DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME,
+    DESIGN_PAR_INTEREST_PERC_NAME,
+    DESIGN_PAR_LIFESPAN_NAME,
+    DESIGN_PAR_PERSONNEL_COSTS_NAME,
+    DESIGN_PAR_ENERGY_PRICE_NAME,
     )
 
 from drinq.utils.treatmentkpi import (
@@ -89,10 +98,12 @@ DB_PLANTKPI_MAPPING = {
     KPI_NOMINAL_FLOW_M3PERH: TPPN['nominal_flow_rate'],
     KPI_ENERGY_CONSUMPTION_KWHRPERM3: TPPN['specific_energy_consumption'],
     KPI_FOOTPRINT_AREA_M2: TPPN['footprint_area'],
-    KPI_SPECIFIC_CONSTRUCTION_COSTS: TPPN['specific_construction_costs'],
+    KPI_CONSTRUCTION_COSTS: TPPN['construction_costs'],
     KPI_OPER_AND_MAINT_COSTS_ANN: TPPN['operation_and_maintenance_costs_annual'],
     KPI_INVESTMENT_COSTS_ANN: TPPN['investment_costs_annual'],
     KPI_CO2_EMISSIONS_KGPERM3: TPPN['co2_equivalent_emissions'],
+    KPI_LEVELIZED_COST_OF_WATER: TPPN['levelized_cost_of_water'],
+    KPI_LEVELIZED_CHEMICAL_COSTS: TPPN['levelized_cost_of_chemicals'],
     # KPI_MASS_OF_CHEMICALS: TPPN['mass_of_chemicals'],
 }
 # SUMMED_TECHKPI_MAPPING = {
@@ -433,7 +444,6 @@ class QuestionsCompleteView(generic.TemplateView):
             treatment_options, treatment_maps = dst.get_treatment_trains(
                 technology_tuples=technologies)
 
-
             # Build available technologies and stage names per step
             num_stages = len(technologies)
             stages = []
@@ -478,7 +488,6 @@ class QuestionsCompleteView(generic.TemplateView):
                 if plant.slug is not None and plant.option in filtered_options:
                     filtered_options[plant.option]['slug'] = plant.slug
 
-
             context['treatment_options'] = filtered_options
             context['stages'] = stages
             context['selected_techs'] = selected_techs
@@ -517,6 +526,9 @@ class NamedDesignCreateView(generic.CreateView):
             configuration=configuration,
         )
         if created:
+            # The treatment layout configuration is stored here.
+            # It is determined by the treatment map stored in
+            # the session
             for step_number, tech in treatment_map.items():
                 tech_id = tech['technology']
                 technology = Technology.objects.get(id=tech_id)
@@ -677,37 +689,6 @@ class DesignParameterInputView(generic.FormView):
                 raise Http404("Stage does not exist")
         return stage_names
 
-    def get_constructioncost_parameter_dict(self, technology_ids: list = None):
-        if technology_ids is None:
-            technology_ids = self.get_treatment_technology_ids()
-        cost_parameters = {tech: {} for tech in technology_ids}
-        for tech in technology_ids:
-            # Fetch cost parameters for each technology
-            tech_obj = Technology.objects.get(id=tech)
-            cost_params = TechnologyConstructionCostParameter.objects.filter(
-                technology=tech_obj).first()
-            if cost_params:
-                plantproperty = cost_params.plantproperty.name if cost_params.plantproperty else None  # noqa, E501
-                technologyproperty = cost_params.technologyproperty.name if cost_params.technologyproperty else None  # noqa, E501
-                if technologyproperty is not None:
-                    technologyproperty_value = TreatmentPlantTechnologyPropertyValue.objects.filter(  # noqa, E501
-                        treatmentplant=self.get_treatment_plant(),
-                        technology=tech_obj,
-                        technologyproperty=cost_params.technologyproperty
-                    ).first()
-                cost_parameters[tech] = {
-                    'a': cost_params.a,
-                    'b': cost_params.b,
-                    'c': cost_params.c,
-                    'plant_property': plantproperty,
-                    'technology_property': technologyproperty,
-                    'cost_function': cost_params.costfunction,
-                }
-            else:
-                cost_parameters[tech] = None
-
-        return cost_parameters
-
     def get_form(self, form_class=None):
         treatment_plant = self.get_treatment_plant()
         design_parameters = DesignParameter.objects.all()
@@ -760,51 +741,11 @@ class DesignParameterInputView(generic.FormView):
             instance.save()
             saved.append(instance)
 
-        # Process results after saving
-        # self.process_results(treatment_plant)
-        # After saving plant-wide design parameters, continue to
-        # technology-level properties step before running calculations.
         return redirect('technology_properties', plant_id=treatment_plant.id)
 
     def form_invalid(self, formset):
         """Handle invalid form"""
         return self.render_to_response(self.get_context_data(formset=formset))
-
-    # def process_results(self, treatment_plant):
-    #     stages = self.get_treatment_stage_names()
-    #     technologies = self.get_treatment_technology_names()
-
-    #     # Initialize the treatment plant performance calculator
-    #     print("--------------------------------------")
-    #     print("Processing results for treatment plant:", treatment_plant.name)  # noqa, E501
-    #     print('Initializing plant calculator with stages:', stages, 'and technologies:', technologies)  # noqa, E501
-    #     plant_calculator = dac.TreatmentPlantPerformanceCalculator(
-    #         treatmentplant_id=treatment_plant.id,
-    #         stages=stages,
-    #         technologies=technologies,
-    #         design_parameters={
-    #             dp.designparameter.name: dp.value
-    #             for dp in TreatmentplantDesignParameter.objects.filter(
-    #                 treatmentplant=treatment_plant
-    #             )
-    #         }
-    #         )
-
-    #     # Calculate and store plant properties
-    #     # TODO: Is this processed???
-    #     print("--------------------------------------")
-    #     print("Calculating nominal flow for treatment plant:", treatment_plant.name)  # noqa, E501
-    #     nominal_flow_value = plant_calculator.update_nominal_flow_m3perhr()
-    #     nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
-    #         name=TPPN["nominal_flow_rate_m3perh"])
-    #     plant_calculator.set_constructioncosts(
-    #         cost_parameters=self.get_constructioncost_parameter_dict(),
-    #     )
-    #     TreatmentPlantPropertyValue.objects.update_or_create(
-    #         treatmentplant=treatment_plant,
-    #         property=nominal_flow,
-    #         defaults={'value': str(nominal_flow_value)}
-    #     )
 
     def post(self, request, *args, **kwargs):
         """Handle POST requests"""
@@ -831,7 +772,6 @@ class DesignParameterResultsView(generic.DetailView):
         ).select_related('technology', 'kpi')
 
         # Group by technology
-        from collections import defaultdict
         tech_kpis = defaultdict(list)
         for kpi_value in tech_kpi_qs:
             tech_kpis[kpi_value.technology].append(kpi_value)
@@ -883,7 +823,9 @@ class TechnologyPropertiesView(generic.FormView):
     def get_form(self, form_class=None):
         treatment_plant = self.get_treatment_plant()
         tech_ids = TreatmentPlantLayout.objects.filter(
-            treatmentplant=treatment_plant).values_list('technology', flat=True)
+            treatmentplant=treatment_plant).values_list(
+                'technology', flat=True)
+        
         non_digested_prop_ids = TechnologyPropertyJunction.objects.filter(
             technology__in=tech_ids, is_digested=False
         ).values_list('property', flat=True)
@@ -992,17 +934,6 @@ class TechnologyPropertiesView(generic.FormView):
             instance.save()
             saved.append(instance)
 
-        # Save water quality parameter values
-        for form in waterquality_formset.forms:
-            if getattr(form, 'cleaned_data', None) is None:
-                form.full_clean()
-            if not form.cleaned_data:
-                continue
-            instance = form.save(commit=False)
-            if getattr(instance, 'treatmentplant', None) is None:
-                instance.treatmentplant = treatment_plant
-            instance.save()
-
         # Step 2: Calculate technology-specific and plant-wide KPIs
         # - gather technologies and stages
         # - build design parameter dict
@@ -1028,8 +959,27 @@ class TechnologyPropertiesView(generic.FormView):
             for dp in TreatmentplantDesignParameter.objects.filter(
                 treatmentplant=treatment_plant)
         }
-
-        plant_calculator = dac.TreatmentPlantPerformanceCalculator(
+        tech_chem_objects = TechnologyChemicalagentJunction.objects
+        chemical_agents = [
+            cap.chemical_agent for cap in tech_chem_objects.filter(
+                technology__in=tech_ids
+            ).select_related('chemical_agent').distinct()
+        ]
+        chemicalagent_parameters = {
+            tech_name: {
+                c_agent.name: {
+                    'price': ChemicalagentPrice.objects.get(
+                        chemical_agent=c_agent).default_value
+                    if ChemicalagentPrice.objects.filter(
+                        chemical_agent=c_agent).exists() else None,
+                    'emission_factor': None,
+                }
+                for c_agent in chemical_agents
+                if TechnologyChemicalagentJunction.objects.filter(
+                    technology__name=tech_name, chemical_agent=c_agent).exists()
+            } for tech_name in technology_names
+        }
+        dwtp = dac.TreatmentPlantPerformanceCalculator(
             treatmentplant_id=treatment_plant.id,
             stages=stage_names,
             technologies=technology_names,
@@ -1037,17 +987,15 @@ class TechnologyPropertiesView(generic.FormView):
             waterquality_parameters={},  # to be filled in by tech calculator
             plant_kpis={},
             db_kpi_mapping=DB_PLANTKPI_MAPPING,
+            chemicalagent_parameters=chemicalagent_parameters
         )
         # Step 2a: set the nominal flow
         # -----------------------------------------------------     
-        if plant_calculator.nominal_flow_m3perhr.value is None:
-            plant_calculator.update_nominal_flow_m3perhr()
-            plant_calculator.update_plant_kpis()  # to set nominal flow KPI
+        if dwtp.nominal_flow_m3perhr.value is None:
+            dwtp.update_nominal_flow_m3perhr()
+            dwtp.update_plant_kpis()  # to set nominal flow KPI
         wq_parameters = {
             tech: {} for tech in technology_names}
-
-        # plant_calculator.plant_kpis[TPPN['nominal_flow_rate_m3perh']] = (
-        #     plant_calculator.nominal_flow_m3perhr.value)
 
         # Step 2b: initialize technology-dependent calculations
         # ----------------------------------------------------
@@ -1126,7 +1074,8 @@ class TechnologyPropertiesView(generic.FormView):
             design_parameters=design_parameters,
             tech_parameters=tech_properties,
             waterquality_parameters=wq_parameters,
-            plant_kpis=plant_calculator.plant_kpis,
+            chemicalagent_parameters=chemicalagent_parameters,
+            plant_kpis=dwtp.plant_kpis,
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
         )
@@ -1135,14 +1084,14 @@ class TechnologyPropertiesView(generic.FormView):
         
         # Assign the summed technology KPIs to the plant calculator
         summed_kpis = kpi_calculator.summed_kpis
-        plant_calculator.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
+        dwtp.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
             TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
-        plant_calculator.energyconsumption_kwhrperm3.value = plant_calculator.get_energyconsumption_per_m3()  # noqa, E501
-        plant_calculator.power_kw.value = summed_kpis.get(
+        dwtp.energyconsumption_kwhrperm3.value = dwtp.get_energyconsumption_per_m3()  # noqa, E501
+        dwtp.power_kw.value = summed_kpis.get(
             TECHKPI_POWER_KW, None)
-        plant_calculator.co2_emissions_kgperm3.value = summed_kpis.get(  # noqa, E501
+        dwtp.co2_emissions_kgperm3.value = summed_kpis.get(  # noqa, E501
             TECHKPI_CO2_EMISSIONS_KGPERM3, None)
-        plant_calculator.footprint_area_m2.value = summed_kpis.get(
+        dwtp.footprint_area_m2.value = summed_kpis.get(
             TECHKPI_FOOTPRINT_AREA_M2, None)
 
         # Save the digested technology properties back to the database
@@ -1160,6 +1109,7 @@ class TechnologyPropertiesView(generic.FormView):
                     )
                 except TechnologyProperty.DoesNotExist:
                     continue
+            # save KPI values
             for (kpi_name, kpi_value) in (
                     kpi_calculator.tech_kpis[tech_name].items()):
                 try:
@@ -1178,9 +1128,9 @@ class TechnologyPropertiesView(generic.FormView):
                 except TechnologyKPI.DoesNotExist:
                     continue
 
-        # Step 2c: compute plant-wide properties
-        # --------------------------------------
-        plant_calculator.update_plant_kpis()
+        # Step 2c: compute plant-wide costs
+        # ---------------------------------
+        dwtp.update_plant_kpis()
         # compute construction costs if possible (replicate existing helper)
         constrcosts = {}
         for tech_id in tech_ids:
@@ -1209,11 +1159,6 @@ class TechnologyPropertiesView(generic.FormView):
                                 f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
                                 f"construction cost calculation"
                             )
-                            warn(
-                                f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
-                                f" for technology_id={tech_id} and "
-                                f"technologyproperty={tccp.technologyproperty}"
-                                )
                             techprop_value = None
                         if techprop_value is None:
                             continue
@@ -1227,7 +1172,7 @@ class TechnologyPropertiesView(generic.FormView):
                     else:
                         if tccp.plantproperty:
                             try:
-                                plantprop_value = plant_calculator.plant_kpis.get(  # noqa, E501
+                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
                                     tccp.plantproperty.name, None)
                             except TreatmentPlantProperty.DoesNotExist:
                                 plantprop_value = None
@@ -1288,7 +1233,7 @@ class TechnologyPropertiesView(generic.FormView):
                         else:
                             if tccp.plantproperty:
                                 try:
-                                    plantprop_value = plant_calculator.plant_kpis.get(  # noqa, E501
+                                    plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
                                         tccp.plantproperty.name, None)
                                 except TreatmentPlantProperty.DoesNotExist:
                                     plantprop_value = None
@@ -1311,20 +1256,62 @@ class TechnologyPropertiesView(generic.FormView):
                         )
                     continue
         try:
-            plant_calculator.set_constructioncosts(cost_parameters=constrcosts)
+            dwtp.set_constructioncosts(cost_parameters=constrcosts)
         except KeyError as ke:
             # TODO: raise the error in future versions
             # perf_indic.update({TPPN['construction_costs_eurperm3']: None})
             logger.warning(
                 f"KeyError during construction cost calculation: {ke}. ")  # noqa, E501
 
-        # Calculate investment and maintenance costs
-        # TODO: implement
+        # Calculate investment, maintenance and levelized costs
+        oper_and_maintenance_rate = dwtp.design_parameters.get(
+            DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME, 5) / 100
+        lifespan = dwtp.design_parameters.get(
+            DESIGN_PAR_LIFESPAN_NAME, None)
+        interest_rate = dwtp.design_parameters.get(
+            DESIGN_PAR_INTEREST_PERC_NAME, None
+        ) / 100
+        personnel_costs_year = dwtp.design_parameters.get(
+            DESIGN_PAR_PERSONNEL_COSTS_NAME, None
+        )
+        energy_price = dwtp.design_parameters.get(
+            DESIGN_PAR_ENERGY_PRICE_NAME, None
+        )
+        energy_costs_year = (
+            dwtp.energyconsumption_kwhrperday.value * 365 * energy_price
+        )
+        chemical_costs_per_day = summed_kpis.get(
+            TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
+            0.0,
+        )
+        chemical_costs_per_year = chemical_costs_per_day * 365
+        yearly_production_m3 = dwtp.nominal_flow_m3perhr.value * 24 * 365
+        dwtp.oper_and_maintenancecosts_eurperyear.value = dwtp.oper_and_maintenancecosts_eurperyear.calculate_value(
+            construction_costs=dwtp.constructioncosts_eur.value,
+            oper_maintenance_percentage=oper_and_maintenance_rate,
+        )
+        dwtp.investmentcosts_eur.value = dwtp.investmentcosts_eur.calculate_value(
+            construction_costs_total=dwtp.constructioncosts_eur.value,
+            operation_maintenance_percentage=oper_and_maintenance_rate,
+            energy_cost_per_year=energy_costs_year,
+            personnel_costs_per_year=personnel_costs_year,
+            chemical_costs_per_year=chemical_costs_per_year,
+            interest_rate=interest_rate,
+            lifespan_years=lifespan,
+        )
+        dwtp.levelized_cost_of_water.value = dwtp.levelized_cost_of_water.calculate_value(
+            total_investment_costs_peryear=dwtp.investmentcosts_eur.value,
+            yearly_water_production_m3=yearly_production_m3,
+        )
+        dwtp.levelized_chemical_costs.value = dwtp.levelized_chemical_costs.calculate_value(
+            chemical_costs_per_year=chemical_costs_per_year,
+            yearly_water_production_m3=yearly_production_m3,
+        )
 
         # Step 2-d: update plant-wide properties (KPIs)
         # --------------------------------------------
-        plant_calculator.update_plant_kpis()  # update cost related KPIs
-        for prop_name, val in plant_calculator.plant_kpis.items():
+        dwtp.update_plant_kpis()  # update cost related KPIs
+        for prop_name, val in dwtp.plant_kpis.items():
             value = np.round(val, 3)
             if val is None:
                 continue

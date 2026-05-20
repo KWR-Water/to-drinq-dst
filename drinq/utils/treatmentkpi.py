@@ -12,9 +12,6 @@ from drinq.utils.physics_and_chemistry import (
     reynolds_number_pipe,
     calculate_pressure_drop_pipe
 )
-# from drinq.utils.financial_costs import (
-#     # TODO: add CAPEX, OPEX etc.
-# )
 import json
 
 
@@ -101,6 +98,7 @@ class TreatmentDataclassMixin:
     design_parameters: dict
     plant_kpis: dict
     wq_parameters: dict | None = None
+    chem_parameters: list[str] | None = None
     digest_parameter_list: list[str] | None = None
 
     def __post_init__(self):
@@ -108,6 +106,7 @@ class TreatmentDataclassMixin:
         self.wq_parameters = self.wq_parameters
         self.design_parameters = self.design_parameters
         self.plant_kpis = self.plant_kpis
+        self.chem_parameters = self.chem_parameters
         if len(self.digest_parameter_list) == 0:
             self.digest_parameter_list = None
         self.digest_parameter_list = self.digest_parameter_list
@@ -154,8 +153,58 @@ class TreatmentKPI(ABC, TreatmentDataclassMixin):
 
     @property
     @abstractmethod
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         raise NotImplementedError("Subclasses should implement this method")
+
+    def chemical_names(self) -> list[str]:
+        if not self.chem_parameters:
+            return []
+        return [name for name in self.chem_parameters if isinstance(name, str)]
+
+    def _single_chemical_value(self, value: float) -> dict[str, float]:
+        names = self.chemical_names()
+        if not names:
+            return {}
+        return {names[0]: value}
+
+    def _resolve_per_chemical_factors(
+        self,
+        factor: float | dict[str, float] | None,
+        default_value: float = 0.0,
+    ) -> dict[str, float]:
+        names = self.chemical_names()
+        if not names:
+            return {}
+        if isinstance(factor, dict):
+            if len(names) == 1 and names[0] not in factor and factor:
+                return {names[0]: next(iter(factor.values()))}
+            return {
+                name: float(factor.get(name, default_value))
+                for name in names
+            }
+        value = default_value if factor is None else float(factor)
+        return {name: value for name in names}
+
+    def sum_per_chemical(self, values_by_chemical: dict[str, float]) -> float:
+        return float(sum(values_by_chemical.values()))
+
+    def total_daily_chemical_costs__eur(
+        self,
+        chemical_prices: float | dict[str, float] | None,
+    ) -> float:
+        masses = self.daily_mass_of_chemicals__kg()
+        if not masses:
+            return 0.0
+        if isinstance(chemical_prices, dict):
+            if len(masses) == 1 and next(iter(masses)) not in chemical_prices and chemical_prices:
+                unit_price = float(next(iter(chemical_prices.values())))
+                return self.sum_per_chemical(masses) * unit_price
+            return sum(
+                float(mass) * float(chemical_prices.get(name, 0.0))
+                for name, mass in masses.items()
+            )
+        unit_price = 0.0 if chemical_prices is None else float(chemical_prices)
+        return self.sum_per_chemical(masses) * unit_price
 
     @property
     @abstractmethod
@@ -550,7 +599,7 @@ def movingbedvesselcalc_m_m2(flow_per_unit_m3hr: float) -> float:
 
 def inlinepipesize(flow_per_unit_m3hr: float) -> float:
     V = flow_per_unit_m3hr
-    motorpower_kW = np.array([
+    motorpower_kw = np.array([
         0.35, 0.55, 0.75, 1, 1.5, 2.25, 2.25, 2.25, 3.7, 7.5, 15, 22
     ])
     length_m = np.array([
@@ -574,10 +623,10 @@ def inlinepipesize(flow_per_unit_m3hr: float) -> float:
     L = length_m[idx]
     D = diameters_mm[idx]
     Dm = D / 1000  # diameter in meters
-    unit_depth_m = int(np.ceil(1.1 * Dm))
+    unit_length_m = int(np.ceil(1.1 * Dm))
     unit_area_m2 = int(D*L)
-    powermixing_kW=motorpower_kW[idx]
-    return unit_area_m2,powermixing_kW, unit_length
+    powermixing_kw = motorpower_kw[idx]
+    return unit_area_m2, powermixing_kw, unit_length_m
 
 
 def reactor_dimensions(
@@ -634,7 +683,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
     volume_chemical_day: float
     chemicals_area_m2: float
     chemical_emission_factor: float
-    emission_factor_electricity:float
+    emission_factor_electricity: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -711,22 +760,42 @@ class CoagulationDynamicMixing(TreatmentKPI):
         return np.ceil(self.tanks_area_m2 + self.chemicals_area_m2)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        return self.chemicals_area_m2
+        masses = self.daily_mass_of_chemicals__kg()
+        if not masses:
+            return 0.0
+        concentrations = self._resolve_per_chemical_factors(
+            factor=self.solution_wwperc,
+            default_value=self.solution_wwperc,
+        )
+        areas = {}
+        for chem_name, mass_kg_per_day in masses.items():
+            concentration = concentrations.get(chem_name, self.solution_wwperc)
+            if concentration <= 0:
+                continue
+            volume_chemical_day = mass_kg_per_day / (
+                (concentration / 100) * DENS_WATER_KG_PER_M3
+            )
+            areas[chem_name] = calculate_chemical_storage_area__m2(
+                daily_volume_m3perday=volume_chemical_day,
+                storage_time_days=self.storage_time_days,
+                tank_height_m=self.chem_tank_height,
+            )
+        return self.sum_per_chemical(areas)
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         dosing_per_lane = calculate_dosing_mass__perday_perunit(
             concentration_mgL=self.conc_chem_mgL,  # noqa, E501
             flow_per_lane_m3hr=self.flow_per_lane,
             units_per_lane=self.units_per_lane,
         )
-        return dosing_per_lane * self.lanes
+        return self._single_chemical_value(dosing_per_lane * self.lanes)
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return self.conc_chem_mgL
 
     def hydraulic_headloss__bar(self) -> float:
-        total_headloss=(0.001 * self.tanks_area_m2) + self.tank_height
-        return meters_of_water_to_bar(total_headloss) 
+        total_headloss = (0.001 * self.tanks_area_m2) + self.tank_height
+        return meters_of_water_to_bar(total_headloss)
 
     def power__kw(self) -> float:
         seconds_per_day = 86400
@@ -739,9 +808,12 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
         power_pump_kw = (
             self.density_chemical_kgm3 * GRAVITY_M_PER_S2 *
-            flow_chemical_m3_s * dosing_head_m) / (self.efficiency_mixer * 1000)
+            flow_chemical_m3_s * dosing_head_m) / (
+                self.efficiency_mixer * 1000)
         print("power of coag dosing pump",power_pump_kw)
-        return (power_kw_unit * self.units_per_lane * self.lanes) + power_pump_kw
+        return (
+            power_kw_unit * self.units_per_lane * self.lanes
+            ) + power_pump_kw
 
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
@@ -749,7 +821,15 @@ class CoagulationDynamicMixing(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
     def daily_energy_consumption__kwh(self) -> float:
@@ -847,15 +927,35 @@ class CoagulationInlineMixing(TreatmentKPI):
         return np.ceil(self.tanks_area_m2 + self.chemicals_area_m2)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        return self.chemicals_area_m2
+        masses = self.daily_mass_of_chemicals__kg()
+        if not masses:
+            return 0.0
+        concentrations = self._resolve_per_chemical_factors(
+            factor=self.solution_wwperc,
+            default_value=self.solution_wwperc,
+        )
+        areas = {}
+        for chem_name, mass_kg_per_day in masses.items():
+            concentration = concentrations.get(chem_name, self.solution_wwperc)
+            if concentration <= 0:
+                continue
+            volume_chemical_day = mass_kg_per_day / (
+                (concentration / 100) * DENS_WATER_KG_PER_M3
+            )
+            areas[chem_name] = calculate_chemical_storage_area__m2(
+                daily_volume_m3perday=volume_chemical_day,
+                storage_time_days=self.storage_time_days,
+                tank_height_m=self.chem_tank_height,
+            )
+        return self.sum_per_chemical(areas)
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         dosing_per_lane = calculate_dosing_mass__perday_perunit(
             concentration_mgL=self.conc_chem_mgL,  # noqa, E501
             flow_per_lane_m3hr=self.flow_per_lane,
             units_per_lane=self.units_per_lane,
         )
-        return dosing_per_lane * self.lanes
+        return self._single_chemical_value(dosing_per_lane * self.lanes)
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return self.conc_chem_mgL
@@ -877,7 +977,15 @@ class CoagulationInlineMixing(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
     def daily_energy_consumption__kwh(self) -> float:
@@ -988,8 +1096,8 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # TODO: implement chemical dosing mass calculation
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # TODO: implement chemical dosing mass calculation
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # TODO: implement chemical dosing concentration calculation
@@ -1021,7 +1129,15 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
     def daily_energy_consumption__kwh(self) -> float:
@@ -1110,8 +1226,8 @@ class FlocculationDynamicMixing(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0
@@ -1230,8 +1346,8 @@ class MicroStrainer(TreatmentKPI):
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Micro strainer
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Micro strainer
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Micro strainer
@@ -1325,8 +1441,8 @@ class Strainer(TreatmentKPI):
     def daily_energy_consumption__kwh(self) -> float:
         return self.power__kw() * 24  # Assuming continuous operation
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Strainer
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Strainer
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Strainer
@@ -1407,8 +1523,8 @@ class ChainScrapedSedimentation(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Chain Scraped Sedimentation
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Chain Scraped Sedimentation
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Chain Scraped Sedimentation
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Chain Scraped Sedimentation
@@ -1529,21 +1645,31 @@ class ChlorineDisinfection(TreatmentKPI):
         return np.ceil(unit_area_m2 * self.lanes + chemicals_area_m2)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        # TODO: verify formula with Greg
-        volume_chemical_day_m3 = self.daily_mass_of_chemicals__kg() / (
-            1000 * self.chlorine_solution_w_w)  # m3/day
-        chemicals_area_m2 = (
-            volume_chemical_day_m3 * self.storage_time_days) / (
-            self.chemicals_tank_height_m)
-        return chemicals_area_m2
+        masses = self.daily_mass_of_chemicals__kg()
+        if not masses:
+            return 0.0
+        concentrations = self._resolve_per_chemical_factors(
+            factor=self.chlorine_solution_w_w,
+            default_value=self.chlorine_solution_w_w,
+        )
+        areas = {}
+        for chem_name, mass_kg_per_day in masses.items():
+            concentration = concentrations.get(chem_name, self.chlorine_solution_w_w)
+            if concentration <= 0:
+                continue
+            volume_chemical_day_m3 = mass_kg_per_day / (1000 * concentration)
+            areas[chem_name] = (
+                volume_chemical_day_m3 * self.storage_time_days
+            ) / self.chemicals_tank_height_m
+        return self.sum_per_chemical(areas)
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         dosing_per_lane = calculate_dosing_mass__perday_perunit(
             concentration_mgL=self.chlorine_concentration_mgL,
             flow_per_lane_m3hr=self.flow_per_lane_m3perh,
             units_per_lane=1,
         )
-        return dosing_per_lane * self.lanes * 1
+        return self._single_chemical_value(dosing_per_lane * self.lanes)
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return self.chlorine_concentration_mgL
@@ -1563,7 +1689,15 @@ class ChlorineDisinfection(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -1616,10 +1750,12 @@ class ChloramineDisinfection(TreatmentKPI):
         self.storage_time_days = parameters[TPN['chemical_storage_time_days']]
         self.tank_height_m = parameters[TPN['tank_height']]
         # TODO: verify formula with Greg
-        self.volume_chlorine_m3day = self.chlorine_disinfection.daily_mass_of_chemicals__kg() / (  # noqa, E501
-            1000 * 1.19)
-        self.volume_ammonia_m3day = self.daily_mass_of_chemicals__kg() / (
-            1000 * 0.68)
+        chlorine_mass = self.sum_per_chemical(
+            self.chlorine_disinfection.daily_mass_of_chemicals__kg()
+        )
+        ammonia_mass = self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+        self.volume_chlorine_m3day = chlorine_mass / (1000 * 1.19)
+        self.volume_ammonia_m3day = ammonia_mass / (1000 * 0.68)
     
     def __repr__(self):
         return f"ChloramineDisinfection(tank height (m)={self.tank_height_m}, " \
@@ -1661,14 +1797,16 @@ class ChloramineDisinfection(TreatmentKPI):
 
         return chemicals_area
     
-    def daily_mass_of_chemicals__kg(self) -> float:
-        mass_chlorine_kgday = self.chlorine_disinfection.daily_mass_of_chemicals__kg()  # noqa, E501
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        mass_chlorine_kgday = self.sum_per_chemical(
+            self.chlorine_disinfection.daily_mass_of_chemicals__kg()
+        )
         mass_ammonia_kgday = calculate_dosing_mass__perday_perunit(
             concentration_mgL=self.ammonia_concentration_mgL,
             flow_per_lane_m3hr=self.flow_per_lane_m3perh,
             units_per_lane=self.units_per_lane,
         )
-        return mass_chlorine_kgday + mass_ammonia_kgday
+        return self._single_chemical_value(mass_chlorine_kgday + mass_ammonia_kgday)
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return self.ammonia_concentration_mgL
@@ -1696,7 +1834,15 @@ class ChloramineDisinfection(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -1784,8 +1930,8 @@ class MembraneFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Membrane Filtration
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Membrane Filtration
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Membrane Filtration
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Membrane Filtration
@@ -1876,7 +2022,7 @@ class IntakePump(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Intake Pump
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         return 0.0  # No chemicals used in Intake Pump
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
@@ -1988,8 +2134,8 @@ class CleanWaterStorageTank(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Clean Water Storage Tank
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Clean Water Storage Tank
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Clean Water Storage Tank
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Clean Water Storage Tank
@@ -2042,6 +2188,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     unit_area_m2: float
     unit_height_m: float
     tanks_area_m2: float
+    filter_area_m2: float
     backwash_pump_flow_m3_per_h: float
     backwash_pump_head_m: float
     backwash_pump_area_m2: float
@@ -2060,7 +2207,8 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.lanes = design_parameters.get('number of lanes', None)
-        self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)          
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
@@ -2111,6 +2259,10 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             2 * (3 * self.backwash_pump_flow_m3_per_h / 3600))  # rule of thumb of Apump=3*Qpump (in m/s)
         self.backwash_area_m2 = (
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'filter area':
+                self.filter_area_m2 = self.tanks_area_m2
+            self.parameters[tech_property] = self.filter_area_m2  # overwrite filter area
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
@@ -2136,8 +2288,8 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Rapid Sand Filtration
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
@@ -2311,8 +2463,8 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Rapid Sand Filtration
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
@@ -2456,8 +2608,8 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Rapid Sand Filtration
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
@@ -2555,8 +2707,8 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Rapid Sand Filtration
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Rapid Sand Filtration
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used in Rapid Sand Filtration
@@ -2663,8 +2815,8 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  
@@ -2769,11 +2921,11 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates total dry PAC required per day."""
         hourly_mass = (self.nominal_flow_m3perh *
                        self.pac_dosage_mg_liter) / 1000
-        return hourly_mass * 24
+        return self._single_chemical_value(hourly_mass * 24)
     
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # TODO
@@ -2781,7 +2933,10 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     def footprint_area_for_chemicals__m2(self) -> float:
         """Calculates the area required for the PAC storage silo."""
         safety_factor = 1.2  # Factor for PAC aeration/fluffing
-        total_mass_stored = self.daily_mass_of_chemicals__kg() * self.storage_time_days
+        total_mass_stored = (
+            self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+            * self.storage_time_days
+        )
         bulk_density_kg_m3 = self.pac_bulk_density_g_cm3 * 1000  # Convert g/cm3 to kg/m3
         required_volume_m3 = (total_mass_stored /
                               bulk_density_kg_m3) * safety_factor
@@ -2826,7 +2981,15 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (
             co2_emissions + chemical_co2_emissions
             ) / self.nominal_flow_m3perh / 24
@@ -2898,15 +3061,18 @@ class UVAOP(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates daily mass of pure H2O2 required."""
         daily_flow_m3 = self.nominal_flow_m3perh * 24
-        return (daily_flow_m3 * self.h2o2_dosing_mgL) / 1000.0
+        mass_kg_per_day = (daily_flow_m3 * self.h2o2_dosing_mgL) / 1000.0
+        return self._single_chemical_value(mass_kg_per_day)
 
     def footprint_area_for_chemicals__m2(self) -> float:
         """Calculates area for H2O2 storage tanks including safety bunding."""
         daily_mass_solution_kg = (
-            self.daily_mass_of_chemicals__kg() / self.h2o2_solution_w_w)
+            self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+            / self.h2o2_solution_w_w
+        )
         # Density of 35% H2O2 is ~1.1 kg/L:
         volume_m3 = daily_mass_solution_kg / 1100.0
         total_storage_vol_m3 = volume_m3 * self.storage_time_days
@@ -2940,7 +3106,15 @@ class UVAOP(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -3004,12 +3178,16 @@ class BaffledOzonationContactor(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Total ozone gas generated per day."""
-        return (self.nominal_flow_m3perh * 24 * self.ozone_dosage_mgliter) / 1000.0    
+        mass_kg_per_day = (
+            self.nominal_flow_m3perh * 24 * self.ozone_dosage_mgliter
+        ) / 1000.0
+        return self._single_chemical_value(mass_kg_per_day)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        equipment_area_m2 = self.daily_mass_of_chemicals__kg() * 10 / 24  # 10m2 per kg/h used
+        total_mass = self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+        equipment_area_m2 = total_mass * 10 / 24  # 10m2 per kg/h used
         return equipment_area_m2 
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
@@ -3048,7 +3226,15 @@ class BaffledOzonationContactor(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 class PelletSoftening(TreatmentKPI):
@@ -3151,9 +3337,9 @@ class PelletSoftening(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates chemicals in and pellets out per day."""
-        return self.lime_req_kgperday
+        return self._single_chemical_value(self.lime_req_kgperday)
 
     def footprint_area_for_chemicals__m2(self) -> float:
         lime_depth_m = 2.5
@@ -3204,7 +3390,15 @@ class PelletSoftening(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -3272,20 +3466,25 @@ class CationIonExchange(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates chemicals in """
         """Total salt consumed by the whole plant per day."""
         daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
         salt_ratio = 0.20  # kg NaCl per eq removed (avg range 0.16-0.24)
-        return daily_removal_eq * salt_ratio
+        return self._single_chemical_value(daily_removal_eq * salt_ratio)
 
     def footprint_area_for_chemicals__m2(self) -> float:
-        salt_vol = (self.daily_mass_of_chemicals__kg() * self.storage_days) / self.nacl_density 
+        salt_vol = (
+            self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+            * self.storage_days
+        ) / self.nacl_density 
         area_salt = salt_vol / 2.5 # 2.5m stacking height
         return area_salt
 
     def chemical_solution_concentration__mg_per_l(self) -> float:
-        nacl_mgperl = 1000 * self.daily_mass_of_chemicals__kg() / (
+        nacl_mgperl = 1000 * self.sum_per_chemical(
+            self.daily_mass_of_chemicals__kg()
+        ) / (
             self.nominal_flow_m3perh * 24)
         return nacl_mgperl
 
@@ -3340,7 +3539,15 @@ class CationIonExchange(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -3409,18 +3616,23 @@ class AnionicIEX(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Total salt (NaCl) consumed per day based on resin volume regenerated."""
 
         daily_doc_load_g = self.delta_doc_mgL * self.nominal_flow_m3perh * 24.0        
         resin_exhausted_l_day = daily_doc_load_g / self.resin_capacity_g_per_l
 
         resin_m3_day = resin_exhausted_l_day / 1000.0
-        return resin_m3_day * self.salt_dose_kg_per_m3_resin
+        return self._single_chemical_value(
+            resin_m3_day * self.salt_dose_kg_per_m3_resin
+        )
 
     def footprint_area_for_chemicals__m2(self) -> float:
         """Required area for salt storage."""
-        salt_vol = (self.daily_mass_of_chemicals__kg() * self.storage_days) / self.nacl_density 
+        salt_vol = (
+            self.sum_per_chemical(self.daily_mass_of_chemicals__kg())
+            * self.storage_days
+        ) / self.nacl_density 
         area_salt = salt_vol / 2.0 # 2.0m stacking height safety factor
         return area_salt
 
@@ -3473,7 +3685,15 @@ class AnionicIEX(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh() *
             self.emission_factor_electricity)
-        chemical_co2_emissions = self.chemical_emission_factor * self.daily_mass_of_chemicals__kg()
+        masses = self.daily_mass_of_chemicals__kg()
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
         return (co2_emissions + chemical_co2_emissions)/ self.nominal_flow_m3perh / 24
 
 
@@ -3539,8 +3759,8 @@ class AirFlotationDAF(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in DAF
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in DAF
 
     def footprint_area__m2(self) -> float:
         """Total area for DAF tanks + recirculation units."""
@@ -3666,8 +3886,8 @@ class SludgeBlanketClarifier(TreatmentKPI):
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Sludge clarifiers
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Sludge clarifiers
     
     def sludge_production_kg(self) -> float:
         """Calculates sludge production (waste solids) in kg/day."""
@@ -3771,8 +3991,8 @@ class UVdisinfection(TreatmentKPI):
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}
 
     def footprint_area_for_chemicals__m2(self) -> float:
         return 0.0
@@ -3877,8 +4097,8 @@ class LamellaClarifierSlope(TreatmentKPI):
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Sludge clarifiers
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Sludge clarifiers
     
     def sludge_production_kg(self) -> float:
         """Calculates sludge production (waste solids) in kg/day."""
@@ -4004,8 +4224,8 @@ class LamellaClarifierHorizontal(TreatmentKPI):
     def chemical_solution_concentration__mg_per_l(self) -> float:
         return 0.0  # No chemicals used
 
-    def daily_mass_of_chemicals__kg(self) -> float:
-        return 0.0  # No chemicals used in Sludge clarifiers
+    def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
+        return {}  # No chemicals used in Sludge clarifiers
     
     def sludge_production_kg(self) -> float:
         """Calculates sludge production (waste solids) in kg/day."""

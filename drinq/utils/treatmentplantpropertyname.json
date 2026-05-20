@@ -2,9 +2,11 @@
     "nominal_flow_rate": "nominal flow rate",
     "footprint_area": "footprint area",
     "volume": "volume",
-    "specific_construction_costs": "specific construction costs",
+    "construction_costs": "construction costs",
     "investment_costs_annual": "investment costs (annual)",
     "operation_and_maintenance_costs_annual": "operation and maintenance costs (annual)",
     "specific_energy_consumption": "specific energy consumption",
-    "co2_equivalent_emissions": "CO2 equivalent emissions"
+    "co2_equivalent_emissions": "CO2 equivalent emissions",
+    "levelized_cost_of_water": "levelized cost of water",
+    "levelized_cost_of_chemicals": "levelized cost of chemicals"
 }

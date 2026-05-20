@@ -10,5 +10,6 @@ docs/build/*
 */.ipynb_checkpoints
 .ipynb_checkpoints
 *.sql*
+to_drinq_dst.sqlite
 *.db
 .DS_Store

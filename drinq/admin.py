@@ -1,21 +1,23 @@
 from django.contrib import admin
 from .models import (
     Compound, CompoundCas, CompoundSynonym, Technology, Process,
-    Stage, Goal, RemovalEfficiency, GoalPerTechnology, DecidingFactor,
-    TechnologyChemicalagent, TechnologyProperty,
-    Watercompany, WaterqualityParameter,
+    Stage, Goal, RemovalEfficiency, GoalPerTechnology,
+    TechnologyProperty,
+    Watercompany, WaterqualityParameter, ChemicalAgent, ChemicalagentPrice,
     )
 
 # Register your models here.
 model_classes = [
     Compound, CompoundCas, CompoundSynonym, Technology, Process, Stage, Goal,
-    RemovalEfficiency, GoalPerTechnology,
+    RemovalEfficiency, GoalPerTechnology, ChemicalAgent
 ]
 
 slug_field_mapping = {
     Compound.__name__: ('cid'),
     CompoundCas.__name__: ('cas'),
     CompoundSynonym.__name__: None,
+    ChemicalAgent.__name__: ('name'),
+    ChemicalagentPrice.__name__: None,
     Technology.__name__: ('name'),
     TechnologyProperty.__name__: ('name'),
     Process.__name__: ('name'),
@@ -23,7 +25,6 @@ slug_field_mapping = {
     Goal.__name__: '(goal)',
     RemovalEfficiency.__name__: None,
     GoalPerTechnology.__name__: None,
-    DecidingFactor.__name__: None,
     WaterqualityParameter.__name__: ('name'),
     Watercompany.__name__: ('name'),
 }
