@@ -1,6 +1,0 @@
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=23 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-KeyError during construction cost calculation: 'Pellet softening reactor with lime'. 
-KeyError during construction cost calculation: 'Cation exchange (CIEX) filtration unit'. 
-KeyError during construction cost calculation: 'Cation exchange (CIEX) filtration unit'. 

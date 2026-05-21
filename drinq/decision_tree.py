@@ -61,6 +61,11 @@ def get_treatment_trains(technology_tuples: List[tuple]) -> List[Technology]:
             for tech_nr, technology_id in enumerate(option):
                 technology = Technology.objects.get(id=technology_id)
                 if technology is not None:
+                    if technology.name is not None:
+                        if (
+                            technology.name.lower() == 'no technology'
+                            or technology.name.lower() == 'dummy technology'):
+                            continue
                     if tech_nr not in treatment_options[opt_nr+1]['steps']:
                         # Initialize the technology entry if it doesn't exist
                         treatment_options[opt_nr+1]['steps'] = {tech_nr+1: {}}

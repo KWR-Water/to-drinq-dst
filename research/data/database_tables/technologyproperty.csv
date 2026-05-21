@@ -13,7 +13,7 @@ id,name,unit,description,category,parent_property
 12,energy consumption (kWh/m3 water),kWh/m^3,energy consumption (kWh) per m3 water produced,2,
 13,lower bound of dosing flow rate (liter/hr),10^-3 m^3/hour,lower value of the feasibile range of flow rates (liter per hour),4,17
 14,upper bound of dosing flow rate (liter/hr),10^-3 m^3/hour,upper value of the feasibile range of flow rates (liter per hour),4,17
-15,target concentration of dosing chemical (mg/l),g/m^3,nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume,4,
+15,target concentration of dosing chemical,g/m^3,nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume,4,
 16,number of units per lane,,number of units per treatment lane,1,
 17,nominal dosing flow rate,10^-3 m^3/hour,nominal (design) value for dosing flow rate,1,
 18,retention time (min),minutes,retention time of water,1,
@@ -42,7 +42,7 @@ id,name,unit,description,category,parent_property
 41,recirculation ratio,,water recirculation in DAF process,1,
 42,plate spacing,m,space between plates in lamella clarifiers,1,103
 43,upper bound weir_loading,m3/m/day,upper bound of lamella weird loading,1,
-44,backwash tank height,m,backwash tank height,1,19
+44,backwash tank height,m,backwash tank height,1,
 45,upper bound sand filter bed height,m,upper bound rapid sand filtration media height,1,135
 46,lower bound sand filter bed height,m,lower bound rapid sand filtration media height,1,135
 47,lower bound sand grain size,mm,upper bound sand media grain size,1,133
@@ -84,7 +84,7 @@ id,name,unit,description,category,parent_property
 83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,81
 84,bar spacing,m,space between bar screens or grid screens (m),1,103
 85,lower bound NF flow recovery rate,,lower bound NF flow recovery rate,1,116
-86,upper bound NF flow recovery rate,,upper bound NF flow recovery rate,1,116
+86,upper bound NF flow recovery rate,126,upper bound NF flow recovery rate,1,116
 87,lower bound RO flow recovery rate,,lower bound RO flow recovery rate,1,116
 88,upper bound RO flow recovery rate,,upper bound RO flow recovery rate,1,116
 89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,89
@@ -124,23 +124,23 @@ id,name,unit,description,category,parent_property
 123,head loss coefficient,,"k-factor, head loss coefficient or flow loss coefficient",1,
 124,scraper power coefficient,kW/m^2,scraper power per unit area (m2),1,
 125,power,kW,power of equipment or technology,1,
-126,filtration rate,m^3/m^2/hour,filtration rate (m3/m2/hr),1,
+126,filtration rate,m^3/m^2/hour,"filtration rate, or hydraulic loading rate",1,
 127,sand porosity,,porosity of sand media,1,
 128,anthracite porosity,,porosity of anthracite media,1,
 129,sand density,kg/m^3,density of sand,1,
 130,anthracite density,kg/m^3,density of anthracite,1,
 131,backwash duration,minutes,backwash duration (min.),1,
-132,backwash hydraulic loading  rate,m^3/m^2/hour,backwash hydraulic loading  rate (m3/m2/h),1,
+132,backwash filtration rate,m^3/m^2/hour,backwash filtration rate (m3/m2/h),1,
 133,sand media grain size,mm,sand media grain size,1,
 134,anthracite media grain size,mm,anthracite media grain size,1,
 135,sand filter bed height,m,sand filter bed height,1,
 136,anthracite filter bed height,m,anthracite filter bed height,1,
-137,energy consumption per kg ozone,kwH/kg,energy consumption per kg of product (ozone) produced,3,
-138,power density,W/m3,scraper power per unit volume (m3),3,
-139,PAC porosity,,porosity of powedered activated carbon,4,
+137,energy consumption per kg ozone,kWh/kg,energy consumption per kg of product (ozone) produced,3,
+138,power density,W/m3,power per unit volume (m3),3,
+139,PAC porosity,,porosity of powdered activated carbon,4,
 140,mass density of pellets,kg/m^3,mass density of pellets for softening (g/cm3),4,
 141,mass density of air,g/cm^3,mass density of air (g/cm3),1,
-142,mass density of TSS,kg/m^3,mass density of total suspended solids (g/cm3),1,
+142,mass density of TSS,g/cm^3,mass density of total suspended solids (g/cm3),1,
 143,chemical dosage factor,%,percentage of chemical required per kg of a parameter,1,
 144,pellet porosity static,m,pellets at initial condition of the processing,2,
 145,pellet porosity expanded,,pellets at final condition of the processing,3,
@@ -164,4 +164,4 @@ id,name,unit,description,category,parent_property
 163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),,28
 164,lower bound UV power per m3,kW/m^3,lower bound of UV power intensity (kW/m^3),3,161
 165,upper bound UV power per m3,kW/m^3,upper bound of UV power intensity (kW/m^3),3,161
-166,sludge tank height,m,height of the sludge tank,1,
+166,GAC porosity,,porosity of GAC particles,4,
