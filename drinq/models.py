@@ -98,9 +98,10 @@ class ChemicalagentPrice(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     chemical_agent = models.ForeignKey(
         ChemicalAgent, on_delete=models.CASCADE,
-        db_column='chemical_agent')
-    value = models.FloatField(blank=True, null=False)
-    unit_price = models.TextField(blank=True, null=False)
+        db_column='chemicalagent')
+    default_value = models.FloatField(
+        blank=True, null=False, db_column='defaultvalue')
+    units = models.TextField(blank=True, null=False, db_column='units')
 
     class Meta:
         # managed = False
@@ -108,8 +109,28 @@ class ChemicalagentPrice(models.Model):
         verbose_name_plural = "chemical agent prices"
 
     def __str__(self) -> str:
-        return f"{self.chemical_agent}: {self.value} {self.unit_price}"
+        return f"{self.chemical_agent}: {self.default_value} {self.units}"
 
+
+class TreatmentPlantChemicalagentPriceJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        'TreatmentPlant', on_delete=models.CASCADE,
+        db_column='plant')
+    chemicalagent = models.ForeignKey(
+        ChemicalAgent, on_delete=models.CASCADE,
+        db_column='chemicalagent')
+    price = models.FloatField(blank=True, null=False, db_column='price')
+
+    class Meta:
+        # managed = False
+        db_table = 'treatmentplant_chemicalagent_price'
+        verbose_name_plural = "treatment plant chemical agent prices"
+
+    def __str__(self) -> str:
+        treatment_plant = TreatmentPlant.objects.get(pk=self.treatmentplant.pk)
+        chemical_agent = ChemicalAgent.objects.get(pk=self.chemicalagent.pk)
+        return f"Treatment plant: {treatment_plant}, chemical agent: {chemical_agent}, price: {self.price}"  # noqa, E501
 
 class MultiStepConfiguration(models.Model):
     name = models.CharField(max_length=100)
@@ -414,6 +435,9 @@ class DesignParameter(models.Model):
         'ParameterCategory', models.CASCADE, blank=True, null=True,
         db_column='category')
     slug = AutoSlugField(populate_from='name', unique=True)
+    defaultvalue = models.FloatField(
+        blank=True, null=False, default=0.0,
+        db_column='default_value')
 
     class Meta:
         # managed = False
@@ -645,6 +669,8 @@ class TechnologyConstructionCostParameter(models.Model):
     a = models.FloatField(blank=True, null=False, default=0.0)
     b = models.FloatField(blank=True, null=False, default=0.0)
     c = models.FloatField(blank=True, null=False, default=0.0)
+    d = models.FloatField(blank=True, null=False, default=0.0)
+    e = models.FloatField(blank=True, null=False, default=0.0)
     plantproperty = models.ForeignKey(
         'TreatmentPlantProperty', on_delete=models.CASCADE,
         db_column='plantproperty', blank=True, null=True)
@@ -658,7 +684,8 @@ class TechnologyConstructionCostParameter(models.Model):
         verbose_name_plural = "technology construction cost parameters"
 
     def __str__(self):
-        return f"{self.id} [{self.technology}] ({self.a}, {self.b}, {self.c})"
+        return f"{self.id} [{self.technology}] ({self.a}, {self.b}, {self.c}, {self.d}, {self.e}), plant property: {self.plantproperty}, " \
+               f"technology property: {self.technologyproperty}"
 
 
 class TechnologyKPI(models.Model):
@@ -754,14 +781,14 @@ class TechnologyRelatedtechnology(models.Model):
         return f"Technology: {tech_name}, related technology: {relatedtech_name}"
 
 
-class TechnologyChemicalagent(models.Model):
+class TechnologyChemicalagentJunction(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE, blank=True, null=True,
         db_column='technology')
     chemical_agent = models.ForeignKey(
         ChemicalAgent, on_delete=models.CASCADE, blank=True, null=True,
-        db_column='chemical_agent')
+        db_column='chemicalagent')
 
     class Meta:
         # managed = False

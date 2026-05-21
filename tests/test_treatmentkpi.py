@@ -322,7 +322,7 @@ class TestChainScrapedSedimentation(unittest.TestCase):
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
         )
-        self.assertTrue(sedimentation.scraper_power_per_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
+        self.assertTrue(sedimentation.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
         self.assertTrue(sedimentation.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
         self.assertTrue(sedimentation.flow_m3perh == self.plant_kpis['nominal flow rate (m3/hr)'])  # noqa, E501

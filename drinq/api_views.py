@@ -36,7 +36,7 @@ PLANT_PROPERTIES_TO_CALCULATE = [
     TPPN["nominal_flow_rate"],
     TPPN["footprint_area"],
     TPPN["volume"],
-    TPPN["specific_construction_costs"],
+    TPPN["construction_costs"],
     TPPN["investment_costs_annual"],
     TPPN["operation_and_maintenance_costs_annual"],
     TPPN["specific_energy_consumption"],
@@ -133,18 +133,6 @@ def get_technology_properties(
     return technology_properties
 
 
-def query_technology_constrcost_parameters(
-    technology: Technology,
-):
-    """
-    Get the construction cost parameters for a technology in the treatment plant.
-    """
-    technology_costs = TechnologyConstructionCostParameter.objects.get(
-        technology=technology
-        )
-    return technology_costs
-
-
 def get_constrcost_parameters(
     technology_list: list[int]
 ) -> dict[str, dict]:
@@ -156,11 +144,18 @@ def get_constrcost_parameters(
         technology = Technology.objects.get(id=technology_id)
         tech_name = technology.name
         plantproperty_name, technologyproperty_name = None, None
-        a, b, c = 0, 0, 0
+        (a, b, c, d, e, ) = 0, 0, 0, 0, 0
         plantproperty_value, technologyproperty_value = None, None
         try:
-            cost_par_result = query_technology_constrcost_parameters(technology)  # noqa E501
-            a, b, c = cost_par_result.a, cost_par_result.b, cost_par_result.c
+            cost_par_result = TechnologyConstructionCostParameter.objects.get(
+                technology=technology)
+            a, b, c, d, e = (
+                cost_par_result.a,
+                cost_par_result.b,
+                cost_par_result.c,
+                cost_par_result.d,
+                cost_par_result.e
+            )
         except TechnologyConstructionCostParameter.DoesNotExist:
             Warning(
                 f"No cost parameters found for technology {technology.name}"
@@ -176,11 +171,12 @@ def get_constrcost_parameters(
                 id=cost_par_result.technologyproperty.pk).name
             technologyproperty_value = TreatmentPlantTechnologyPropertyValue.objects.filter(  # noqa, E501
                 technologyproperty=cost_par_result.technologyproperty).first()
-            # TODO: for technology properties, a separate form should be created  # noqa, E501
         cost_parameters[tech_name] = {
             'a': a,
             'b': b,
             'c': c,
+            'd': d,
+            'e': e,
             'plantproperty': plantproperty_name,
             'technologyproperty': technologyproperty_name,
             'plantproperty_value': plantproperty_value,
