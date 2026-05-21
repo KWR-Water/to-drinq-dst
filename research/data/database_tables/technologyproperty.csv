@@ -14,7 +14,7 @@ id,name,unit,description,category,parent_property
 13,lower bound of dosing flow rate (liter/hr),10^-3 m^3/hour,lower value of the feasibile range of flow rates (liter per hour),4,17
 14,upper bound of dosing flow rate (liter/hr),10^-3 m^3/hour,upper value of the feasibile range of flow rates (liter per hour),4,17
 15,target concentration of dosing chemical,g/m^3,nominal (design) value for mass of dosing material (e.g. coagulant) needed per unit water volume,4,
-16,number of units per lane,,number of units per treatment lane,1,
+16,units per lane,,number of units per treatment lane,1,
 17,nominal dosing flow rate,10^-3 m^3/hour,nominal (design) value for dosing flow rate,1,
 18,retention time (min),minutes,retention time of water,1,
 19,tank height,m,height of tank or pressure vessel (meter),1,
