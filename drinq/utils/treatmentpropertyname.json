@@ -14,7 +14,7 @@
   "lower_bound_of_dosing_flow_rate_liter_per_hr": "lower bound of dosing flow rate (liter/hr)",
   "upper_bound_of_dosing_flow_rate_liter_per_hr": "upper bound of dosing flow rate (liter/hr)",
   "target_concentration_of_dosing_chemical": "target concentration of dosing chemical",
-  "number_of_units_per_lane": "number of units per lane",
+  "units_per_lane": "units per lane",
   "nominal_dosing_flow_rate": "nominal dosing flow rate",
   "retention_time_min": "retention time (min)",
   "tank_height": "tank height",

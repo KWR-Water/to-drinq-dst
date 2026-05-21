@@ -701,7 +701,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
@@ -879,7 +879,7 @@ class CoagulationInlineMixing(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
@@ -1026,7 +1026,7 @@ class CascadeMixerCoagulationDosing(TreatmentKPI):
             TPN['chemical_emission_factor']]
         self.weir_height = parameters[TPN['weir_height']]
         self.tank_height = parameters[TPN['tank_height']]
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.weir_coefficient = parameters[TPN['weir_coefficient']]
         self.headloss_coefficient = parameters[TPN['head_loss_coefficient']]
         self.chem_dosing_solution_concentration_w_w = (
@@ -1177,7 +1177,7 @@ class FlocculationDynamicMixing(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.tank_height = parameters[TPN['tank_height']]
@@ -1516,7 +1516,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         plant_kpis = self.plant_kpis
         wq_parameters = self.wq_parameters
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -1627,7 +1627,7 @@ class ChlorineDisinfection(TreatmentKPI):
         plant_kpis = self.plant_kpis
         _ = self.wq_parameters  # Unused variable, but may be needed for future calculations
 
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
@@ -1786,7 +1786,7 @@ class ChloramineDisinfection(TreatmentKPI):
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None))
         self.retention_time_min = parameters[TPN['retention_time_min']]
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.number_of_units = self.units_per_lane * self.lanes
         self.storage_time_days = parameters[TPN['chemical_storage_time_days']]
         self.tank_height_m = parameters[TPN['tank_height']]
@@ -1914,7 +1914,7 @@ class MembraneFiltration(TreatmentKPI):
         # wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
@@ -2029,7 +2029,7 @@ class IntakePump(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.pipe_diameter_m = parameters[TPN['pipe_diameter_m']]
         self.pipe_length_m = parameters[TPN['pipe_length_m']]
         self.pipe_roughness = parameters[TPN['pipe_roughness']]
@@ -2147,7 +2147,7 @@ class CleanWaterStorageTank(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.tank_height_m = parameters[TPN['tank_height']]
         self.retention_time_hrs = parameters[TPN['retention_time_hr']]
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.number_of_units = self.units_per_lane * self.lanes
@@ -2268,7 +2268,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.hydraulic_loading_rate_m3m2h = parameters[
             TPN['filtration_rate']]
         self.sand_porosity = parameters[
@@ -2455,7 +2455,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)           
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.hydraulic_loading_rate_m3m2h = design_parameters[
             TPN['hydraulic_loading_rate']]
         self.sand_porosity = parameters[
@@ -2630,7 +2630,7 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/(
             self.units_per_lane - 1)  #Always 1 pressurized filter stand-by
         self.unit_depth_m, self.unit_area_m2 = pressurisedvesselcalc_m_m2(
@@ -2869,7 +2869,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.hydraulic_loading_rate_m3m2h = parameters[
             TPN['filtration_rate']]
         self.gac_porosity = parameters[
@@ -2985,7 +2985,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         plant_kpis = self.plant_kpis
         # wq_parameters = self.wq_parameters
         
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.lanes = design_parameters.get('number of lanes', None)
         self.unit_depth_m = parameters[TPN['tank_height']]
         self.silo_height_m = parameters.get(TPN['tank_height_chemical_storage'], 10.0)  # Average Silo Height
@@ -3123,7 +3123,7 @@ class UVAOP(TreatmentKPI):
             EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.h2o2_dosing_mgL = parameters.get(
             TPN['h2o2_target_dosing_mg_l'], 7.0)
         self.h2o2_solution_w_w = parameters.get(
@@ -3236,7 +3236,7 @@ class BaffledOzonationContactor(TreatmentKPI):
             EMISSION_FACTOR_ELEC_NAME, None)  
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/self.units_per_lane 
         self.tank_height_m = parameters[TPN['tank_height']]
         self.unit_height_m = self.tank_height_m  # TODO: Greg, please check!
@@ -3356,7 +3356,7 @@ class PelletSoftening(TreatmentKPI):
         wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
@@ -3515,7 +3515,7 @@ class CationIonExchange(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
@@ -3662,7 +3662,7 @@ class AnionicIEX(TreatmentKPI):
         # wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
@@ -3805,7 +3805,7 @@ class AirFlotationDAF(TreatmentKPI):
         wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -3934,7 +3934,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         design_parameters = self.design_parameters
         wq_parameters = self.wq_parameters
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
@@ -4080,7 +4080,7 @@ class UVdisinfection(TreatmentKPI):
         # wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -4178,7 +4178,7 @@ class LamellaClarifierSlope(TreatmentKPI):
         wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
@@ -4322,7 +4322,7 @@ class LamellaClarifierHorizontal(TreatmentKPI):
         wq_parameters = self.wq_parameters
         
         self.lanes = design_parameters.get('number of lanes', None)
-        self.units_per_lane = parameters[TPN['number_of_units_per_lane']]
+        self.units_per_lane = parameters[TPN['units_per_lane']]
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
