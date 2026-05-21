@@ -762,11 +762,23 @@ class DesignParameterResultsView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['properties'] = TreatmentPlantPropertyValue.objects.filter(
-            treatmentplant=self.object
+        properties = (
+            TreatmentPlantPropertyValue.objects
+            .filter(treatmentplant=self.object)
+            .select_related('property__category')
+            .order_by('property__category__name', 'property__name')
         )
 
-        # Gather all technology KPIs for this treatment plant, grouped by technology
+        properties_by_category = defaultdict(list)
+        for prop_value in properties:
+            category = getattr(prop_value.property, 'category', None)
+            category_name = category.name if category else 'Uncategorized'
+            properties_by_category[category_name].append(prop_value)
+
+        context['properties_by_category'] = properties_by_category.items()
+
+        # Gather technology KPIs for this treatment plant, grouped by
+        # technology.
         tech_kpi_qs = TreatmentPlantTechnologyKPIValue.objects.filter(
             treatmentplant=self.object
         ).select_related('technology', 'kpi')
@@ -776,7 +788,7 @@ class DesignParameterResultsView(generic.DetailView):
         for kpi_value in tech_kpi_qs:
             tech_kpis[kpi_value.technology].append(kpi_value)
 
-        # Get the ordered list of technologies by step from 
+        # Get the ordered list of technologies by step from
         # TreatmentPlantLayout
         layout_qs = TreatmentPlantLayout.objects.filter(
             treatmentplant=self.object
