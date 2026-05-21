@@ -53,7 +53,7 @@ from drinq.utils.financial_costs import (
 TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY = 'daily energy consumption'
 TECHKPI_FOOTPRINT_AREA_M2 = 'footprint area'
 TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY = 'daily chemical costs'
-HELPERKPI_MASS_OF_CHEMICALS = 'mass of chemicals used per day'
+HELPERKPI_MASS_OF_CHEMICALS = 'daily mass of chemicals'
 TECHKPI_POWER_KW = 'power'
 TECHKPI_HEADLOSS_BAR = 'head loss'
 TECHKPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
@@ -384,6 +384,16 @@ class TechnologyPerformanceCalculator:
             for chem_name, mass in masses.items()
         )
 
+    def _technology_kpi_list(self) -> list[str] | None:
+        """Return KPI names that can be computed by TreatmentKPI classes."""
+        if self.tech_kpinames is None:
+            return None
+        return [
+            kpi_name
+            for kpi_name in self.tech_kpinames
+            if kpi_name != TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY
+        ]
+
     def calculate_kpi(
         self,
     ):
@@ -393,7 +403,7 @@ class TechnologyPerformanceCalculator:
         design_parameters = self.design_parameters
         wq_parameters = self.waterquality_parameters
         plant_kpis = self.plant_kpis
-        tech_kpilist = {"kpi_list": self.tech_kpinames}
+        tech_kpilist = {"kpi_list": self._technology_kpi_list()}
 
         self._populate_missing_chemical_emission_factors()
 
@@ -573,9 +583,13 @@ class TechnologyPerformanceCalculator:
                 )
             else:
                 kpis[TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY] = 0.0
-            kpis.pop(HELPERKPI_MASS_OF_CHEMICALS, None)
-            print(f"---- {tech}: {kpis}")
-        
+            kpis_for_log = {
+                key: value
+                for key, value in kpis.items()
+                if key != HELPERKPI_MASS_OF_CHEMICALS
+            }
+            print(f"---- {tech}: {kpis_for_log}")
+   
     def sum_kpis(
         self,
         allowed_kpis: list[str] = None,
