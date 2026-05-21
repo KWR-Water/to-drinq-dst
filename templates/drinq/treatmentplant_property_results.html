@@ -17,7 +17,7 @@
         {% if properties_by_category %}
             {% for category_name, category_props in properties_by_category %}
             <div class="mb-4">
-                <h3>{{ category_name }}</h3>
+                <h3>{{ category_name|capfirst }}</h3>
                 <table class="table table-bordered">
                     <tr>
                         <th>Property</th>
@@ -44,10 +44,10 @@
 
         {% if technology_kpis_ordered %}
         <div class="mt-5">
-            <h3>KPIs per Technology</h3>
+            <h2>KPIs per Technology</h2>
             <div class="mb-4">
                 {% for technology, kpis in technology_kpis_ordered %}
-                    <h4>{{ technology.name }}</h4>
+                    <h3>{{ technology.name }}</h3>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
