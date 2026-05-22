@@ -14,33 +14,40 @@
     <p></p>
     <div class="card shadow-sm p-3 bg-white">
         <h2>Treatment plant KPIs for plant </h2>
-        <div class="mb-4">
-            <table class="table table-bordered">
-                <tr>
-                    <th>Property</th>
-                    <th>Value</th>
-                    <th>Unit</th>
-                </tr>
-                {% for prop in properties %}
-                <tr>
-                    <td>{{ prop.property.name }}</td>
-                    <td>{{ prop.value|format_kpi_value }}</td>
-                    <td class="align-top">
-                        <div class="form-text text-muted small mt-1">
-                            {{ prop.property.unit|superscript_exponents|safe }}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+        {% if properties_by_category %}
+            {% for category_name, category_props in properties_by_category %}
+            <div class="mb-4">
+                <h3>{{ category_name|capfirst }}</h3>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                        <th>Unit</th>
+                    </tr>
+                    {% for prop in category_props %}
+                    <tr>
+                        <td>{{ prop.property.name }}</td>
+                        <td>{{ prop.value|format_kpi_value }}</td>
+                        <td class="align-top">
+                            <div class="form-text text-muted small mt-1">
+                                {{ prop.property.unit|superscript_exponents|safe }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mb-4"><em>No plant-level KPIs available for this plant.</em></div>
+        {% endif %}
 
         {% if technology_kpis_ordered %}
         <div class="mt-5">
-            <h3>KPIs per Technology</h3>
+            <h2>KPIs per Technology</h2>
             <div class="mb-4">
                 {% for technology, kpis in technology_kpis_ordered %}
-                    <h4>{{ technology.name }}</h4>
+                    <h3>{{ technology.name }}</h3>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
