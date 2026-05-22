@@ -12,6 +12,20 @@ from autoslug import AutoSlugField
 from closuretree.models import ClosureModel
 
 
+class AdaptabilityCriterion(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    slug = models.TextField(unique=True, null=False)
+    label = models.TextField(blank=True, null=True)
+
+    class Meta:
+        # managed = False
+        db_table = 'adaptability_criterion'
+        verbose_name_plural = "adaptability criteria"
+
+    def __str__(self) -> str:
+        return f"{self.slug} ({self.id})"
+
+
 class Citation(models.Model):
     key = models.TextField(unique=True, blank=True, null=True)
 
@@ -578,6 +592,26 @@ class Technology(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class TechnologyAdaptabilityScore(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='technology')
+    adaptabilitycriterion = models.ForeignKey(
+        AdaptabilityCriterion, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='criterion')
+    raw_symbol = models.TextField(blank=True, null=True, db_column='raw_symbol')
+    score = models.FloatField(blank=True, null=False, db_column='score')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_adaptabilityscore'
+        verbose_name_plural = "technology adaptability scores"
+
+    def __str__(self):
+        return f"{self.technology} ({self.adaptabilitycriterion}): {self.score}"
 
 
 class TechnologyProperty(models.Model):

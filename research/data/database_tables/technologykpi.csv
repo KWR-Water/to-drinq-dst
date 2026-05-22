@@ -7,3 +7,4 @@ id,name,description,unit
 6,power,"power, in kW",kW
 7,daily energy consumption,daily energy consumption in kWh,kWh
 8,CO2 equivalent emissions,CO2 (equivalent) emissions in kg per m3 water produced,kg/m^3
+9,adaptability score,"adaptability score which is an aggregated value for climate variability, emerging pollutants, demographic shifts and energy and cost volatility. Scores range from 0 (decreasing) to 1 (robust).",

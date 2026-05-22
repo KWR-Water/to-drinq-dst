@@ -8,13 +8,16 @@
 <div class="container mt-5">
     <h1>Treatment Design: View details and specify further</h1>
     
-    <p class="card-text">
-        This page shows the details of the selected design of a treatment plant.
-        You can view the technologies used in this design, and specify further 
-        details.
+    <p class="lead">
+        This page shows the details of the selected design of a treatment plant, including 
+        the technologies used in this design and the adaptability scores of these technologies. Scroll down 
+        to review the details of the design, and view technology properties. 
     </p>
     <div class="form-container bg-white p-4 shadow rounded">
         <h3>Details of treatment design</h3>
+        <p>Review the details of the treatment design. Click on the "Edit" button to change the name of 
+            the treatment plant, and click on the "Calculate performance" 
+            button to specify design parameters and calculate the performance of this plant.</p>
         <div class="card mt-4 shadow-sm">
             <div class="card-body">
                 <table class="table table-striped">
@@ -43,28 +46,47 @@
                             <td>{{ treatment_plant.option }}</td>
                             <td><em>Not configurable.</em></td>
                         </tr>
+                        <tr>
+                            <td>Adaptability KPI (average over technologies)</td>
+                            <td>
+                                {% if plant_adaptability_score is not None %}
+                                    {{ plant_adaptability_score|floatformat:2 }}
+                                {% else %}
+                                    <em>No adaptability score available.</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="mb-2">
+                                    Based on per-technology averages across
+                                    {{ adaptability_criteria_total }} criteria.
+                                </div>
+                                <a href="{% url 'adaptability_details' treatment_plant.id %}" class="btn btn-outline-primary btn-sm">
+                                    View adaptability details
+                                </a>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
-    <h2 class="mt-4">Calculate performance of plant</h2>
-    <div class="card mt-4 shadow-sm">
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Description of action</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Calculate the performance of the plant and specify design parameters</td>
-                        <td><a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Calculate performance</a></td>
-                    </tr>
-                </tbody>
-            </table>
+        <h3 class="mt-4">Calculate performance of plant</h3>
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Description of action</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Calculate the performance of the plant and specify design parameters</td>
+                            <td><a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Calculate performance</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <h2 class="mt-4">Technologies used in this design</h2>
@@ -72,7 +94,12 @@
         The technologies used in this design are shown in the table below. The top row relates to the step where intake water is 
         treated, the final row corresponds to the last treatment step. You can view the details of each technology by clicking on the "View" button.
     </p>
-    <h5 class="card-title">Technologies in option {{ treatment_plant.option }}  of plant: "{{ treatment_plant.name }}".</h5>
+    <p>
+        <a href="{% url 'adaptability_details' treatment_plant.id %}" class="btn btn-outline-primary btn-sm">
+            View full adaptability details
+        </a>
+    </p>
+    <h5 class="card-title">Technologies in option {{ treatment_plant.option }}  of plant: "{{ treatment_plant.name }}"</h5>
     <div class="card mt-4 shadow-sm">
         <div class="card-body">
             <table class="table table-striped">
@@ -80,40 +107,60 @@
                     <tr>
                         <th>Step</th>
                         <th>Technology</th>
+                        <th>Adaptability score</th>
                         <th>Description</th>
                         <th>Advantages</th>
                         <th>Disadvantages</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% for layout in treatment_layout %}
+                {% for row in treatment_layout_with_adaptability %}
                     <tr>
-                        <th>{{ layout.step }}</th>
-                        <td>{{ layout.technology.name }}</td>
+                        <th>{{ row.layout.step }}</th>
+                        <td>{{ row.layout.technology.name }}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#descModal{{ layout.technology.id }}">
+                            {% if row.adaptability_score is not None %}
+                                {{ row.adaptability_score|floatformat:2 }}
+                            {% else %}
+                                <em>Not available</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#descModal{{ row.layout.technology.id }}">
                                 View
                             </button>
                             <!-- Modal -->
-                            <div class="modal fade" id="descModal{{ layout.technology.id }}" tabindex="-1" aria-labelledby="descModalLabel{{ layout.technology.id }}" aria-hidden="true">
+                            <div class="modal fade" id="descModal{{ row.layout.technology.id }}" tabindex="-1" aria-labelledby="descModalLabel{{ row.layout.technology.id }}" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="descModalLabel{{ layout.technology.id }}">{{ layout.technology.name }}</h5>
+                                            <h5 class="modal-title" id="descModalLabel{{ row.layout.technology.id }}">{{ row.layout.technology.name }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                     <div class="modal-body">
-                                        {{ layout.technology.description }}
+                                        {{ row.layout.technology.description }}
                                     </div>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ layout.technology.advantage }}</td>
-                        <td>{{ layout.technology.disadvantage }}</td>
+                        <td>{{ row.layout.technology.advantage }}</td>
+                        <td>{{ row.layout.technology.disadvantage }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            <p class="form-text text-muted mb-2">
+                Coverage note: each technology average is based on scores
+                available across {{ adaptability_criteria_total }} criteria.
+            </p>
+            <ul class="text-muted small mb-0">
+                {% for note in criteria_coverage_notes %}
+                    <li>
+                        Step {{ note.step }} - {{ note.technology_name }}:
+                        {{ note.criteria_count }}/{{ adaptability_criteria_total }} criteria
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>

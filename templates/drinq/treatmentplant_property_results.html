@@ -11,6 +11,7 @@
   <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
      provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
     <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+        <a href="{% url 'adaptability_details' object.id %}" class="btn btn-outline-primary ms-2">View full adaptability details</a>
     <p></p>
     <div class="card shadow-sm p-3 bg-white">
         <h2>Treatment plant KPIs for plant </h2>
@@ -46,8 +47,17 @@
         <div class="mt-5">
             <h2>KPIs per Technology</h2>
             <div class="mb-4">
-                {% for technology, kpis in technology_kpis_ordered %}
-                    <h3>{{ technology.name }}</h3>
+                {% for row in technology_kpis_ordered %}
+                    <h3>{{ row.technology.name }}</h3>
+                    <p class="mb-2 text-muted">
+                        Adaptability score:
+                        {% if row.adaptability_score is not None %}
+                            {{ row.adaptability_score|floatformat:2 }}
+                            ({{ row.criteria_count }}/{{ adaptability_criteria_total }} criteria)
+                        {% else %}
+                            <em>Not available</em>
+                        {% endif %}
+                    </p>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -57,7 +67,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for kpi_value in kpis %}
+                        {% for kpi_value in row.kpis %}
                             <tr>
                                 <td>{{ kpi_value.kpi.name }}</td>
                                 <td>{{ kpi_value.value|format_kpi_value }}</td>

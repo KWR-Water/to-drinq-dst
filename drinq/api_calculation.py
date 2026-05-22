@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 
 from drinq.utils.treatmentkpi import (
+    TECH_KPI_MAPPINGS,
     MicroStrainer,
     Strainer,
     CascadeMixerCoagulationDosing, 
@@ -57,6 +58,7 @@ HELPERKPI_MASS_OF_CHEMICALS = 'daily mass of chemicals'
 TECHKPI_POWER_KW = 'power'
 TECHKPI_HEADLOSS_BAR = 'head loss'
 TECHKPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
+TECHKPI_ADAPTABILITY_SCORE = 'adaptability score'
 
 TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_FOOTPRINT_AREA_M2,
@@ -84,6 +86,7 @@ KPI_OPER_AND_MAINT_COSTS_ANN = 'operation and maintenance costs (annual)'
 KPI_LEVELIZED_COST_OF_WATER = 'levelized cost of water'
 KPI_LEVELIZED_CHEMICAL_COSTS = 'levelized chemical costs'
 KPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
+KPI_ADAPTABILITY_INDEX = 'resilience index'
 
 logger = logging.getLogger(__name__)
 
@@ -388,10 +391,33 @@ class TechnologyPerformanceCalculator:
         """Return KPI names that can be computed by TreatmentKPI classes."""
         if self.tech_kpinames is None:
             return None
-        return [
+
+        excluded_kpis = {
+            TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
+            TECHKPI_ADAPTABILITY_SCORE,
+        }
+        requested_kpis = [
             kpi_name
             for kpi_name in self.tech_kpinames
-            if kpi_name != TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY
+            if kpi_name not in excluded_kpis
+        ]
+
+        supported_kpis = set(TECH_KPI_MAPPINGS.keys())
+        unsupported_kpis = sorted({
+            kpi_name for kpi_name in requested_kpis
+            if kpi_name not in supported_kpis
+        })
+        if unsupported_kpis:
+            logger.warning(
+                "Skipping unsupported technology KPI names before "
+                "TreatmentKPI lookup: %s",
+                unsupported_kpis,
+            )
+
+        return [
+            kpi_name
+            for kpi_name in requested_kpis
+            if kpi_name in supported_kpis
         ]
 
     def calculate_kpi(

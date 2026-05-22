@@ -69,7 +69,7 @@ id,name,unit,description,category,parent_property
 68,upper bound bar width,m,upper bound bar width,1,103
 69,lower bound bar space,m,lower bound bar space,1,103
 70,upper bound bar space,m,upper bound bar space,1,103
-71,empty bed contact time (min),minutes,empty bed contact time (min.),1,
+71,empty bed contact time,minutes,empty bed contact time (min.),1,
 72,lower bound gac particle diameter,mm,lower bound gac particle diameter,1,105
 73,upper bound gac particle diameter,mm,upper bound gac particle diameter,1,105
 74,lower bound powder activated carbon,mg/l,lower bound powder activated carbon,4,108

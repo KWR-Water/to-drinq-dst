@@ -14,8 +14,10 @@ from django.http import (
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
+from django.db.models import Avg, Count
 
 from drinq.models import (
+    AdaptabilityCriterion,
     Compound,
     CompoundCas,
     Technology,
@@ -43,6 +45,7 @@ from drinq.models import (
     ChemicalagentPrice,
     WaterqualityParameterTechnologyJunction,
     TreatmentPlantTechnologyKPIValue,
+    TechnologyAdaptabilityScore,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -113,6 +116,89 @@ DB_PLANTKPI_MAPPING = {
 # }
 
 logger = logging.getLogger(__name__)
+
+
+def get_adaptability_scores_for_technologies(technologies):
+    """Return aggregated adaptability scores for a sequence of technologies.
+
+    The technology score is the average over available adaptability criteria.
+    The treatment-plant score is the average over included technology scores.
+    """
+    criteria_rows = list(
+        AdaptabilityCriterion.objects
+        .order_by('id')
+        .values('id', 'slug', 'label')
+    )
+    criteria = [
+        {
+            'id': row['id'],
+            'slug': row['slug'],
+            'label': row['label'],
+            'display_name': row['label'] or row['slug'],
+        }
+        for row in criteria_rows
+    ]
+
+    technology_ids = [tech.id for tech in technologies if tech is not None]
+    if not technology_ids:
+        return {
+            'criteria': criteria,
+            'criteria_total': len(criteria),
+            'technology_scores': {},
+            'technology_criteria_counts': {},
+            'technology_criterion_scores': {},
+            'plant_score': None,
+        }
+
+    technology_score_rows = (
+        TechnologyAdaptabilityScore.objects
+        .filter(technology_id__in=technology_ids)
+        .values('technology_id')
+        .annotate(
+            adaptability_score=Avg('score'),
+            criteria_count=Count('adaptabilitycriterion', distinct=True),
+        )
+    )
+
+    technology_scores = {
+        row['technology_id']: row['adaptability_score']
+        for row in technology_score_rows
+    }
+    technology_criteria_counts = {
+        row['technology_id']: row['criteria_count']
+        for row in technology_score_rows
+    }
+    technology_criterion_scores = {
+        technology_id: {} for technology_id in technology_ids
+    }
+    criterion_score_rows = (
+        TechnologyAdaptabilityScore.objects
+        .filter(technology_id__in=technology_ids)
+        .values('technology_id', 'adaptabilitycriterion_id', 'score')
+    )
+    for row in criterion_score_rows:
+        technology_criterion_scores[row['technology_id']][
+            row['adaptabilitycriterion_id']
+        ] = row['score']
+
+    available_scores = [
+        technology_scores[technology_id]
+        for technology_id in technology_ids
+        if technology_scores.get(technology_id) is not None
+    ]
+    plant_score = (
+        sum(available_scores) / len(available_scores)
+        if available_scores else None
+    )
+
+    return {
+        'criteria': criteria,
+        'criteria_total': len(criteria),
+        'technology_scores': technology_scores,
+        'technology_criteria_counts': technology_criteria_counts,
+        'technology_criterion_scores': technology_criterion_scores,
+        'plant_score': plant_score,
+    }
 
 
 class Register(generic.TemplateView):
@@ -635,9 +721,61 @@ class TreatmentDesignDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = {}
+        treatment_layout = (
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=self.object)
+            .select_related('technology')
+            .order_by('step')
+        )
+        technologies = [
+            layout.technology for layout in treatment_layout
+            if layout.technology is not None
+        ]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            technologies)
+
+        treatment_layout_with_adaptability = []
+        criteria_coverage_notes = []
+        adaptability_matrix_rows = []
+        criteria = adaptability_data['criteria']
+        for layout in treatment_layout:
+            technology_id = layout.technology_id
+            criteria_count = adaptability_data[
+                'technology_criteria_counts'].get(technology_id, 0)
+            criterion_score_map = adaptability_data[
+                'technology_criterion_scores'].get(technology_id, {})
+            treatment_layout_with_adaptability.append({
+                'layout': layout,
+                'adaptability_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+                'criteria_count': criteria_count,
+            })
+            criteria_coverage_notes.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criteria_count': criteria_count,
+            })
+            adaptability_matrix_rows.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criterion_scores': [
+                    criterion_score_map.get(criterion['id'])
+                    for criterion in criteria
+                ],
+                'average_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+            })
+
         context['treatment_plant'] = self.object
-        context['treatment_layout'] = TreatmentPlantLayout.objects.filter(
-            treatmentplant=self.object)
+        context['treatment_layout'] = treatment_layout
+        context['treatment_layout_with_adaptability'] = (
+            treatment_layout_with_adaptability)
+        context['adaptability_criteria'] = criteria
+        context['criteria_coverage_notes'] = criteria_coverage_notes
+        context['adaptability_matrix_rows'] = adaptability_matrix_rows
+        context['plant_adaptability_score'] = adaptability_data['plant_score']
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
         return context
 
 
@@ -796,14 +934,91 @@ class DesignParameterResultsView(generic.DetailView):
         ordered_techs = [
             layout.technology for layout in layout_qs
             if layout.technology is not None]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            ordered_techs)
 
-        # Build an ordered list of (technology, kpis) pairs
+        # Build an ordered list of technology KPI blocks.
         technology_kpis_ordered = []
         for tech in ordered_techs:
             if tech in tech_kpis:
-                technology_kpis_ordered.append((tech, tech_kpis[tech]))
+                technology_kpis_ordered.append({
+                    'technology': tech,
+                    'kpis': tech_kpis[tech],
+                    'adaptability_score': adaptability_data[
+                        'technology_scores'].get(tech.id),
+                    'criteria_count': adaptability_data[
+                        'technology_criteria_counts'].get(tech.id, 0),
+                })
 
         context['technology_kpis_ordered'] = technology_kpis_ordered
+
+        # --- Persist plant adaptability KPI as a TreatmentPlantPropertyValue ---
+        adaptability_score = adaptability_data['plant_score']
+        if adaptability_score is not None:
+            adapt_prop, _ = TreatmentPlantProperty.objects.get_or_create(
+                name="adaptability score",
+                defaults={
+                    'unit': '(0–1)',
+                    'description': 'Average adaptability score across all technologies and criteria',
+                },
+            )
+            TreatmentPlantPropertyValue.objects.update_or_create(
+                treatmentplant=self.object,
+                property=adapt_prop,
+                defaults={'value': f"{adaptability_score:.4f}"},
+            )
+
+        context['plant_adaptability_score'] = adaptability_score
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
+        return context
+
+
+class AdaptabilityDetailView(generic.DetailView):
+    model = TreatmentPlant
+    template_name = 'drinq/adaptability_details.html'
+    pk_url_kwarg = 'plant_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        treatment_layout = (
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=self.object)
+            .select_related('technology')
+            .order_by('step')
+        )
+        technologies = [
+            layout.technology for layout in treatment_layout
+            if layout.technology is not None
+        ]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            technologies)
+
+        criteria = adaptability_data['criteria']
+        matrix_rows = []
+        for layout in treatment_layout:
+            technology_id = layout.technology_id
+            criterion_score_map = adaptability_data[
+                'technology_criterion_scores'].get(technology_id, {})
+            matrix_rows.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criterion_scores': [
+                    criterion_score_map.get(criterion['id'])
+                    for criterion in criteria
+                ],
+                'average_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+                'criteria_count': adaptability_data[
+                    'technology_criteria_counts'].get(technology_id, 0),
+            })
+
+        context['treatment_plant'] = self.object
+        context['adaptability_criteria'] = criteria
+        context['adaptability_matrix_rows'] = matrix_rows
+        context['plant_adaptability_score'] = adaptability_data['plant_score']
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
         return context
 
 
