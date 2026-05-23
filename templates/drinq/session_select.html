@@ -17,6 +17,10 @@
     
     Click "Load Configuration" to proceed with the selected session.
   </p>
+  <p>
+    Need to remove options or delete a full configuration?
+    <a href="{% url 'configuration_manage' %}">Manage stored configurations</a>.
+  </p>
   <form method="post">
     {% csrf_token %}
     <div class="form-group">

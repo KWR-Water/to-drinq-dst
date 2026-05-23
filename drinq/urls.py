@@ -35,6 +35,11 @@ urlpatterns = [
     #     ), name='drinq_form'),
     path('session_select/',  views.SessionSelectView.as_view(),
          name='session_select'),
+    path(
+        'configuration_manage/',
+        views.ConfigurationManagementView.as_view(),
+        name='configuration_manage',
+    ),
     path('form-name/', views.FormNameView.as_view(), name='form_name'),
     path(
         'form-designtree/', views.FormWaterSourceView.as_view(),

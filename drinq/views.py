@@ -15,6 +15,7 @@ from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
 from django.db.models import Avg, Count
+from django.db.utils import OperationalError
 
 from drinq.models import (
     AdaptabilityCriterion,
@@ -225,6 +226,92 @@ class SessionSelectView(generic.edit.FormView):
     def form_valid(self, form):
         session = form.cleaned_data['session']
         return redirect('form_complete', session_key=session.session_key)
+
+
+class ConfigurationManagementView(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'drinq/configuration_manage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        configurations = (
+            MultiStepConfiguration.objects
+            .filter(user=self.request.user)
+            .prefetch_related('treatmentplant_set')
+            .order_by('-date_created')
+        )
+        context['configurations'] = configurations
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        if action == 'delete_configuration':
+            return self._delete_configuration(request)
+        if action == 'delete_option':
+            return self._delete_option(request)
+        return redirect('configuration_manage')
+
+    def _delete_configuration(self, request):
+        configuration_id = request.POST.get('configuration_id')
+        try:
+            configuration = MultiStepConfiguration.objects.get(
+                id=configuration_id,
+                user=request.user,
+            )
+        except MultiStepConfiguration.DoesNotExist:
+            raise Http404('Configuration does not exist.')
+
+        if request.session.get('configuration_id') == configuration.id:
+            request.session.pop('configuration_id', None)
+        self._delete_configuration_with_fallback(configuration)
+        return redirect('configuration_manage')
+
+    def _delete_option(self, request):
+        configuration_id = request.POST.get('configuration_id')
+        treatment_plant_id = request.POST.get('treatment_plant_id')
+        try:
+            treatment_plant = TreatmentPlant.objects.get(
+                id=treatment_plant_id,
+                configuration_id=configuration_id,
+                configuration__user=request.user,
+            )
+        except TreatmentPlant.DoesNotExist:
+            raise Http404('Treatment design option does not exist.')
+
+        self._delete_treatment_plant_with_fallback(treatment_plant)
+        return redirect('configuration_manage')
+
+    def _delete_configuration_with_fallback(
+            self,
+            configuration: MultiStepConfiguration) -> None:
+        try:
+            configuration.delete()
+            return
+        except OperationalError as exc:
+            if 'no such table' not in str(exc).lower():
+                raise
+
+        db_alias = MultiStepConfiguration.objects.db
+        TreatmentPlant.objects.filter(
+            configuration_id=configuration.id,
+        )._raw_delete(db_alias)
+        MultiStepConfiguration.objects.filter(
+            id=configuration.id,
+        )._raw_delete(db_alias)
+
+    def _delete_treatment_plant_with_fallback(
+            self,
+            treatment_plant: TreatmentPlant) -> None:
+        try:
+            treatment_plant.delete()
+            return
+        except OperationalError as exc:
+            if 'no such table' not in str(exc).lower():
+                raise
+
+        db_alias = TreatmentPlant.objects.db
+        TreatmentPlant.objects.filter(
+            id=treatment_plant.id,
+        )._raw_delete(db_alias)
 
 
 class FormNameView(LoginRequiredMixin, generic.edit.FormView):

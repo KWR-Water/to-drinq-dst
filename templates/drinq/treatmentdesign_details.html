@@ -44,7 +44,21 @@
                         <tr>
                             <td>Option number</td>
                             <td>{{ treatment_plant.option }}</td>
-                            <td><em>Not configurable.</em></td>
+                            <td>
+                                <form method="post" action="{% url 'configuration_manage' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_option">
+                                    <input type="hidden" name="configuration_id" value="{{ treatment_plant.configuration.id }}">
+                                    <input type="hidden" name="treatment_plant_id" value="{{ treatment_plant.id }}">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Delete this design option?');"
+                                    >
+                                        Delete this option
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                         <tr>
                             <td>Adaptability KPI (average over technologies)</td>

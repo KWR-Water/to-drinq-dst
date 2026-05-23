@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage stored treatment design configurations</h2>
+    <p class="lead">
+        Remove a complete saved configuration or remove a specific design
+        option within a configuration.
+    </p>
+
+    {% if configurations %}
+        {% for configuration in configurations %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ configuration.name }}</strong>
+                        <div class="small text-muted">
+                            Created on {{ configuration.date_created|date:'Y-m-d H:i' }}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a
+                            href="{% url 'form_complete' configuration.session_key %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Load
+                        </a>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete_configuration">
+                            <input type="hidden" name="configuration_id" value="{{ configuration.id }}">
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Delete this configuration and all design options?');"
+                            >
+                                Delete configuration
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        {{ configuration.description|default:'No description available.' }}
+                    </p>
+
+                    {% if configuration.treatmentplant_set.all %}
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Option number</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for treatment_plant in configuration.treatmentplant_set.all %}
+                                        <tr>
+                                            <td>{{ treatment_plant.name }}</td>
+                                            <td>{{ treatment_plant.option }}</td>
+                                            <td>
+                                                {{ treatment_plant.description|default:'No description available.' }}
+                                            </td>
+                                            <td>
+                                                {% if treatment_plant.slug %}
+                                                    <a
+                                                        href="{% url 'design_detail' treatment_plant.slug %}"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                    >
+                                                        Open
+                                                    </a>
+                                                {% endif %}
+                                                <form method="post" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="delete_option">
+                                                    <input type="hidden" name="configuration_id" value="{{ configuration.id }}">
+                                                    <input type="hidden" name="treatment_plant_id" value="{{ treatment_plant.id }}">
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Delete this design option?');"
+                                                    >
+                                                        Delete option
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            No design options saved for this configuration.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            No saved configurations found.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
