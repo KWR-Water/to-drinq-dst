@@ -26,12 +26,13 @@
                         <th>Unit</th>
                     </tr>
                     {% for prop in category_props %}
+                    {% scaled_kpi_display prop.value prop.property.name as display %}
                     <tr>
                         <td>{{ prop.property.name }}</td>
-                        <td>{{ prop.value|format_kpi_value }}</td>
+                        <td>{{ display.value }}</td>
                         <td class="align-top">
                             <div class="form-text text-muted small mt-1">
-                                {{ prop.property.unit|superscript_exponents|safe }}
+                                {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ prop.property.unit|superscript_exponents|safe }}
                             </div>
                         </td>
                     </tr>
@@ -68,12 +69,13 @@
                         </thead>
                         <tbody>
                         {% for kpi_value in row.kpis %}
+                            {% scaled_kpi_display kpi_value.value kpi_value.kpi.name as display %}
                             <tr>
                                 <td>{{ kpi_value.kpi.name }}</td>
-                                <td>{{ kpi_value.value|format_kpi_value }}</td>
+                                <td>{{ display.value }}</td>
                                 <td class="align-top">
                                     <div class="form-text text-muted small mt-1">
-                                        {{ kpi_value.kpi.unit|superscript_exponents|safe }}
+                                        {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ kpi_value.kpi.unit|superscript_exponents|safe }}
                                     </div>
                                 </td>
                             </tr>
