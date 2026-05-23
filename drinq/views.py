@@ -15,6 +15,7 @@ from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
 from django.db.models import Avg, Count
+from django.db import IntegrityError, transaction
 from django.db.utils import OperationalError
 
 from drinq.models import (
@@ -37,6 +38,7 @@ from drinq.models import (
     TreatmentPlant,
     TreatmentPlantLayout,
     TreatmentplantDesignParameter,
+    TreatmentPlantChemicalagentPriceJunction,
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
@@ -47,6 +49,7 @@ from drinq.models import (
     WaterqualityParameterTechnologyJunction,
     TreatmentPlantTechnologyKPIValue,
     TechnologyAdaptabilityScore,
+    ConfiguredTechnologies,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -286,17 +289,11 @@ class ConfigurationManagementView(LoginRequiredMixin, generic.TemplateView):
         try:
             configuration.delete()
             return
-        except OperationalError as exc:
-            if 'no such table' not in str(exc).lower():
+        except (OperationalError, IntegrityError) as exc:
+            if not self._is_supported_delete_fallback_error(exc):
                 raise
 
-        db_alias = MultiStepConfiguration.objects.db
-        TreatmentPlant.objects.filter(
-            configuration_id=configuration.id,
-        )._raw_delete(db_alias)
-        MultiStepConfiguration.objects.filter(
-            id=configuration.id,
-        )._raw_delete(db_alias)
+        self._hard_delete_configuration(configuration.id)
 
     def _delete_treatment_plant_with_fallback(
             self,
@@ -304,14 +301,109 @@ class ConfigurationManagementView(LoginRequiredMixin, generic.TemplateView):
         try:
             treatment_plant.delete()
             return
+        except (OperationalError, IntegrityError) as exc:
+            if not self._is_supported_delete_fallback_error(exc):
+                raise
+
+        self._hard_delete_treatment_plant(treatment_plant.id)
+
+    def _is_supported_delete_fallback_error(self, exc: Exception) -> bool:
+        error_text = str(exc).lower()
+        if isinstance(exc, OperationalError):
+            return 'no such table' in error_text
+        if isinstance(exc, IntegrityError):
+            return 'foreign key' in error_text
+        return False
+
+    def _hard_delete_configuration(self, configuration_id: int) -> None:
+        db_alias = MultiStepConfiguration.objects.db
+        treatment_plant_ids = list(
+            TreatmentPlant.objects.filter(
+                configuration_id=configuration_id,
+            ).values_list('id', flat=True)
+        )
+
+        with transaction.atomic(using=db_alias):
+            for treatment_plant_id in treatment_plant_ids:
+                self._hard_delete_treatment_plant(
+                    treatment_plant_id,
+                    db_alias=db_alias,
+                )
+
+            self._raw_delete_if_table_exists(
+                QuestionAnswer.objects.filter(
+                    configuration_id=configuration_id,
+                ),
+                db_alias,
+            )
+            self._raw_delete_if_table_exists(
+                ConfiguredTechnologies.objects.filter(
+                    configuration_id=configuration_id,
+                ),
+                db_alias,
+            )
+            self._raw_delete_if_table_exists(
+                MultiStepConfiguration.objects.filter(id=configuration_id),
+                db_alias,
+            )
+
+    def _hard_delete_treatment_plant(
+            self,
+            treatment_plant_id: int,
+            db_alias: str | None = None) -> None:
+        if db_alias is None:
+            db_alias = TreatmentPlant.objects.db
+
+        child_querysets = [
+            TreatmentPlantLayout.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentplantDesignParameter.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantPropertyValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantWaterQualityParameterValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantTechnologyKPIValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantChemicalagentPriceJunction.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+        ]
+
+        for child_queryset in child_querysets:
+            self._raw_delete_if_table_exists(child_queryset, db_alias)
+
+        self._raw_delete_if_table_exists(
+            TreatmentPlant.objects.filter(id=treatment_plant_id),
+            db_alias,
+        )
+
+    def _raw_delete_if_table_exists(self, queryset, db_alias: str) -> None:
+        try:
+            queryset._raw_delete(db_alias)
         except OperationalError as exc:
             if 'no such table' not in str(exc).lower():
                 raise
 
-        db_alias = TreatmentPlant.objects.db
-        TreatmentPlant.objects.filter(
-            id=treatment_plant.id,
-        )._raw_delete(db_alias)
+
+class ConfigurationUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = MultiStepConfiguration
+    form_class = ConfigurationNameForm
+    template_name = 'drinq/configuration_edit.html'
+
+    def get_queryset(self):
+        return MultiStepConfiguration.objects.filter(user=self.request.user)
+
+    def get_success_url(self):
+        return f"{reverse('configuration_manage')}?updated=1"
 
 
 class FormNameView(LoginRequiredMixin, generic.edit.FormView):

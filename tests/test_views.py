@@ -133,6 +133,65 @@ class ConfigurationManagementViewTests(TestCase):
             TreatmentPlant.objects.filter(
                 configuration_id=self.configuration.id).exists())
 
+
+class ConfigurationUpdateViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='owner', password='secretpass')
+        self.other_user = User.objects.create_user(
+            username='other', password='otherpass')
+        self.client.force_login(self.user)
+
+        self.configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='session-edit',
+            name='Original name',
+            description='Original description',
+        )
+        self.other_configuration = MultiStepConfiguration.objects.create(
+            user=self.other_user,
+            session_key='session-other',
+            name='Other name',
+            description='Other description',
+        )
+
+    def test_update_configuration_name_and_description(self):
+        url = reverse(
+            'configuration_edit',
+            kwargs={'pk': self.configuration.id},
+        )
+        response = self.client.post(
+            url,
+            {
+                'name': 'Updated name',
+                'description': 'Updated description',
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.configuration.refresh_from_db()
+        self.assertEqual(self.configuration.name, 'Updated name')
+        self.assertEqual(
+            self.configuration.description,
+            'Updated description',
+        )
+        self.assertContains(
+            response,
+            'Configuration details updated successfully.',
+        )
+
+    def test_cannot_edit_configuration_of_other_user(self):
+        url = reverse(
+            'configuration_edit',
+            kwargs={'pk': self.other_configuration.id},
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 404)
+
 # How to debug invalid forms:
 # - After form.is_valid(), inspect form.errors to see which fields are invalid.
 # - Make sure all required fields for the form/model are present in the POST data.

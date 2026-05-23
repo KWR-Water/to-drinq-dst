@@ -9,6 +9,12 @@
         option within a configuration.
     </p>
 
+    {% if request.GET.updated %}
+        <div class="alert alert-success" role="alert">
+            Configuration details updated successfully.
+        </div>
+    {% endif %}
+
     {% if configurations %}
         {% for configuration in configurations %}
             <div class="card mb-4 shadow-sm">
@@ -25,6 +31,12 @@
                             class="btn btn-sm btn-outline-primary"
                         >
                             Load
+                        </a>
+                        <a
+                            href="{% url 'configuration_edit' configuration.id %}"
+                            class="btn btn-sm btn-outline-secondary"
+                        >
+                            Edit
                         </a>
                         <form method="post" class="d-inline">
                             {% csrf_token %}
@@ -46,8 +58,13 @@
                     </p>
 
                     {% if configuration.treatmentplant_set.all %}
-                        <div class="table-responsive">
-                            <table class="table table-striped mb-0">
+                        <div class="ms-md-4 mt-3 border-start ps-3 ps-md-4">
+                            <h6 class="text-muted mb-2">
+                                Saved treatment design options in this
+                                configuration
+                            </h6>
+                            <div class="table-responsive small">
+                                <table class="table table-sm table-striped mb-0">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -90,7 +107,8 @@
                                         </tr>
                                     {% endfor %}
                                 </tbody>
-                            </table>
+                                </table>
+                            </div>
                         </div>
                     {% else %}
                         <div class="alert alert-info mb-0">

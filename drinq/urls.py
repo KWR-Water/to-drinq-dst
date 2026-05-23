@@ -40,6 +40,11 @@ urlpatterns = [
         views.ConfigurationManagementView.as_view(),
         name='configuration_manage',
     ),
+    path(
+        'configuration_manage/<int:pk>/edit/',
+        views.ConfigurationUpdateView.as_view(),
+        name='configuration_edit',
+    ),
     path('form-name/', views.FormNameView.as_view(), name='form_name'),
     path(
         'form-designtree/', views.FormWaterSourceView.as_view(),
