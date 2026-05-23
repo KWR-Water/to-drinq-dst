@@ -32,19 +32,37 @@
                         <tr>
                             <td>Current treatment plant configuration</td>
                             <td>{{ treatment_plant.configuration.name }}</td>
-                            <td>Not configurable.</td>
+                            <td>
+                                <a href="{% url 'configuration_edit' treatment_plant.configuration.id %}" class="btn btn-outline-secondary btn-sm">
+                                    Edit configuration
+                                </a>
+                            </td>
                         </tr>
                         <tr>
                             <td>Current name of treatment plant</td>
                             <td>{{ treatment_plant.name }}</td>
                             <td>
-                                <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'edit_treatmentdesign' treatment_plant.slug %}" class="btn btn-outline-primary btn-sm">Edit name</a>
                             </td>
                         </tr>
                         <tr>
                             <td>Option number</td>
                             <td>{{ treatment_plant.option }}</td>
-                            <td><em>Not configurable.</em></td>
+                            <td>
+                                <form method="post" action="{% url 'configuration_manage' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_option">
+                                    <input type="hidden" name="configuration_id" value="{{ treatment_plant.configuration.id }}">
+                                    <input type="hidden" name="treatment_plant_id" value="{{ treatment_plant.id }}">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Delete this design option?');"
+                                    >
+                                        Delete this option
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                         <tr>
                             <td>Adaptability KPI (average over technologies)</td>
