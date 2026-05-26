@@ -28,14 +28,6 @@ Note 1. - When to use ModelForm (and when not)
 
 See https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/#django.forms.ModelForm
 
-If you’re building a database-driven app, chances are you’ll have forms 
-that map closely to Django models. For instance, you might have a BlogComment 
-model, and you want to create a form that lets people submit comments. 
-In this case, it would be redundant to define the field types in your form, 
-because you’ve already defined the fields in your model.
-For this reason, Django provides a helper class that lets you create a 
-Form class from a Django model.
-
 Note 2. - handling of forms in SessionWizardView is broken, or does not work as 
 expected. I encountered a similar problem with the SessionWizardView as posted 
 on StackOverflow:

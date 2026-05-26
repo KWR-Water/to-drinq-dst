@@ -9,6 +9,7 @@ __pycache__
 docs/build/*
 */.ipynb_checkpoints
 .ipynb_checkpoints
-*.sqlite
+*.sql*
+to_drinq_dst.sqlite
 *.db
 .DS_Store

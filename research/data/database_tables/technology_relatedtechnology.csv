@@ -1,7 +1,8 @@
-﻿id,technology,related_technology
-1,40,4
-2,44,4
-3,40,33
-4,44,33
+id,technology,relatedtechnology
+1,40,34
+2,44,34
+3,4,33
+4,51,50
 5,27,49
 6,39,49
+7,52,34

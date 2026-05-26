@@ -13,8 +13,8 @@
   "energy_consumption_kwh_per_m3_water": "energy consumption (kWh/m3 water)",
   "lower_bound_of_dosing_flow_rate_liter_per_hr": "lower bound of dosing flow rate (liter/hr)",
   "upper_bound_of_dosing_flow_rate_liter_per_hr": "upper bound of dosing flow rate (liter/hr)",
-  "target_concentration_of_dosing_chemical_mg_per_l": "target concentration of dosing chemical (mg/l)",
-  "number_of_units_per_lane": "number of units per lane",
+  "target_concentration_of_dosing_chemical": "target concentration of dosing chemical",
+  "units_per_lane": "units per lane",
   "nominal_dosing_flow_rate": "nominal dosing flow rate",
   "retention_time_min": "retention time (min)",
   "tank_height": "tank height",
@@ -130,7 +130,7 @@
   "sand_density": "sand density",
   "anthracite_density": "anthracite density",
   "backwash_duration": "backwash duration",
-  "backwash_hydraulic_loading_rate": "backwash hydraulic loading rate",
+  "backwash_filtration_rate": "backwash filtration rate",
   "sand_media_grain_size": "sand media grain size",
   "anthracite_media_grain_size": "anthracite media grain size",
   "sand_filter_bed_height": "sand filter bed height",
@@ -164,5 +164,7 @@
   "upper_bound_uv_dose": "upper bound uv dose",
   "lower_bound_power_per_m3": "lower bound UV power per m3",
   "upper_bound_power_per_m3": "upper bound uUV power per m3",
-  "sludge_tank_height": "sludge tank height"
+  "sludge_tank_height": "sludge tank height",
+  "filtration_rate": "filtration rate",
+  "gac_porosity": "GAC porosity"
 }

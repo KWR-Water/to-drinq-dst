@@ -11,36 +11,54 @@
   <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
      provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
     <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+        <a href="{% url 'adaptability_details' object.id %}" class="btn btn-outline-primary ms-2">View full adaptability details</a>
     <p></p>
     <div class="card shadow-sm p-3 bg-white">
         <h2>Treatment plant KPIs for plant </h2>
-        <div class="mb-4">
-            <table class="table table-bordered">
-                <tr>
-                    <th>Property</th>
-                    <th>Value</th>
-                    <th>Unit</th>
-                </tr>
-                {% for prop in properties %}
-                <tr>
-                    <td>{{ prop.property.name }}</td>
-                    <td>{{ prop.value|format_kpi_value }}</td>
-                    <td class="align-top">
-                        <div class="form-text text-muted small mt-1">
-                            {{ prop.property.unit|superscript_exponents|safe }}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+        {% if properties_by_category %}
+            {% for category_name, category_props in properties_by_category %}
+            <div class="mb-4">
+                <h3>{{ category_name|capfirst }}</h3>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                        <th>Unit</th>
+                    </tr>
+                    {% for prop in category_props %}
+                    {% scaled_kpi_display prop.value prop.property.name as display %}
+                    <tr>
+                        <td>{{ prop.property.name }}</td>
+                        <td>{{ display.value }}</td>
+                        <td class="align-top">
+                            <div class="form-text text-muted small mt-1">
+                                {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ prop.property.unit|superscript_exponents|safe }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mb-4"><em>No plant-level KPIs available for this plant.</em></div>
+        {% endif %}
 
         {% if technology_kpis_ordered %}
         <div class="mt-5">
-            <h3>KPIs per Technology</h3>
+            <h2>KPIs per Technology</h2>
             <div class="mb-4">
-                {% for technology, kpis in technology_kpis_ordered %}
-                    <h4>{{ technology.name }}</h4>
+                {% for row in technology_kpis_ordered %}
+                    <h3>{{ row.technology.name }}</h3>
+                    <p class="mb-2 text-muted">
+                        Adaptability score:
+                        {% if row.adaptability_score is not None %}
+                            {{ row.adaptability_score|floatformat:2 }}
+                            ({{ row.criteria_count }}/{{ adaptability_criteria_total }} criteria)
+                        {% else %}
+                            <em>Not available</em>
+                        {% endif %}
+                    </p>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -50,13 +68,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for kpi_value in kpis %}
+                        {% for kpi_value in row.kpis %}
+                            {% scaled_kpi_display kpi_value.value kpi_value.kpi.name as display %}
                             <tr>
                                 <td>{{ kpi_value.kpi.name }}</td>
-                                <td>{{ kpi_value.value|format_kpi_value }}</td>
+                                <td>{{ display.value }}</td>
                                 <td class="align-top">
                                     <div class="form-text text-muted small mt-1">
-                                        {{ kpi_value.kpi.unit|superscript_exponents|safe }}
+                                        {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ kpi_value.kpi.unit|superscript_exponents|safe }}
                                     </div>
                                 </td>
                             </tr>

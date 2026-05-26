@@ -65,7 +65,7 @@
                 <tr>
                     <td>{{ form.instance.designparameter.name }}</td>
                     <td>
-                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" or form.instance.designparameter.name == "interest rate" or form.instance.designparameter.name == "emission factor (electricity)" %}
+                        {% if form.instance.designparameter.name == "peak demand factor" or form.instance.designparameter.name == "leakage factor" or form.instance.designparameter.name == "interest rate" or form.instance.designparameter.name == "energy price" or form.instance.designparameter.name == "emission factor (electricity)" %}
                             <input type="number"
                                 step="any"
                                 name="{{ form.value.html_name }}"

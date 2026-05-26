@@ -1,0 +1,6 @@
+id,password,last_login,is_superuser,username,first_name,last_name,email,is_staff,is_active,date_joined
+1,pbkdf2_sha256$870000$JnVlSUHwND1cPlIn9SUcdj$hWgUFI8AOU58m0SdNM8bGLeAZWCsKglip79XNK/SLqI=,2026-03-27 10:47:40.167805,1,admin,,,admin@example.com,1,1,2025-12-02 12:55:08.358405
+2,pbkdf2_sha256$1000000$6TCrmOkOViJD8gXD2hRPGf$WwuZ9bsDDXlydX5LsyuMLQbdAG/6/07ktssPn+qTl/4=,2026-05-18 08:39:27.295251,0,dirk,Dirk,Vries,dirk.vries@kwrwater.nl,0,1,2025-12-11 17:27:44
+3,pbkdf2_sha256$870000$ILTtCYkFGIGWJ87zBSKtTa$KCkhsXrHYTdKvo0ZkGEr3iecbqyn1v0WbzJQwU5XbJ0=,2026-04-03 11:31:30.982301,1,admin_greg,,,g.kyritsakas@tudelft.nl,1,1,2026-04-03 11:30:11.310205
+4,pbkdf2_sha256$870000$hJSDGUOKi7XWO8Zc3HQ2Ha$x04BtcNn1Cn08AOXBwEaXhAn5svyaOc615ENYR24coI=,2026-04-03 11:38:11.802483,0,greg,Greg,Kyritsakas,,0,1,2026-04-03 11:34:21
+5,pbkdf2_sha256$1000000$U9F8Bl88UUMjjOZ97NGqwu$b7I0mbfKveVAnz4u/9NF8gklnT2rf+PxEN/PMJkfc6k=,2026-05-13 11:00:45.165267,1,admin_dirk,,,dirk.vries@kwrwater.nl,1,1,2026-05-13 11:00:05.997086

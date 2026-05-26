@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 
 from drinq.utils.treatmentkpi import (
+    TECH_KPI_MAPPINGS,
     MicroStrainer,
     Strainer,
     CascadeMixerCoagulationDosing, 
@@ -37,6 +38,7 @@ from drinq.utils.treatmentkpi import (
     INPUT_WQPARAMETER_KEY,
     TARGET_WQPARAMETER_KEY,
     NOMINAL_FLOW_RATE_NAME,
+    TPN,
 )
 from drinq.utils.financial_costs import (
     construction_costs_total,
@@ -51,10 +53,12 @@ from drinq.utils.financial_costs import (
 # NOTE: TECHKPI names should match those in the database!
 TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY = 'daily energy consumption'
 TECHKPI_FOOTPRINT_AREA_M2 = 'footprint area'
-TECHKPI_MASS_OF_CHEMICALS = 'mass of chemicals'
+TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY = 'daily chemical costs'
+HELPERKPI_MASS_OF_CHEMICALS = 'daily mass of chemicals'
 TECHKPI_POWER_KW = 'power'
 TECHKPI_HEADLOSS_BAR = 'head loss'
 TECHKPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
+TECHKPI_ADAPTABILITY_SCORE = 'adaptability score'
 
 TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_FOOTPRINT_AREA_M2,
@@ -62,17 +66,27 @@ TODRINQ_KPINAMES_TOSUM = [
     TECHKPI_POWER_KW,
     TECHKPI_HEADLOSS_BAR,
     TECHKPI_CO2_EMISSIONS_KGPERM3,  # NOT WORKING YET
+    TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
 ]
 
 # Below follow the database names for the KPIs
+DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME = 'operation and maintenance rate'
+DESIGN_PAR_PERSONNEL_COSTS_NAME = 'personnel costs'
+DESIGN_PAR_LIFESPAN_NAME = 'depreciation period'
+DESIGN_PAR_INTEREST_PERC_NAME = 'interest rate'
+DESIGN_PAR_ENERGY_PRICE_NAME = 'energy price'  # per kWh
 KPI_NOMINAL_FLOW_M3PERH = NOMINAL_FLOW_RATE_NAME
 KPI_ENERGY_CONSUMPTION_KWHRPERDAY = 'energy consumption (kwhrperday)'
 KPI_ENERGY_CONSUMPTION_KWHRPERM3 = 'specific energy consumption'
 KPI_FOOTPRINT_AREA_M2 = 'footprint area'
-KPI_SPECIFIC_CONSTRUCTION_COSTS = 'construction costs'
+KPI_CONSTRUCTION_COSTS = 'construction costs'
+# KPI_SPECIFIC_CONSTRUCTION_COSTS = 'specific construction costs'
 KPI_INVESTMENT_COSTS_ANN = 'investment costs (annual)'
 KPI_OPER_AND_MAINT_COSTS_ANN = 'operation and maintenance costs (annual)'
+KPI_LEVELIZED_COST_OF_WATER = 'levelized cost of water'
+KPI_LEVELIZED_CHEMICAL_COSTS = 'levelized chemical costs'
 KPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
+KPI_ADAPTABILITY_INDEX = 'resilience index'
 
 logger = logging.getLogger(__name__)
 
@@ -156,58 +170,6 @@ def var_total_water_demand(
     return var_persons + var_leakage + var_demand_lscons + var_cons_lppd
 
 
-def technology_selector(
-    stage: str,
-    technology_options: list[str],
-) -> str | None:
-    """Select technology based on performance indicators.
-
-    Args:
-        stage (str): treatment stage
-        technology_options (list[str]): list of technology options
-        performance_indicators (dict[str, float | int]): performance indicators
-
-    Returns:
-        str | None: selected technology or None if no selection is made
-    """
-    selected_technology = None
-    match stage.lower():
-        case 'screening':
-            for technology in technology_options:
-                match technology.lower():
-                    case 'strainer':
-                        selected_technology = technology
-                    case _:
-                        pass
-        case 'algae screening':
-            for technology in technology_options:
-                match technology.lower():
-                    case 'micro strainer':
-                        selected_technology = technology
-                    case _:
-                        pass
-        case 'coagulation':
-            for technology in technology_options:
-                match technology.lower():
-                    case str(technology) if (
-                        'coagulant dosing' and 'dynamic mixing'
-                        ) in technology:
-                        selected_technology = technology
-                    case _:
-                        pass
-        case 'flocculation':
-            for technology in technology_options:
-                match technology.lower():
-                    case 'dynamic mixing':
-                        selected_technology = technology
-                    case _:
-                        pass
-        case _:
-            pass
-    return selected_technology
-
-
-# TODO: implement in views.py
 @dataclass
 # Name WaterQualityParameterData or WaterqualityParameterKPI. Not to be
 # confused with the db table.
@@ -271,6 +233,7 @@ class TechnologyPerformanceCalculator:
     technologies: list[str]  # names of technologies
     tech_parameters: dict[str, dict[str, float | int]]  # tech: {parameter_id: value}
     design_parameters: dict[str, float | int]  # plant parameter_id: value
+    chemicalagent_parameters: dict[str, dict[str, dict[str, float | None]]]
     waterquality_parameters: dict[str, dict[str, float | int]]  # tech: wq_dict
     plant_kpis: dict[str, float | int]  # plant performance indicators
     tech_kpinames: list[str]  # technology performance indicators
@@ -284,6 +247,7 @@ class TechnologyPerformanceCalculator:
         design_parameters: dict[str, float | int],
         plant_kpis: dict[str, float | int] = dict(),
         tech_parameters: dict[str, dict[str, float | int]] = dict(),
+        chemicalagent_parameters: dict[str, dict[str, dict[str, float | None]]] | None = None,
         waterquality_parameters: dict[str, dict[str, float | int]] = dict(),
         tech_kpinames: list[str] = None,
         digested_tech_parameter_list: dict[str, list[str]] = None,
@@ -292,6 +256,10 @@ class TechnologyPerformanceCalculator:
         self.tech_parameters = tech_parameters
         self.design_parameters = design_parameters
         self.technologies = technologies
+        self.chemicalagent_parameters = (
+            {} if chemicalagent_parameters is None
+            else chemicalagent_parameters
+        )
         self.waterquality_parameters = waterquality_parameters
         self.stages = stages
         self.plant_kpis = plant_kpis
@@ -299,7 +267,159 @@ class TechnologyPerformanceCalculator:
         self.tech_kpis = {technology: None for technology in technologies}
         self.digested_tech_parameter_list = digested_tech_parameter_list
         self.summed_kpis = dict()
-        
+
+    def _extract_chemical_prices_for_technology(
+        self,
+        technology_name: str,
+    ) -> dict[str, float]:
+        prices: dict[str, float] = {}
+        params = self.chemicalagent_parameters.get(technology_name, {})
+        for chem_name, chem_meta in params.items():
+            if chem_meta is None:
+                continue
+            price = chem_meta.get('price', None)
+            if price is None:
+                continue
+            prices[chem_name] = float(price)
+        return prices
+
+    def _parse_float(self, value: object) -> float | None:
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return None
+            try:
+                return float(stripped)
+            except ValueError:
+                try:
+                    return float(stripped.replace(',', '.'))
+                except ValueError:
+                    return None
+        return None
+
+    def _normalize_property_name(self, name: str) -> str:
+        return re.sub(r'[^a-z0-9]+', ' ', name.lower()).strip()
+
+    def _extract_emission_factor_for_chemical(
+        self,
+        technology_name: str,
+        chemical_name: str,
+    ) -> float | None:
+        """Normalizes emission factor property names and 
+        attempts to extract a chemical-specific emission factor
+        for the given technology.
+        The method first looks for a property name that contains both
+        the generic chemical emission factor key and the chemical name.
+        If not found, it falls back to the generic chemical emission factor 
+        for the technology, and finally looks for any property that matches
+        the generic key.
+        """
+        tech_properties = self.tech_parameters.get(technology_name, {})
+        if not tech_properties:
+            return None
+
+        generic_key = TPN['chemical_emission_factor']
+        generic_norm = self._normalize_property_name(generic_key)
+        chemical_norm = self._normalize_property_name(chemical_name)
+
+        # Level 1: per-chemical property containing both the generic key
+        # and chemical name.
+        for prop_name, prop_value in tech_properties.items():
+            prop_norm = self._normalize_property_name(prop_name)
+            if generic_norm in prop_norm and chemical_norm in prop_norm:
+                parsed = self._parse_float(prop_value)
+                if parsed is not None:
+                    return parsed
+
+        # Level 2 fallback: generic chemical emission factor from TPN mapping.
+        if generic_key in tech_properties:
+            parsed = self._parse_float(tech_properties[generic_key])
+            if parsed is not None:
+                return parsed
+
+        for prop_name, prop_value in tech_properties.items():
+            if self._normalize_property_name(prop_name) == generic_norm:
+                parsed = self._parse_float(prop_value)
+                if parsed is not None:
+                    return parsed
+
+        return None
+
+    def _populate_missing_chemical_emission_factors(self) -> None:
+        for tech_name, chem_data in self.chemicalagent_parameters.items():
+            for chem_name, chem_meta in chem_data.items():
+                if chem_meta is None:
+                    chem_meta = {}
+                    chem_data[chem_name] = chem_meta
+                if chem_meta.get('emission_factor') is not None:
+                    continue
+                emission_factor = self._extract_emission_factor_for_chemical(
+                    technology_name=tech_name,
+                    chemical_name=chem_name,
+                )
+                if emission_factor is not None:
+                    chem_meta['emission_factor'] = emission_factor
+
+    def _calculate_daily_chemical_costs(
+        self,
+        technology_name: str,
+        masses: dict[str, float],
+    ) -> float:
+        if not masses:
+            return 0.0
+        prices = self._extract_chemical_prices_for_technology(technology_name)
+        if not prices:
+            return 0.0
+        if len(masses) == 1:
+            mass_value = float(next(iter(masses.values())))
+            if len(prices) == 1:
+                return mass_value * float(next(iter(prices.values())))
+            first_price = prices.get(next(iter(masses.keys())), None)
+            if first_price is not None:
+                return mass_value * first_price
+            return mass_value * float(next(iter(prices.values())))
+        return sum(
+            float(mass) * float(prices.get(chem_name, 0.0))
+            for chem_name, mass in masses.items()
+        )
+
+    def _technology_kpi_list(self) -> list[str] | None:
+        """Return KPI names that can be computed by TreatmentKPI classes."""
+        if self.tech_kpinames is None:
+            return None
+
+        excluded_kpis = {
+            TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
+            TECHKPI_ADAPTABILITY_SCORE,
+        }
+        requested_kpis = [
+            kpi_name
+            for kpi_name in self.tech_kpinames
+            if kpi_name not in excluded_kpis
+        ]
+
+        supported_kpis = set(TECH_KPI_MAPPINGS.keys())
+        unsupported_kpis = sorted({
+            kpi_name for kpi_name in requested_kpis
+            if kpi_name not in supported_kpis
+        })
+        if unsupported_kpis:
+            logger.warning(
+                "Skipping unsupported technology KPI names before "
+                "TreatmentKPI lookup: %s",
+                unsupported_kpis,
+            )
+
+        return [
+            kpi_name
+            for kpi_name in requested_kpis
+            if kpi_name in supported_kpis
+        ]
+
     def calculate_kpi(
         self,
     ):
@@ -309,7 +429,9 @@ class TechnologyPerformanceCalculator:
         design_parameters = self.design_parameters
         wq_parameters = self.waterquality_parameters
         plant_kpis = self.plant_kpis
-        tech_kpilist = {"kpi_list": self.tech_kpinames}
+        tech_kpilist = {"kpi_list": self._technology_kpi_list()}
+
+        self._populate_missing_chemical_emission_factors()
 
         if technologies is None or stages is None:
             raise ValueError("Technologies and stages must be provided.")
@@ -324,6 +446,11 @@ class TechnologyPerformanceCalculator:
                     'plant_kpis': plant_kpis,
                     'design_parameters': design_parameters,
                     'wq_parameters': tech_wq_parameters,
+                    'chem_parameters': list(
+                        self.chemicalagent_parameters.get(
+                            technology, {}
+                        ).keys()
+                    ),
                     'digest_parameter_list': digest_property_list,
                 }
                 match stage.lower():
@@ -333,10 +460,6 @@ class TechnologyPerformanceCalculator:
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
                                 self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
-                            # case 'strainer':
-                            #     strainer = Strainer(**tech_kwargs)
-                            #     self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
-                            #     self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'screening':
                         if 'strainer' in technology.lower():
@@ -345,11 +468,11 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'coagulation':
-                        if  ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        if ('dynamic mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
-                        elif  ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        elif ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
@@ -360,9 +483,19 @@ class TechnologyPerformanceCalculator:
 
                     case 'flocculation':
                         if ('dynamic mixing') in technology.lower():
-                            floc_dynmixer = FlocDynamicMixing(**tech_kwargs)  # noqa, E501
+                            floc_dynmixer = FlocculationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
+
+                    case 'nom removal':
+                        if ('anion exchange') in technology.lower():
+                            anion_iex = AnionicIEX(**tech_kwargs)
+                            self.tech_kpis[technology] = anion_iex.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = anion_iex.parameters  # noqa, E501
+                        if ('ultrafiltration') in technology.lower():
+                            ultrafiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = ultrafiltration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = ultrafiltration.parameters  # noqa, E501
 
                     case 'floc removal':
                         if 'sludge blanket' in technology.lower():
@@ -383,7 +516,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = lamella_slope.parameters  # noqa, E501
                         elif ('lamella' in technology.lower()) and ('horizontal' in technology.lower()):
                             lamella_horizontal = LamellaClarifierHorizontal(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = llamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = lamella_horizontal.parameters  # noqa, E501
 
                     case 'submerged rapid sand filtration':
@@ -455,11 +588,34 @@ class TechnologyPerformanceCalculator:
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
+  
+                    case 'clean water storage':
+                        if ('clean water storage tank' in technology.lower()):
+                            storage_tank = CleanWaterStorageTank(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = storage_tank.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_parameters[technology] = storage_tank.parameters  # noqa, E501
 
         print("-- Calculated technology KPIs:")
         for tech, kpis in self.tech_kpis.items():
-            print(f"---- {tech}: {kpis}")
-        
+            if kpis is None:
+                continue
+            masses = kpis.get(HELPERKPI_MASS_OF_CHEMICALS, {})
+            if isinstance(masses, dict):
+                kpis[TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY] = (
+                    self._calculate_daily_chemical_costs(
+                        technology_name=tech,
+                        masses=masses,
+                    )
+                )
+            else:
+                kpis[TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY] = 0.0
+            kpis_for_log = {
+                key: value
+                for key, value in kpis.items()
+                if key != HELPERKPI_MASS_OF_CHEMICALS
+            }
+            print(f"---- {tech}: {kpis_for_log}")
+   
     def sum_kpis(
         self,
         allowed_kpis: list[str] = None,
@@ -580,7 +736,7 @@ class HeadLossBarKPI(PlantKPI):
 
 
 class MassOfChemicalsDailyKPI(PlantKPI):
-    name: str = TECHKPI_MASS_OF_CHEMICALS
+    name: str = HELPERKPI_MASS_OF_CHEMICALS
     value: float | int | None
 
 
@@ -624,8 +780,12 @@ class OperAndMaintenanceCostsKPI(PlantKPI):
         return self.value
 
 
+# class SpecificConstructionCostsKPI(PlantKPI):
+#     name: str = KPI_SPECIFIC_CONSTRUCTION_COSTS
+#     value: float | int | None
+
 class ConstructionCostsKPI(PlantKPI):
-    name: str = KPI_SPECIFIC_CONSTRUCTION_COSTS
+    name: str = KPI_CONSTRUCTION_COSTS
     value: float | int | None
 
     def calculate_value(
@@ -672,7 +832,7 @@ class InvestmentCostsYearKPI(PlantKPI):
 
 
 class LevelizedCostOfWaterKPI(PlantKPI):
-    name: str = 'levelized cost of water (eur/m3)'
+    name: str = KPI_LEVELIZED_COST_OF_WATER
     value: float | int | None
 
     def calculate_value(
@@ -692,6 +852,21 @@ class LevelizedCostOfWaterKPI(PlantKPI):
 class FootprintAreaKPI(PlantKPI):
     name: str = KPI_FOOTPRINT_AREA_M2
     value: float | int | None
+
+
+class LevelizedChemicalCostsKPI(PlantKPI):
+    name: str = KPI_LEVELIZED_CHEMICAL_COSTS
+    value: float | int | None
+
+    def calculate_value(
+        self,
+        chemical_costs_per_year: float,
+        yearly_water_production_m3: float,
+    ) -> float:
+        if yearly_water_production_m3 <= 0:
+            raise ValueError("Yearly water production (m3) must be greater than zero.")
+        self.value = chemical_costs_per_year / yearly_water_production_m3
+        return self.value
 
 
 @dataclass
@@ -716,6 +891,7 @@ class TreatmentPlantPerformanceCalculator:
     plant_kpis: dict[str, float | int | None]  # plant performance indicators
     db_kpi_mapping: dict[str, str | None]  # database KPI names
     waterquality_parameters: dict[str, dict[str, float | int]] | None  # tech: wq_dict
+    chemicalagent_parameters: dict[str, dict[str, float]] | None  # tech: chemical agent dict
 
     nominal_flow_m3perhr: NominalFlowKPI
     footprint_area_m2: FootprintAreaM2KPI
@@ -724,6 +900,8 @@ class TreatmentPlantPerformanceCalculator:
     constructioncosts_eur: ConstructionCostsKPI
     investmentcosts_eur: InvestmentCostsYearKPI
     operation_maintenance_costs_peryear: OperAndMaintenanceCostsKPI
+    levelized_cost_of_water: LevelizedCostOfWaterKPI
+    levelized_chemical_costs: LevelizedChemicalCostsKPI
     head_loss_bar: HeadLossBarKPI
     # mass_of_chemicals_daily_kg: MassOfChemicalsDailyKPI
     power_kw: PowerKWKPI
@@ -738,6 +916,7 @@ class TreatmentPlantPerformanceCalculator:
         plant_kpis: dict[str, float | int] = None,
         db_kpi_mapping: dict[str, str | None] = None,
         waterquality_parameters: dict[str, dict[str, float | int]] = None,
+        chemicalagent_parameters: dict[str, dict[str, float]] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.design_parameters = design_parameters
@@ -747,13 +926,18 @@ class TreatmentPlantPerformanceCalculator:
         if waterquality_parameters is None:
             waterquality_parameters = {}  # Initialize as empty dictionary
         self.waterquality_parameters = waterquality_parameters
+        if chemicalagent_parameters is None:
+            chemicalagent_parameters = {}  # Initialize as empty dictionary
+        self.chemicalagent_parameters = chemicalagent_parameters
         self.kpi_attr_mapping = {
             'nominal_flow_m3perhr': KPI_NOMINAL_FLOW_M3PERH,
             'footprint_area_m2': KPI_FOOTPRINT_AREA_M2,
             'energyconsumption_kwhrperday': KPI_ENERGY_CONSUMPTION_KWHRPERDAY,
             'energyconsumption_kwhrperm3': KPI_ENERGY_CONSUMPTION_KWHRPERM3,
-            'constructioncosts_eur': KPI_SPECIFIC_CONSTRUCTION_COSTS,
+            'constructioncosts_eur': KPI_CONSTRUCTION_COSTS,
             'investmentcosts_eur': KPI_INVESTMENT_COSTS_ANN,
+            'levelized_cost_of_water': KPI_LEVELIZED_COST_OF_WATER,
+            'levelized_chemical_costs': KPI_LEVELIZED_CHEMICAL_COSTS,
             'head_loss_bar': TECHKPI_HEADLOSS_BAR,
             # 'mass_of_chemicals_daily_kg': TECHKPI_MASS_OF_CHEMICALS,
             'power_kw': TECHKPI_POWER_KW,
@@ -783,14 +967,25 @@ class TreatmentPlantPerformanceCalculator:
                 KPI_ENERGY_CONSUMPTION_KWHRPERM3, None)
         )
         self.constructioncosts_eur = ConstructionCostsKPI(
-            name=KPI_SPECIFIC_CONSTRUCTION_COSTS,
+            name=KPI_CONSTRUCTION_COSTS,
             value=None, name_in_dbtable=self.db_kpi_mapping.get(
-                KPI_SPECIFIC_CONSTRUCTION_COSTS, None)
+                KPI_CONSTRUCTION_COSTS, None)
         )
         self.investmentcosts_eur = InvestmentCostsYearKPI(
             name=KPI_INVESTMENT_COSTS_ANN, value=None,
-            name_in_dbtable=self.db_kpi_mapping.get(KPI_INVESTMENT_COSTS_ANN, None)
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_INVESTMENT_COSTS_ANN, None)
             )  # total investment costs in EUR
+        self.levelized_cost_of_water = LevelizedCostOfWaterKPI(
+            name=KPI_LEVELIZED_COST_OF_WATER, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_LEVELIZED_COST_OF_WATER, None)
+        )
+        self.levelized_chemical_costs = LevelizedChemicalCostsKPI(
+            name=KPI_LEVELIZED_CHEMICAL_COSTS, value=None,
+            name_in_dbtable=self.db_kpi_mapping.get(
+                KPI_LEVELIZED_CHEMICAL_COSTS, None)
+        )
         self.head_loss_bar = HeadLossBarKPI(
             name=TECHKPI_HEADLOSS_BAR, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(TECHKPI_HEADLOSS_BAR, None)
@@ -800,11 +995,7 @@ class TreatmentPlantPerformanceCalculator:
         #     name_in_dbtable=self.db_kpi_mapping.get(
         #         TECHKPI_MASS_OF_CHEMICALS, None)
         # )
-        self.co2_emmissions_chemicals_kgperm3 = CO2EmissionsPerM3KPI(
-            name=KPI_CO2_EMISSIONS_KGPERM3, value=None,
-            name_in_dbtable=self.db_kpi_mapping.get(
-                KPI_CO2_EMISSIONS_KGPERM3, None)
-        )
+
         self.power_kw = PowerKWKPI(
             name=TECHKPI_POWER_KW, value=None,
             name_in_dbtable=self.db_kpi_mapping.get(TECHKPI_POWER_KW, None)
@@ -882,60 +1073,110 @@ class TreatmentPlantPerformanceCalculator:
         }
 
     def set_constructioncosts(
-        self,
-        cost_parameters: dict[str, dict] = None,
-    ) -> float:
-        """Purpose: Calculate costs based on design parameters.
-        
+            self,
+            cost_parameters: dict[str, dict] | None = None,
+    ) -> None:
+        """Calculate and set construction costs based on cost parameters.
+
         Args:
-            plant_properties (dict[str, float], optional): Dictionary of plant 
-                properties, where each key is a plant property name. 
-                Defaults to None.
-            cost_parameters (dict[str, dict], optional): Dictionary of cost 
-                parameters for each technology. The keys of the dictionary 
-                refer to technology names. Defaults to None.
+            cost_parameters: Dictionary of cost parameters keyed by technology
+                name. Each entry must contain the unified polynomial coefficients
+                'a1', 'b1', 'c1', 'd1', 'e' and the input variable values
+                'technologyproperty_value' and 'plantproperty_value'.
+
+        Raises:
+            ValueError: If cost_parameters is None.
 
         Note:
-            The cost parameters dictionary for each technology should contain
-            the parameters 'a', 'b', and 'c' for the quadratic cost function.
+            The unified cost function is:
+                cost = a1*x_t**2 + b1*x_t + c1*x_p**2 + d1*x_p + e
+            where x_t is the technology property value and x_p is the plant
+            property value. Coefficients are zero when not applicable.
         """
         if cost_parameters is None:
             raise ValueError("Cost parameters must be provided.")
-        # parameters = self.design_parameters
-        # plc_costs = parameters.get('PLC costs (EUR)', 0.)
-        # personnel_costs = parameters.get('personnel costs (EUR)', 0.)
 
         costs = self.constructioncosts_eur.value or 0.0
-        if self.technologies:
-            for technology in self.technologies:
-                x_value = 0.
-                constrcost_params = cost_parameters[technology]
-                if constrcost_params is not None:
-                    a, b, c = (
-                        constrcost_params.get('a', 0.),
-                        constrcost_params.get('b', 0.),
-                        constrcost_params.get('c', 0.),
-                    )
-                    # plant_property = constrcost_params.get('plantproperty', None)  # noqa, E501
-                    # technology_property = constrcost_params.get(
-                    #     'technologyproperty', None)
-                    plantproperty_value = constrcost_params.get(
-                        'plantproperty_value', 0)
-                    technologyproperty_value = constrcost_params.get(
-                        'technologyproperty_value', 0)
-                    if plantproperty_value:
-                        x_value = plantproperty_value
-                    if technologyproperty_value:
-                        x_value = technologyproperty_value
-                    constr_costs = a*x_value**2 + b*x_value + c
-                    costs += constr_costs
-                else:
-                    logger.warning(
-                        f"Construction cost parameters not found for "
-                        f"technology: {technology}")
-                    continue
-        costs = 1000 * round(abs(costs)/1000.0, 2)
-        self.constructioncosts_eur.value = costs
+
+        for technology in (self.technologies or []):
+            params = cost_parameters.get(technology)
+            if params is None:
+                logger.warning(
+                    f"Construction cost parameters not found for "
+                    f"technology: {technology}"
+                )
+                continue
+
+            a = params.get('a', 0.)
+            b = params.get('b', 0.)
+            c = params.get('c', 0.)
+            d = params.get('d', 0.)
+            e = params.get('e',  0.)
+
+            x_t = params.get('technologyproperty_value', 0.)
+            x_p = params.get('plantproperty_value', 0.)
+            if x_t is None:
+                x_t = 0
+            if x_p is None:
+                x_p = 0
+            costs += a*x_t**2 + b*x_t + c*x_p**2 + d*x_p + e
+
+        net_costs = 1000 * round(abs(costs) / 1000.0, 2)
+        self.constructioncosts_eur.value = self.constructioncosts_eur.calculate_value(
+            construction_costs=net_costs,
+            construction_costs_percentage=20,
+            tail_costs_percentage=5,
+            general_facilities_costs_percentage=5,
+        )  # noqa, E501
+
+    def get_specific_construction_costs(self) -> float:
+        """Calculate total construction costs per year based on construction costs and other factors.
+
+        Args:
+            interest_rate: Annual interest rate as a decimal (e.g., 0.05 for 5%).
+            lifespan_years: Expected lifespan of the plant in years.
+        Returns:
+            Total investment costs per year in EUR.
+        """
+        construct_costs_total = self.constructioncosts_eur.value
+        volume_m3perhr = self.nominal_flow_m3perhr.value
+        lifespan = self.design_parameters.get(DESIGN_PAR_LIFESPAN_NAME, None)  # default to 20 years if not provided
+        if construct_costs_total is None:
+            raise ValueError("Construction costs must be calculated before calculating total construction costs per year.")  # noqa, E501
+        if volume_m3perhr is None:
+            raise ValueError("Nominal flow (m3perhr) must be calculated before calculating total construction costs per year.")  # noqa, E501
+        volume_m3peryear = volume_m3perhr * 24 * 365
+        return construct_costs_total / lifespan / volume_m3peryear
+
+    def set_investment_costs(
+        self,
+        interest_rate: float,
+        lifespan_years: int,
+    ) -> None:
+        """Calculate and set annual investment costs based on construction costs.
+
+        Args:
+            interest_rate: Annual interest rate as a decimal (e.g., 0.05 for 5%).
+            lifespan_years: Expected lifespan of the plant in years.
+        """
+        construct_costs_total = self.constructioncosts_eur.value
+        operation_maintenance_percentage = self.design_parameters.get(
+            DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME, 0.05)
+        volume_m3_per_year = self.nominal_flow_m3perhr.value * 24 * 365
+        energy_cost_per_year = self.energyconsumption_kwhrperm3.value * volume_m3_per_year if self.energyconsumption_kwhrperm3.value and self.nominal_flow_m3perhr.value else 0  # noqa, E501
+        personnel_costs_per_year = self.design_parameters.get(DESIGN_PAR_PERSONNEL_COSTS_NAME, 0)  # noqa, E501
+        chemical_costs_per_year = self.plant_kpis.get('chemical costs (eur/year)', 0)  # noqa, E501
+
+        investment_costs_ann = total_investment_costs_peryear(
+            construction_costs_total=construct_costs_total,
+            interest_rate=interest_rate,
+            lifespan_years=lifespan_years,
+            oper_maintenance_percentage=operation_maintenance_percentage,
+            energy_costs_peryr=energy_cost_per_year,
+            personnel_costs_peryr=personnel_costs_per_year,
+            chemical_costs_peryr=chemical_costs_per_year,
+        )
+        self.investmentcosts_eur.value = investment_costs_ann
 
     def get_energyconsumption_per_m3(
         self,
@@ -951,39 +1192,4 @@ class TreatmentPlantPerformanceCalculator:
         energy_consumption_per_m3 = (
             energy_consumption_kwhperday / nominal_flow_m3perday)
         return energy_consumption_per_m3
-    
-
-    # TODO: this will be moved to the specific class of the filter technologies
-    # def get_filterarea(
-    #     self,
-    #     filter_technology,
-    #     units_per_lane: int = 1,
-    #     nominal_flow: float | None = None,
-    # ):
-
-    #     # Input parameters
-    #     parameters = self.design_parameters
-    #     lanes = parameters.get('number of lanes', 1)
-    #     filter_area, filter_area_per_unit = None, None
-    #     if nominal_flow is None:
-    #         nominal_flow = self.get_nominal_flow_m3hr()
-
-    #     # Calculate surface loading rate based on filter technology
-    #     match filter_technology:
-    #         case str(tech) if ('single medium' or 'granular activated carbon') in tech:  # noqa, E501
-    #             surface_loading_rate = 10
-    #         case str(tech) if 'dual media' in tech:
-    #             surface_loading_rate = 15  # m3/h/m2 average filtration rate for a dual media filtration  # noqa, E501
-    #         case str(tech) if 'moving bed' in tech:
-    #             surface_loading_rate = 8.5  # m3/h/m2 average filtration rate for moving bed filtration  # noqa, E501
-    #         case _:
-    #             surface_loading_rate = None
-
-    #     # Calculate filter area
-    #     if surface_loading_rate is not None:
-    #         filter_area = nominal_flow / surface_loading_rate
-    #         filter_area_per_lane = filter_area / lanes
-    #         filter_area_per_unit = filter_area_per_lane / units_per_lane
-
-    #     return filter_area, filter_area_per_unit
 
