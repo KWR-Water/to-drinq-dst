@@ -712,6 +712,7 @@ class QuestionsCompleteView(generic.TemplateView):
             # Build available technologies and stage names per step
             num_stages = len(technologies)
             stages = []
+            stage_names = []
             for i in range(num_stages):
                 tech_ids = set()
                 for option in treatment_maps.values():
@@ -720,19 +721,39 @@ class QuestionsCompleteView(generic.TemplateView):
                 techs = list(Technology.objects.filter(id__in=tech_ids))
                 # Try to get the stage name from the first technology in this step
                 stage_name = f"Stage {i+1}"
+                omp_removal_passes = False
                 if techs:
+                    # FIX the filtering where the Ozone removal technology is 
+                    # wrongly assigned to OMP removal for the disinfection stage.
                     # TODO: Try to get the stage via StageTechnologies if available
                     # Make an exception for the case Ozonation is for disinfection, 
                     # then do not chose the first entry
-                    stage_obj = (
+                    stage_objs = (
                         Stage.objects.filter(
                             id__in=StageTechnologies.objects.filter(
-                                technology=techs[0]).values_list('stage', flat=True)
-                        ).first()
-                    )
-                    if stage_obj:
+                                technology=techs[0]).values_list(
+                                    'stage', flat=True)
+                        ))
+                    len_stage_objs = len(stage_objs)
+                    if len_stage_objs > 0:
+                        # Test whether OMP removal is present
+                        if not omp_removal_passes:
+                            for stage_name in stage_names:
+                                if 'omp' in stage_name.lower():
+                                    omp_removal_passes = True
+                        if len_stage_objs > 1:
+                            # First check if OMP removal is already present
+                            if omp_removal_passes and 'omp' in stage_objs.first().name.lower():
+                                stage_objs = stage_objs.exclude(name__icontains='omp')  # noqa, E501
+                                len_stage_objs = len(stage_objs)
+                        if len_stage_objs > 1:
+                            logger.warning("Multiple stage objects found for technology %s", techs[0].name)
+                        stage_obj = stage_objs.first()
                         stage_name = stage_obj.name
+                    else:
+                        stage_obj = None
                 stages.append({'name': stage_name, 'technologies': techs})
+                stage_names += [stage_name]
 
             # Filter treatment options based on selected_techs
             filtered_options = {}
