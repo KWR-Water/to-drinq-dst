@@ -5,9 +5,15 @@
 
 {% load list_index %}
 
-<h1 class="mb-4">Preliminary treatment design options</h1>
-<p class="card-text">
-    You have completed the multi-step design of a water treatment. Based on your inputs for the questionnaire, a number of preliminary treatment design 
+<h1 class="mb-4">Treatment design options</h1>
+{% if data.configuration.name %}
+    <h2 class="mb-3" style="font-size: 1.5rem; color: #2c3e50;">Configuration: {{ data.configuration.name }}</h2>
+{% endif %}
+<p class="lead">
+    You have completed the multi-step design of a water treatment, and several design configuration options have been generated. 
+</p>
+<p>
+    Based on your inputs for the questionnaire, a number of preliminary treatment design 
     options is generated and each treatment plant design gets a number (Option 1, 2, 3, etc.). This list can be very large, dependent on 
     the inputs. Below, you can narrow down the list by filtering on technology preferences for each <b>stage</b>, shown in bold typeface. After 
     filtering, you can view the different options and name them. Once named, it will be stored within the plant configuration profile 

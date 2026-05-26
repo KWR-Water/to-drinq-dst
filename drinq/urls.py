@@ -35,6 +35,16 @@ urlpatterns = [
     #     ), name='drinq_form'),
     path('session_select/',  views.SessionSelectView.as_view(),
          name='session_select'),
+    path(
+        'configuration_manage/',
+        views.ConfigurationManagementView.as_view(),
+        name='configuration_manage',
+    ),
+    path(
+        'configuration_manage/<int:pk>/edit/',
+        views.ConfigurationUpdateView.as_view(),
+        name='configuration_edit',
+    ),
     path('form-name/', views.FormNameView.as_view(), name='form_name'),
     path(
         'form-designtree/', views.FormWaterSourceView.as_view(),
@@ -70,10 +80,15 @@ urlpatterns = [
         name='design_parameter_results'
     ),
     path(
-          'treatmentplant/<int:plant_id>/technology/',
-          views.TechnologyPropertiesView.as_view(),
-          name='technology_properties'
-     ),
+        'treatmentplant/<int:plant_id>/adaptability/',
+        views.AdaptabilityDetailView.as_view(),
+        name='adaptability_details',
+    ),
+    path(
+        'treatmentplant/<int:plant_id>/technology/',
+        views.TechnologyPropertiesView.as_view(),
+        name='technology_properties',
+    ),
     path('api/process_parameters/',
          DigestDesignParametersAPI.as_view(),
          name='api_process_parameters'),
@@ -114,3 +129,4 @@ urlpatterns = [
     # path('__debug__/', include(debug_toolbar.urls)),
     # path('compound/<int:cid>/', views.compound_detail, name='drinq'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

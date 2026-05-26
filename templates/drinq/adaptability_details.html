@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<body class="bg-light">
+<div class="container mt-4">
+    <h1 class="mb-3">Adaptability details</h1>
+    <p class="lead">
+        Review plant-level and technology-level adaptability scores for
+        <strong>{{ treatment_plant.name }}</strong>.
+    </p>
+
+    <div class="mb-3">
+        <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-outline-secondary">
+            Back to treatment design details
+        </a>
+        <a href="{% url 'design_parameter_results' treatment_plant.id %}" class="btn btn-outline-primary">
+            Back to treatment KPI results
+        </a>
+    </div>
+
+    <div class="card shadow-sm p-3 bg-white mb-4">
+        <h2 class="h4">Plant adaptability KPI</h2>
+        {% if plant_adaptability_score is not None %}
+            <p class="mb-1">
+                Average adaptability score: <strong>{{ plant_adaptability_score|floatformat:2 }}</strong>
+            </p>
+            <p class="form-text text-muted mb-0">
+                Computed as the average of technology-level averages across
+                {{ adaptability_criteria_total }} criteria.
+            </p>
+        {% else %}
+            <p class="mb-0"><em>No adaptability score available for this plant.</em></p>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm p-3 bg-white">
+        <h2 class="h4">Adaptability scores per technology and criterion</h2>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Step</th>
+                    <th>Technology</th>
+                    {% for criterion in adaptability_criteria %}
+                        <th>{{ criterion.display_name }}</th>
+                    {% endfor %}
+                    <th>Average score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in adaptability_matrix_rows %}
+                    <tr>
+                        <td>{{ row.step }}</td>
+                        <td>{{ row.technology_name }}</td>
+                        {% for score in row.criterion_scores %}
+                            <td>
+                                {% if score is not None %}
+                                    {{ score|floatformat:2 }}
+                                {% else %}
+                                    <em>N/A</em>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                        <td>
+                            {% if row.average_score is not None %}
+                                {{ row.average_score|floatformat:2 }}
+                                <div class="form-text text-muted small">
+                                    {{ row.criteria_count }}/{{ adaptability_criteria_total }} criteria
+                                </div>
+                            {% else %}
+                                <em>N/A</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+{% endblock %}

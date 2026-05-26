@@ -1327,10 +1327,9 @@ class MicroStrainer(TreatmentKPI):
 
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
-        function_name = TECH_KPI_MAPPINGS.get(
-            TECH_KPI_MAPPINGS, kpi)
-        if function_name is not None:
-            return getattr(self, function_name)
+        kpi_attr = TECH_KPI_MAPPINGS.get(kpi, None)
+        if kpi_attr is not None:
+            return getattr(self, kpi_attr)
         else:
             raise ValueError(
                 f"KPI '{kpi}' not implemented for {self.__class__.__name__}.")
@@ -2844,7 +2843,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     empty_bed_contact_time: int
     hydraulic_loading_rate_m3m2h: int
     gac_porosity: float
-    effective_particle_diameter: float
+    particle_diameter: float
     filter_bed_depth_m: float
     nominal_flow_m3perh:float
     flow_per_lane_m3perh: float
@@ -2852,7 +2851,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     flow_per_unit_m3hr: float
     unit_volume_m3: float
     unit_area_m2: float
-    unit_depth_m: float
+    unit_height_m: float
     tanks_area_m2: float
     emission_factor_electricity: float
     
@@ -2876,8 +2875,8 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             TPN['gac_porosity']]
         self.empty_bed_contact_time = parameters[
             TPN['empty_bed_contact_time']]
-        self.effective_particle_diameter = parameters[
-            TPN['effective_particle_diameter']]
+        self.particle_diameter = parameters[
+            TPN['grain_diameter']]
         self.anthracite_bed_depth_m = 0
         self.flow_per_unit_m3hr = (
             self.flow_per_lane_m3perh / self.units_per_lane)
@@ -2885,7 +2884,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.empty_bed_contact_time * self.flow_per_unit_m3hr / 60)
         self.unit_area_m2 = (
             self.flow_per_unit_m3hr / self.hydraulic_loading_rate_m3m2h)
-        self.unit_depth_m = (
+        self.unit_height_m = (
             np.ceil(self.unit_volume_m3 / self.unit_area_m2 + 1))
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
@@ -2934,7 +2933,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             water_viscosity=self.water_viscosity,
             water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
             porosity=self.gac_porosity,
-            grain_size=self.effective_particle_diameter,
+            grain_size=self.particle_diameter,
             hydraulic_loading_rate_m3m2h=self.superficial_velocity,
             filter_bed_height_m=self.unit_height_m
         )
@@ -3203,6 +3202,7 @@ class UVAOP(TreatmentKPI):
             self.emission_factor_electricity)
         specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
+
 
 class BaffledOzonationContactor(TreatmentKPI):
     """KPI calculations for an Ozonation treatment unit."""

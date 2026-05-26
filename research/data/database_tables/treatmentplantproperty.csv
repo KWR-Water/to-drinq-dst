@@ -9,3 +9,4 @@ id,name,description,unit,category
 8,CO2 equivalent emissions,Amount of CO2 equivalent emissions,kg/m^3,5
 9,levelized cost of water,"levelized cost of water, i.e. investment costs per unit volume of water treated",EUR/m^3,2
 10,levelized cost of chemicals,Costs of chemicals per unit volume water produced,EUR/m^3,2
+11,adaptability score,Average adaptability score across all technologies and criteria,(0–1),6

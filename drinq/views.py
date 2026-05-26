@@ -14,8 +14,12 @@ from django.http import (
 from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
+from django.db.models import Avg, Count
+from django.db import IntegrityError, transaction
+from django.db.utils import OperationalError
 
 from drinq.models import (
+    AdaptabilityCriterion,
     Compound,
     CompoundCas,
     Technology,
@@ -34,6 +38,7 @@ from drinq.models import (
     TreatmentPlant,
     TreatmentPlantLayout,
     TreatmentplantDesignParameter,
+    TreatmentPlantChemicalagentPriceJunction,
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
@@ -43,6 +48,8 @@ from drinq.models import (
     ChemicalagentPrice,
     WaterqualityParameterTechnologyJunction,
     TreatmentPlantTechnologyKPIValue,
+    TechnologyAdaptabilityScore,
+    ConfiguredTechnologies,
 )
 from drinq.forms import (
     ConfigurationNameForm,
@@ -115,6 +122,89 @@ DB_PLANTKPI_MAPPING = {
 logger = logging.getLogger(__name__)
 
 
+def get_adaptability_scores_for_technologies(technologies):
+    """Return aggregated adaptability scores for a sequence of technologies.
+
+    The technology score is the average over available adaptability criteria.
+    The treatment-plant score is the average over included technology scores.
+    """
+    criteria_rows = list(
+        AdaptabilityCriterion.objects
+        .order_by('id')
+        .values('id', 'slug', 'label')
+    )
+    criteria = [
+        {
+            'id': row['id'],
+            'slug': row['slug'],
+            'label': row['label'],
+            'display_name': row['label'] or row['slug'],
+        }
+        for row in criteria_rows
+    ]
+
+    technology_ids = [tech.id for tech in technologies if tech is not None]
+    if not technology_ids:
+        return {
+            'criteria': criteria,
+            'criteria_total': len(criteria),
+            'technology_scores': {},
+            'technology_criteria_counts': {},
+            'technology_criterion_scores': {},
+            'plant_score': None,
+        }
+
+    technology_score_rows = (
+        TechnologyAdaptabilityScore.objects
+        .filter(technology_id__in=technology_ids)
+        .values('technology_id')
+        .annotate(
+            adaptability_score=Avg('score'),
+            criteria_count=Count('adaptabilitycriterion', distinct=True),
+        )
+    )
+
+    technology_scores = {
+        row['technology_id']: row['adaptability_score']
+        for row in technology_score_rows
+    }
+    technology_criteria_counts = {
+        row['technology_id']: row['criteria_count']
+        for row in technology_score_rows
+    }
+    technology_criterion_scores = {
+        technology_id: {} for technology_id in technology_ids
+    }
+    criterion_score_rows = (
+        TechnologyAdaptabilityScore.objects
+        .filter(technology_id__in=technology_ids)
+        .values('technology_id', 'adaptabilitycriterion_id', 'score')
+    )
+    for row in criterion_score_rows:
+        technology_criterion_scores[row['technology_id']][
+            row['adaptabilitycriterion_id']
+        ] = row['score']
+
+    available_scores = [
+        technology_scores[technology_id]
+        for technology_id in technology_ids
+        if technology_scores.get(technology_id) is not None
+    ]
+    plant_score = (
+        sum(available_scores) / len(available_scores)
+        if available_scores else None
+    )
+
+    return {
+        'criteria': criteria,
+        'criteria_total': len(criteria),
+        'technology_scores': technology_scores,
+        'technology_criteria_counts': technology_criteria_counts,
+        'technology_criterion_scores': technology_criterion_scores,
+        'plant_score': plant_score,
+    }
+
+
 class Register(generic.TemplateView):
     template_name = "drinq/register.html"
 
@@ -139,6 +229,181 @@ class SessionSelectView(generic.edit.FormView):
     def form_valid(self, form):
         session = form.cleaned_data['session']
         return redirect('form_complete', session_key=session.session_key)
+
+
+class ConfigurationManagementView(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'drinq/configuration_manage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        configurations = (
+            MultiStepConfiguration.objects
+            .filter(user=self.request.user)
+            .prefetch_related('treatmentplant_set')
+            .order_by('-date_created')
+        )
+        context['configurations'] = configurations
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        if action == 'delete_configuration':
+            return self._delete_configuration(request)
+        if action == 'delete_option':
+            return self._delete_option(request)
+        return redirect('configuration_manage')
+
+    def _delete_configuration(self, request):
+        configuration_id = request.POST.get('configuration_id')
+        try:
+            configuration = MultiStepConfiguration.objects.get(
+                id=configuration_id,
+                user=request.user,
+            )
+        except MultiStepConfiguration.DoesNotExist:
+            raise Http404('Configuration does not exist.')
+
+        if request.session.get('configuration_id') == configuration.id:
+            request.session.pop('configuration_id', None)
+        self._delete_configuration_with_fallback(configuration)
+        return redirect('configuration_manage')
+
+    def _delete_option(self, request):
+        configuration_id = request.POST.get('configuration_id')
+        treatment_plant_id = request.POST.get('treatment_plant_id')
+        try:
+            treatment_plant = TreatmentPlant.objects.get(
+                id=treatment_plant_id,
+                configuration_id=configuration_id,
+                configuration__user=request.user,
+            )
+        except TreatmentPlant.DoesNotExist:
+            raise Http404('Treatment design option does not exist.')
+
+        self._delete_treatment_plant_with_fallback(treatment_plant)
+        return redirect('configuration_manage')
+
+    def _delete_configuration_with_fallback(
+            self,
+            configuration: MultiStepConfiguration) -> None:
+        try:
+            configuration.delete()
+            return
+        except (OperationalError, IntegrityError) as exc:
+            if not self._is_supported_delete_fallback_error(exc):
+                raise
+
+        self._hard_delete_configuration(configuration.id)
+
+    def _delete_treatment_plant_with_fallback(
+            self,
+            treatment_plant: TreatmentPlant) -> None:
+        try:
+            treatment_plant.delete()
+            return
+        except (OperationalError, IntegrityError) as exc:
+            if not self._is_supported_delete_fallback_error(exc):
+                raise
+
+        self._hard_delete_treatment_plant(treatment_plant.id)
+
+    def _is_supported_delete_fallback_error(self, exc: Exception) -> bool:
+        error_text = str(exc).lower()
+        if isinstance(exc, OperationalError):
+            return 'no such table' in error_text
+        if isinstance(exc, IntegrityError):
+            return 'foreign key' in error_text
+        return False
+
+    def _hard_delete_configuration(self, configuration_id: int) -> None:
+        db_alias = MultiStepConfiguration.objects.db
+        treatment_plant_ids = list(
+            TreatmentPlant.objects.filter(
+                configuration_id=configuration_id,
+            ).values_list('id', flat=True)
+        )
+
+        with transaction.atomic(using=db_alias):
+            for treatment_plant_id in treatment_plant_ids:
+                self._hard_delete_treatment_plant(
+                    treatment_plant_id,
+                    db_alias=db_alias,
+                )
+
+            self._raw_delete_if_table_exists(
+                QuestionAnswer.objects.filter(
+                    configuration_id=configuration_id,
+                ),
+                db_alias,
+            )
+            self._raw_delete_if_table_exists(
+                ConfiguredTechnologies.objects.filter(
+                    configuration_id=configuration_id,
+                ),
+                db_alias,
+            )
+            self._raw_delete_if_table_exists(
+                MultiStepConfiguration.objects.filter(id=configuration_id),
+                db_alias,
+            )
+
+    def _hard_delete_treatment_plant(
+            self,
+            treatment_plant_id: int,
+            db_alias: str | None = None) -> None:
+        if db_alias is None:
+            db_alias = TreatmentPlant.objects.db
+
+        child_querysets = [
+            TreatmentPlantLayout.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentplantDesignParameter.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantPropertyValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantWaterQualityParameterValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantTechnologyKPIValue.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+            TreatmentPlantChemicalagentPriceJunction.objects.filter(
+                treatmentplant_id=treatment_plant_id,
+            ),
+        ]
+
+        for child_queryset in child_querysets:
+            self._raw_delete_if_table_exists(child_queryset, db_alias)
+
+        self._raw_delete_if_table_exists(
+            TreatmentPlant.objects.filter(id=treatment_plant_id),
+            db_alias,
+        )
+
+    def _raw_delete_if_table_exists(self, queryset, db_alias: str) -> None:
+        try:
+            queryset._raw_delete(db_alias)
+        except OperationalError as exc:
+            if 'no such table' not in str(exc).lower():
+                raise
+
+
+class ConfigurationUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = MultiStepConfiguration
+    form_class = ConfigurationNameForm
+    template_name = 'drinq/configuration_edit.html'
+
+    def get_queryset(self):
+        return MultiStepConfiguration.objects.filter(user=self.request.user)
+
+    def get_success_url(self):
+        return f"{reverse('configuration_manage')}?updated=1"
 
 
 class FormNameView(LoginRequiredMixin, generic.edit.FormView):
@@ -447,6 +712,7 @@ class QuestionsCompleteView(generic.TemplateView):
             # Build available technologies and stage names per step
             num_stages = len(technologies)
             stages = []
+            stage_names = []
             for i in range(num_stages):
                 tech_ids = set()
                 for option in treatment_maps.values():
@@ -455,18 +721,39 @@ class QuestionsCompleteView(generic.TemplateView):
                 techs = list(Technology.objects.filter(id__in=tech_ids))
                 # Try to get the stage name from the first technology in this step
                 stage_name = f"Stage {i+1}"
+                omp_removal_passes = False
                 if techs:
-                    # Try to get the stage via StageTechnologies if available
-                    from drinq.models import StageTechnologies, Stage
-                    stage_obj = (
+                    # FIX the filtering where the Ozone removal technology is 
+                    # wrongly assigned to OMP removal for the disinfection stage.
+                    # TODO: Try to get the stage via StageTechnologies if available
+                    # Make an exception for the case Ozonation is for disinfection, 
+                    # then do not chose the first entry
+                    stage_objs = (
                         Stage.objects.filter(
                             id__in=StageTechnologies.objects.filter(
-                                technology=techs[0]).values_list('stage', flat=True)
-                        ).first()
-                    )
-                    if stage_obj:
+                                technology=techs[0]).values_list(
+                                    'stage', flat=True)
+                        ))
+                    len_stage_objs = len(stage_objs)
+                    if len_stage_objs > 0:
+                        # Test whether OMP removal is present
+                        if not omp_removal_passes:
+                            for stage_name in stage_names:
+                                if 'omp' in stage_name.lower():
+                                    omp_removal_passes = True
+                        if len_stage_objs > 1:
+                            # First check if OMP removal is already present
+                            if omp_removal_passes and 'omp' in stage_objs.first().name.lower():
+                                stage_objs = stage_objs.exclude(name__icontains='omp')  # noqa, E501
+                                len_stage_objs = len(stage_objs)
+                        if len_stage_objs > 1:
+                            logger.warning("Multiple stage objects found for technology %s", techs[0].name)
+                        stage_obj = stage_objs.first()
                         stage_name = stage_obj.name
+                    else:
+                        stage_obj = None
                 stages.append({'name': stage_name, 'technologies': techs})
+                stage_names += [stage_name]
 
             # Filter treatment options based on selected_techs
             filtered_options = {}
@@ -635,9 +922,61 @@ class TreatmentDesignDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = {}
+        treatment_layout = (
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=self.object)
+            .select_related('technology')
+            .order_by('step')
+        )
+        technologies = [
+            layout.technology for layout in treatment_layout
+            if layout.technology is not None
+        ]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            technologies)
+
+        treatment_layout_with_adaptability = []
+        criteria_coverage_notes = []
+        adaptability_matrix_rows = []
+        criteria = adaptability_data['criteria']
+        for layout in treatment_layout:
+            technology_id = layout.technology_id
+            criteria_count = adaptability_data[
+                'technology_criteria_counts'].get(technology_id, 0)
+            criterion_score_map = adaptability_data[
+                'technology_criterion_scores'].get(technology_id, {})
+            treatment_layout_with_adaptability.append({
+                'layout': layout,
+                'adaptability_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+                'criteria_count': criteria_count,
+            })
+            criteria_coverage_notes.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criteria_count': criteria_count,
+            })
+            adaptability_matrix_rows.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criterion_scores': [
+                    criterion_score_map.get(criterion['id'])
+                    for criterion in criteria
+                ],
+                'average_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+            })
+
         context['treatment_plant'] = self.object
-        context['treatment_layout'] = TreatmentPlantLayout.objects.filter(
-            treatmentplant=self.object)
+        context['treatment_layout'] = treatment_layout
+        context['treatment_layout_with_adaptability'] = (
+            treatment_layout_with_adaptability)
+        context['adaptability_criteria'] = criteria
+        context['criteria_coverage_notes'] = criteria_coverage_notes
+        context['adaptability_matrix_rows'] = adaptability_matrix_rows
+        context['plant_adaptability_score'] = adaptability_data['plant_score']
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
         return context
 
 
@@ -796,14 +1135,91 @@ class DesignParameterResultsView(generic.DetailView):
         ordered_techs = [
             layout.technology for layout in layout_qs
             if layout.technology is not None]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            ordered_techs)
 
-        # Build an ordered list of (technology, kpis) pairs
+        # Build an ordered list of technology KPI blocks.
         technology_kpis_ordered = []
         for tech in ordered_techs:
             if tech in tech_kpis:
-                technology_kpis_ordered.append((tech, tech_kpis[tech]))
+                technology_kpis_ordered.append({
+                    'technology': tech,
+                    'kpis': tech_kpis[tech],
+                    'adaptability_score': adaptability_data[
+                        'technology_scores'].get(tech.id),
+                    'criteria_count': adaptability_data[
+                        'technology_criteria_counts'].get(tech.id, 0),
+                })
 
         context['technology_kpis_ordered'] = technology_kpis_ordered
+
+        # --- Persist plant adaptability KPI as a TreatmentPlantPropertyValue ---
+        adaptability_score = adaptability_data['plant_score']
+        if adaptability_score is not None:
+            adapt_prop, _ = TreatmentPlantProperty.objects.get_or_create(
+                name="adaptability score",
+                defaults={
+                    'unit': '(0–1)',
+                    'description': 'Average adaptability score across all technologies and criteria',
+                },
+            )
+            TreatmentPlantPropertyValue.objects.update_or_create(
+                treatmentplant=self.object,
+                property=adapt_prop,
+                defaults={'value': f"{adaptability_score:.4f}"},
+            )
+
+        context['plant_adaptability_score'] = adaptability_score
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
+        return context
+
+
+class AdaptabilityDetailView(generic.DetailView):
+    model = TreatmentPlant
+    template_name = 'drinq/adaptability_details.html'
+    pk_url_kwarg = 'plant_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        treatment_layout = (
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=self.object)
+            .select_related('technology')
+            .order_by('step')
+        )
+        technologies = [
+            layout.technology for layout in treatment_layout
+            if layout.technology is not None
+        ]
+        adaptability_data = get_adaptability_scores_for_technologies(
+            technologies)
+
+        criteria = adaptability_data['criteria']
+        matrix_rows = []
+        for layout in treatment_layout:
+            technology_id = layout.technology_id
+            criterion_score_map = adaptability_data[
+                'technology_criterion_scores'].get(technology_id, {})
+            matrix_rows.append({
+                'step': layout.step,
+                'technology_name': layout.technology.name,
+                'criterion_scores': [
+                    criterion_score_map.get(criterion['id'])
+                    for criterion in criteria
+                ],
+                'average_score': adaptability_data[
+                    'technology_scores'].get(technology_id),
+                'criteria_count': adaptability_data[
+                    'technology_criteria_counts'].get(technology_id, 0),
+            })
+
+        context['treatment_plant'] = self.object
+        context['adaptability_criteria'] = criteria
+        context['adaptability_matrix_rows'] = matrix_rows
+        context['plant_adaptability_score'] = adaptability_data['plant_score']
+        context['adaptability_criteria_total'] = (
+            adaptability_data['criteria_total'])
         return context
 
 
