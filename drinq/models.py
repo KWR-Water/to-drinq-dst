@@ -147,7 +147,7 @@ class TreatmentPlantChemicalagentPriceJunction(models.Model):
         return f"Treatment plant: {treatment_plant}, chemical agent: {chemical_agent}, price: {self.price}"  # noqa, E501
 
 class MultiStepConfiguration(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True, max_length=500)
     user = models.ForeignKey(
         CustomUser,
