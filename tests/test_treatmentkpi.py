@@ -1,17 +1,22 @@
 import unittest
 
+import json
 from drinq.utils.treatmentkpi import (
     TreatmentKPI,
     TreatmentDataclassMixin,
     CoagulationDynamicMixing,
     CascadeMixerCoagulationDosing,
     ChainScrapedSedimentation,
+    RapidSandSingleMediumFiltration,
     Strainer,
     ChlorineDisinfection,
     ChloramineDisinfection,
-    calculate_chemical_storage_area__m2
+    calculate_chemical_storage_area__m2,
+    calculate_flow_per_lane
     )
 
+with open("drinq/utils/treatmentpropertyname.json", "r") as file:
+    TPN = json.load(file)
 
 class TestCoagulationDynamicMixing(unittest.TestCase):
     def setUp(self):
@@ -350,6 +355,34 @@ class TestChainScrapedSedimentation(unittest.TestCase):
         self.assertTrue(sedimentation.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
         self.assertTrue(sedimentation.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+
+
+class TestRSFSingle(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            TPN['units_per_lane']: 2,
+            TPN['filtration_rate']: 60,
+            TPN['sand_porosity']: 0.45,
+            # TODO
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+        self.wq_parameters = {}
+        
+    def test_init(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertTrue(rsf_single.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
+        self.assertTrue(rsf_single.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
 
 
 class TestTreatmentKPIAbstract(unittest.TestCase):

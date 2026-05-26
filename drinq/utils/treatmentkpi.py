@@ -3203,6 +3203,7 @@ class UVAOP(TreatmentKPI):
         specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
+
 class BaffledOzonationContactor(TreatmentKPI):
     """KPI calculations for an Ozonation treatment unit."""
     tank_height_m: float
