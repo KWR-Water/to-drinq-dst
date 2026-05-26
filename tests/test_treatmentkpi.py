@@ -8,6 +8,7 @@ from drinq.utils.treatmentkpi import (
     CascadeMixerCoagulationDosing,
     ChainScrapedSedimentation,
     RapidSandSingleMediumFiltration,
+    RapidSandDoubleMediumFiltration
     Strainer,
     ChlorineDisinfection,
     ChloramineDisinfection,
@@ -362,8 +363,14 @@ class TestRSFSingle(unittest.TestCase):
         self.parameters = {
             TPN['units_per_lane']: 2,
             TPN['filtration_rate']: 60,
-            TPN['sand_porosity']: 0.45,
-            # TODO
+            TPN['sand_porosity']: 0.4,
+            TPN['sand_density']: 2800,
+            TPN['sand_media_grain_size']:0.45,
+            TPN['backwash_duration']: 30,
+            TPN['backwash_tank_height']: 2,
+            TPN['backwash_filtration_rate']: 120,
+            TPN['power_efficiency_of_pumps']:70,
+            TPN['sand_filter_bed_height']:2
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -380,10 +387,134 @@ class TestRSFSingle(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
         )
         self.assertTrue(rsf_single.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
         self.assertTrue(rsf_single.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
+    
+    def test_kpi_dict(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        kpi_results = rsf_single.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
 
+    
+    def test_footprint_area(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        area = rsf_single.footprint_area__m2
+        self.assertGreater(area, 0.0)
+    
+    def test_pressure_head(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        headloss = rsf_single.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+    
+    def test_daily_energy_consumption(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        energy = rsf_single.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+class TestRSFDouble(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            TPN['units_per_lane']: 2,
+            TPN['filtration_rate']: 60,
+            TPN['sand_porosity']: 0.4,
+            TPN['sand_density']: 2800,
+            TPN['sand_media_grain_size']:0.45,
+            TPN['backwash_duration']: 30,
+            TPN['backwash_tank_height']: 2,
+            TPN['backwash_filtration_rate']: 120,
+            TPN['power_efficiency_of_pumps']:70,
+            TPN['sand_filter_bed_height']:2
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+        self.wq_parameters = {}
+        
+    def test_init(self):
+        rsf_double = RapidSandDoubleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
+        )
+        self.assertTrue(rsf_double.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
+        self.assertTrue(rsf_double.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
+    
+    def test_kpi_dict(self):
+        rsf_double = RapidSandDoubleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        kpi_results = rsf.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
+    
+    def test_footprint_area(self):
+        rsf = RapidSandDoubleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        area = rsf_double.footprint_area__m2
+        self.assertGreater(area, 0.0)
+    
+    def test_pressure_head(self):
+        rsf_double = RapidSandDoubleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        headloss = rsf_double.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+    
+    def test_daily_energy_consumption(self):
+        rsf_double = RapidSandDoubleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        energy = rsf_double.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    
 
 class TestTreatmentKPIAbstract(unittest.TestCase):
     def setUp(self):
