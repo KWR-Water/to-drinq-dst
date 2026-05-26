@@ -1,6 +1,5 @@
 import unittest
 
-import json
 from drinq.utils.treatmentkpi import (
     TreatmentKPI,
     TreatmentDataclassMixin,
@@ -11,12 +10,14 @@ from drinq.utils.treatmentkpi import (
     Strainer,
     ChlorineDisinfection,
     ChloramineDisinfection,
+    BaffledOzonationContactor,
+    UVdisinfection,
+    CleanWaterStorageTank,
     calculate_chemical_storage_area__m2,
     calculate_flow_per_lane
     )
+from drinq.utils.treatmentkpi import TPN
 
-with open("drinq/utils/treatmentpropertyname.json", "r") as file:
-    TPN = json.load(file)
 
 class TestCoagulationDynamicMixing(unittest.TestCase):
     def setUp(self):
@@ -165,6 +166,16 @@ class TestStrainer(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 250.0,
         }
+        self.kpi_results = {
+            'footprint area': 0.0763888888888889,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 0.4166666666666667,
+            'daily mass of chemicals': {},
+            'chemical solution concentration': 0.0,
+            'head loss': 0.0024991369980118462,
+            'power': 0.017361111111111112,
+            'CO2 equivalent emissions': 3.125e-05
+        }
 
     def test_init(self):
         strainer = Strainer(
@@ -189,6 +200,7 @@ class TestStrainer(unittest.TestCase):
         self.assertIn('head loss', kpi_results)
         self.assertIn('daily energy consumption', kpi_results)
         self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
     def test_footprint_area(self):
         strainer = Strainer(
@@ -213,14 +225,6 @@ class TestStrainer(unittest.TestCase):
 
 class TestChlorineDisinfection(unittest.TestCase):
     def setUp(self):
-        from drinq.utils.treatmentkpi import TPN
-
-        # Bridge legacy key names used by the implementation.
-        TPN['target_residual_concentration_mg_l'] = TPN[
-            'target_residual_concentration_mg_per_l']
-        TPN['chemical_dosing_solution_concentration_w_w_percent'] = TPN[
-            'chemical_dosing_solution_concentration_w_per_wpercent']
-
         self.parameters = {
             'tank height': 6.0,
             'tank height chemical storage': 4.0,
@@ -262,7 +266,220 @@ class TestChlorineDisinfection(unittest.TestCase):
         self.assertIsInstance(daily_mass_kg, dict)
         self.assertGreaterEqual(sum(daily_mass_kg.values()), 0.0)
 
+    def test_get_kpi_dict(self):
+        chlorine_disinfection = ChlorineDisinfection(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            chem_parameters=['chlorine'],
+        )
+        kpi_results = chlorine_disinfection.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
     # TODO: Add more tests for ChlorineDisinfection methods
+
+
+class TestChloramineDisinfection(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 6.0,
+            'tank height chemical storage': 4.0,
+            'target residual concentration (mg/l)': 1.0,
+            'target concentration of dosing chemical': 10.0,
+            'chemical dosing solution concentration (w/w%)': 12.0,
+            'power': 0.5,
+            'retention time (min)': 40.0,
+            'units per lane': 5,
+            'storage time of chemicals (days)': 20,
+            'chemical emission factor': 0.5,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 200.0,
+        }
+
+    def test_init(self):
+        chloramine = ChloramineDisinfection(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            chem_parameters=['chloramine'],
+        )
+        self.assertEqual(
+            chloramine.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(
+            chloramine.retention_time_min, self.parameters['retention time (min)'])
+        self.assertEqual(
+            chloramine.lanes, self.design_parameters['number of lanes'])
+
+    def test_get_kpi_dict(self):
+        chloramine = ChloramineDisinfection(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            chem_parameters=['chloramine'],
+        )
+        kpi_results = chloramine.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
+
+class TestBaffledOzonationContactor(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 5.0,
+            'units per lane': 2,
+            'retention time (min)': 20.0,
+            'target concentration of dosing chemical': 3.0,
+            'energy consumption per kg ozone': 8.0,
+            'chemical emission factor': 0.5,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 160.0,
+        }
+
+    def test_init(self):
+        ozone = BaffledOzonationContactor(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            chem_parameters=['ozone'],
+        )
+        self.assertEqual(ozone.tank_height_m, self.parameters['tank height'])
+        self.assertEqual(ozone.units_per_lane,
+                         self.parameters['units per lane'])
+        self.assertEqual(ozone.retention_time_min,
+                         self.parameters['retention time (min)'])
+        self.assertEqual(ozone.nominal_flow_m3perh,
+                         self.plant_kpis['nominal flow rate'])
+        self.assertEqual(ozone.chemical_solution_concentration__mg_per_l,
+                         ozone.ozone_dosage_mgliter)
+
+    def test_get_kpi_dict(self):
+        ozone = BaffledOzonationContactor(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            chem_parameters=['ozone'],
+        )
+        kpi_results = ozone.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertAlmostEqual(
+            ozone.footprint_area__m2, 27.0, places=1)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertEqual(
+            ozone.daily_mass_of_chemicals__kg['ozone'],
+            ozone.nominal_flow_m3perh * 24 * ozone.ozone_dosage_mgliter / 1000)
+        self.assertIn('head loss', kpi_results)
+        self.assertAlmostEqual(
+            ozone.hydraulic_headloss__bar, 1.03, places=1)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertAlmostEqual(
+            ozone.co2_emissions__kg_co2_eq_per_m3, 0.0108, places=2)
+
+
+class TestUVDisinfection(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'units per lane': 2,
+            'UV dose': 40.0,
+            'UV power intensity': 10.0,
+            'tank height': 0.2,
+            'UV power per m3': 0.04,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 180.0,
+        }
+        self.kpi_results = {
+            'footprint area': 2.0,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 192.0,
+            'daily mass of chemicals': {},
+            'chemical solution concentration': 0.0,
+            'head loss': 0.11961322716039698,
+            'power': 8.0,
+            'CO2 equivalent emissions': 0.02}
+
+    def test_init(self):
+        uv = UVdisinfection(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        self.assertEqual(uv.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(uv.tank_height_m, self.parameters['tank height'])
+        self.assertEqual(uv.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
+        self.assertGreater(uv.exposure_time_sec, 0.0)
+
+    def test_get_kpi_dict(self):
+        uv = UVdisinfection(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        kpi_results = uv.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertDictEqual(kpi_results, self.kpi_results)
+        
+
+class TestCleanWaterStorageTank(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 4.0,
+            'retention time (hr)': 12.0,
+            'units per lane': 1,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+
+    def test_init(self):
+        storage = CleanWaterStorageTank(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        self.assertEqual(storage.tank_height_m, self.parameters['tank height'])
+        self.assertEqual(storage.retention_time_hrs, self.parameters['retention time (hr)'])
+        self.assertEqual(storage.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(storage.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
+
+    def test_get_kpi_dict(self):
+        storage = CleanWaterStorageTank(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        kpi_results = storage.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertAlmostEqual(storage.footprint_area__m2, 300.0, places=1)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertAlmostEqual(storage.hydraulic_headloss__bar, 0.1, places=1)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
 
 
 class DummyTreatmentKPI(TreatmentKPI):
@@ -322,10 +539,6 @@ class TestTreatmentDataclassMixin(unittest.TestCase):
 
 class TestChainScrapedSedimentation(unittest.TestCase):
     def setUp(self):
-        ChainScrapedSedimentation.flow_m3perh = property(  # type: ignore[attr-defined]
-            lambda instance: instance.nominal_flow_m3perh
-        )
-
         self.parameters = {
             'tank height': 4.0,
             'retention time (min)': 60.0,
@@ -343,6 +556,16 @@ class TestChainScrapedSedimentation(unittest.TestCase):
         self.wq_parameters = {
             'input_parameter': {'total suspended solids (mg/l)': 150.0},
         }
+        self.kpi_results = {
+            'footprint area': 72.0,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 192.0,
+            'daily mass of chemicals': {},
+            'chemical solution concentration': 0.0,
+            'head loss': 0.049033067954557606,
+            'power': 8.0,
+            'CO2 equivalent emissions': 0.030000000000000002
+        }
 
     def test_init(self):
         sedimentation = ChainScrapedSedimentation(
@@ -354,16 +577,32 @@ class TestChainScrapedSedimentation(unittest.TestCase):
         self.assertTrue(sedimentation.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
         self.assertTrue(sedimentation.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
-        self.assertTrue(sedimentation.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+        self.assertTrue(sedimentation.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+    
+    def test_get_kpi_dict(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = sedimentation.get_kpi_dict()
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
 
 class TestRSFSingle(unittest.TestCase):
     def setUp(self):
         self.parameters = {
             TPN['units_per_lane']: 2,
-            TPN['filtration_rate']: 60,
+            TPN['filtration_rate']: 10,
             TPN['sand_porosity']: 0.45,
-            # TODO
+            TPN['sand_density']: 2650,
+            TPN['sand_media_grain_size']: 0.8,
+            TPN['backwash_duration']: 10,
+            TPN['backwash_tank_height']: 3.0,
+            TPN['backwash_filtration_rate']: 45.0,
+            TPN['power_efficiency_of_pumps']: 75.0,
+            TPN['sand_filter_bed_height']: 1.5,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -373,17 +612,38 @@ class TestRSFSingle(unittest.TestCase):
             'nominal flow rate': 100.0,
         }
         self.wq_parameters = {}
-        
+        self.kpi_results = {
+            'footprint area': 17.0,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 0.801063492063492,
+            'daily mass of chemicals': {},
+            'chemical solution concentration': 0.0,
+            'head loss': 0.2840731037215019,
+            'power': 1.2015952380952382,
+            'CO2 equivalent emissions': 0.00015019940476190477
+        }
+
     def test_init(self):
         rsf_single = RapidSandSingleMediumFiltration(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
         )
         self.assertTrue(rsf_single.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
         self.assertTrue(rsf_single.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
 
+    def test_get_kpi_dict(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
+        )
+        kpi_results = rsf_single.get_kpi_dict()
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
 class TestTreatmentKPIAbstract(unittest.TestCase):
     def setUp(self):
