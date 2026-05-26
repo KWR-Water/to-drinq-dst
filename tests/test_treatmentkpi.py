@@ -8,7 +8,7 @@ from drinq.utils.treatmentkpi import (
     CascadeMixerCoagulationDosing,
     ChainScrapedSedimentation,
     RapidSandSingleMediumFiltration,
-    RapidSandDoubleMediumFiltration
+    RapidSandDoubleMediumFiltration,
     Strainer,
     ChlorineDisinfection,
     ChloramineDisinfection,
@@ -441,14 +441,15 @@ class TestRSFDouble(unittest.TestCase):
         self.parameters = {
             TPN['units_per_lane']: 2,
             TPN['filtration_rate']: 60,
+            TPN['backwash_tank_height']:0.5,
             TPN['sand_porosity']: 0.4,
             TPN['sand_density']: 2800,
             TPN['sand_media_grain_size']:0.45,
             TPN['backwash_duration']: 30,
             TPN['backwash_tank_height']: 2,
-            TPN['backwash_filtration_rate']: 120,
-            TPN['power_efficiency_of_pumps']:70,
-            TPN['sand_filter_bed_height']:2
+            TPN['efficiency_backwash_pump']:70,
+            TPN['sand_bed_height']: 0.5,
+            TPN['anthracite_bed_height']:0.7
         }
         self.design_parameters = {
             'number of lanes': 2,

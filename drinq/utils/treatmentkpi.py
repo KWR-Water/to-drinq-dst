@@ -2453,9 +2453,9 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)           
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
-            self.lanes, self.flow_m3perh)
+            self.lanes, self.nominal_flow_m3perh)
         self.units_per_lane = parameters[TPN['units_per_lane']]
-        self.hydraulic_loading_rate_m3m2h = design_parameters[
+        self.hydraulic_loading_rate_m3m2h = parameters[
             TPN['hydraulic_loading_rate']]
         self.sand_porosity = parameters[
             TPN['sand_porosity']]
