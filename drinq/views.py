@@ -721,8 +721,9 @@ class QuestionsCompleteView(generic.TemplateView):
                 # Try to get the stage name from the first technology in this step
                 stage_name = f"Stage {i+1}"
                 if techs:
-                    # Try to get the stage via StageTechnologies if available
-                    from drinq.models import StageTechnologies, Stage
+                    # TODO: Try to get the stage via StageTechnologies if available
+                    # Make an exception for the case Ozonation is for disinfection, 
+                    # then do not chose the first entry
                     stage_obj = (
                         Stage.objects.filter(
                             id__in=StageTechnologies.objects.filter(
