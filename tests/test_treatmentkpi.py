@@ -9,7 +9,10 @@ from drinq.utils.treatmentkpi import (
     ChainScrapedSedimentation,
     RapidSandSingleMediumFiltration,
     RapidSandDoubleMediumFiltration,
+    FlocculationDynamicMixing,
+    LamellaClarifierSlope,
     Strainer,
+    MicroStrainer,
     ChlorineDisinfection,
     ChloramineDisinfection,
     calculate_chemical_storage_area__m2,
@@ -109,6 +112,26 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         self.assertIn('head loss', kpi_results)
         self.assertIn('daily energy consumption', kpi_results)
         self.assertIn('CO2 equivalent emissions', kpi_results)
+    
+    def test_pressure_head(self):
+        mixer = CoagulationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        headloss = mixer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        mixer = CoagulationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        emissions = mixer.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 
 class TestCascadeMixerCoagulationDosing(unittest.TestCase):
@@ -148,6 +171,63 @@ class TestCascadeMixerCoagulationDosing(unittest.TestCase):
         self.assertTrue(cascade_mixer.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(cascade_mixer.lanes == self.design_parameters['number of lanes'])  # noqa, E501
         self.assertTrue(cascade_mixer.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+    
+    def test_kpi_dict(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        kpi_results = cascade_mixer.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
+    def test_footprint_area(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        area = cascade_mixer.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_daily_energy_consumption(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        energy = cascade_mixer.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+    
+    def test_footprint_area_for_chemicals(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        energy = cascade_mixer.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+    
+    def test_pressure_head(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        headloss = cascade_mixer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        cascade_mixer = CascadeMixerCoagulationDosing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+        )
+        emissions = cascade_mixer.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 
 class TestStrainer(unittest.TestCase):
@@ -210,7 +290,196 @@ class TestStrainer(unittest.TestCase):
         )
         energy = strainer.daily_energy_consumption__kwh
         self.assertGreater(energy, 0.0)
+    
+    def test_pressure_head(self):
+        strainer = Strainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        headloss = strainer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
 
+class TestMicroStrainer(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'bar width': 0.6,
+            'bar spacing': 0.02,
+            'open area factor': 0.7,
+            'velocity bar screen': 1.0,
+            'head loss coefficient': 0.5,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 250.0,
+        }
+
+    def test_init(self):
+        m_strainer = MicroStrainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        self.assertTrue(m_strainer.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+        self.assertTrue(m_strainer.open_area_factor  == self.parameters['open area factor'])  # noqa, E501
+
+    def test_kpi_dict(self):
+        m_strainer = MicroStrainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        kpi_results = m_strainer.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
+    def test_footprint_area(self):
+        m_strainer = MicroStrainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        area = m_strainer.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_daily_energy_consumption(self):
+        m_strainer = MicroStrainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        energy = m_strainer.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    def test_pressure_head(self):
+        m_strainer = MicroStrainer(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+        )
+        headloss = m_strainer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+class TestFlocculation(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 4.0,
+            'retention time tank1 min': 20.0,
+            'retention time tank2 min': 30.0,
+            'mass density of chemical': 1.2,
+            'storage time of chemicals (days)': 15,
+            'mixer tank1 velocity grad': 100.0,
+            'power efficiency of mixer(s)': 0.8,
+            'units per lane': 3,
+            'chemical emission factor': 0.5,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+
+    def test_init(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        self.assertTrue(flocmixer.tank_height == self.parameters['tank height'])
+        self.assertTrue(flocmixer.lanes == self.design_parameters['number of lanes'])
+        self.assertTrue(flocmixer.nominal_flow_m3perh == self.plant_kpis[
+            'nominal flow rate'])
+
+    def test_get_kpi(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        result = flocmixer.get_kpi('footprint area')
+        self.assertEqual(
+            result, flocmixer.footprint_area__m2)
+        result = flocmixer.get_kpi('head loss')
+        self.assertEqual(
+            result, flocmixer.hydraulic_headloss__bar)
+
+    def test_footprint_area(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        area = flocmixer.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_pressure_head(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        headloss = flocmixer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_daily_energy_consumption(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        energy = flocmixer.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    def test_kpi_dict(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        kpi_results = flocmixer.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+    
+    def test_pressure_head(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        headloss = flocmixer.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        flocmixer = FlocculationDynamicMixing(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=[],
+        )
+        emissions = flocmixer.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 class TestChlorineDisinfection(unittest.TestCase):
     def setUp(self):
@@ -357,6 +626,203 @@ class TestChainScrapedSedimentation(unittest.TestCase):
         self.assertTrue(sedimentation.lanes == self.design_parameters['number of lanes'])  # noqa, E501
         self.assertTrue(sedimentation.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
 
+    def test_get_kpi(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        result = sedimentation.get_kpi('footprint area')
+        self.assertEqual(
+            result, sedimentation.footprint_area__m2)
+        result = sedimentation.get_kpi('head loss')
+        self.assertEqual(
+            result, sedimentation.hydraulic_headloss__bar)
+
+    def test_footprint_area(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        area = sedimentation.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_pressure_head(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = sedimentation.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_daily_energy_consumption(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        energy = sedimentation.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    def test_kpi_dict(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = sedimentation.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+    
+    def test_pressure_head(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = sedimentation.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        sedimentation = ChainScrapedSedimentation(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        sedimentation = sedimentation.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(sedimentation, 0.0)
+
+class TestLamellaSlope(unittest.TestCase):
+    def setUp(self):
+        LamellaClarifierSlope.flow_m3perh = property(  # type: ignore[attr-defined]
+            lambda instance: instance.nominal_flow_m3perh
+        )
+
+        self.parameters = {
+            'tank height': 4.0,
+            'scraper power coefficient': 0.1,
+            'retention time (min)': 60.0,
+            'surface overflow rate': 20,
+            'plate angle' : 60,
+            'units per lane': 3,
+            'sludge tank height': 5.0,
+            'backwash filtration rate': 50,
+            'backwash duration': 15,
+            'backwash tank height' : 1,
+            'mass density of TSS': 30,
+            'power efficiency of pump(s)': 0.8
+
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 120.0,
+        }
+        self.wq_parameters = {
+            'input_parameter': {'total suspended solids (mg/l)': 150.0},
+            'target_parameter': {'total suspended solids (mg/l)': 150.0},
+        }
+
+    def test_init(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertTrue(lamellaslope.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
+        self.assertTrue(lamellaslope.lanes == self.design_parameters['number of lanes'])  # noqa, E501
+        self.assertTrue(lamellaslope.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+
+    def test_get_kpi(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        result = lamellaslope.get_kpi('footprint area')
+        self.assertEqual(
+            result, lamellaslope.footprint_area__m2)
+        result = lamellaslope.get_kpi('head loss')
+        self.assertEqual(
+            result, lamellaslope.hydraulic_headloss__bar)
+
+    def test_footprint_area(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        area = lamellaslope.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_pressure_head(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = lamellaslope.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_daily_energy_consumption(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        energy = lamellaslope.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    def test_kpi_dict(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = lamellaslope.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+    
+    def test_pressure_head(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = lamellaslope.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        lamellaslope = LamellaClarifierSlope(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        emissions = lamellaslope.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 class TestRSFSingle(unittest.TestCase):
     def setUp(self):

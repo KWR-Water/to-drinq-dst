@@ -1182,24 +1182,24 @@ class FlocculationDynamicMixing(TreatmentKPI):
             EMISSION_FACTOR_ELEC_NAME, None)
         self.tank_height = parameters[TPN['tank_height']]
         self.retention_time_tank1_min = parameters.get(
-            TPN['retention_time_tank1_min'],
-            20,
+            TPN.get('retention_time_tank1_min'), 
+            parameters.get('retention time tank 1 (min)', 20) 
         )
         self.retention_time_tank2_min = parameters.get(
-            TPN['retention_time_tank2_min'],
-            30,
+            TPN.get('retention_time_tank2_min'), 
+            parameters.get('retention time tank 2 (min)', 30) 
         )
         self.retention_time_min = (
             self.retention_time_tank1_min + self.retention_time_tank2_min
         )
         self.efficiency_mixer = parameters[TPN['power_efficiency_of_mixers']] / 100  # noqa: E501
         self.mixer_tank1_velocity_grad = parameters.get(
-            TPN['mixer_tank1_velocity_grad'],
-            80,
+            TPN.get('mixer_tank1_velocity_grad'),
+            parameters.get('mixer tank 1 velocity grad', 80)
         )
         self.mixer_tank2_velocity_grad = parameters.get(
-            TPN['mixer_tank2_velocity_grad'],
-            50,
+            TPN.get('mixer_tank2_velocity_grad'),
+            parameters.get('mixer tank 2 velocity grad', 50)
         )
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
@@ -4197,10 +4197,10 @@ class LamellaClarifierSlope(TreatmentKPI):
             TPN['backwash_duration']]
         self.backwash_tank_height_m = parameters[
             TPN['backwash_tank_height']]
-        self.tss_in_mgl = wq_parameters[
-            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
-        self.tss_out_mgl = wq_parameters[
-            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
+        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 0)
+        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 0)
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
@@ -4246,7 +4246,7 @@ class LamellaClarifierSlope(TreatmentKPI):
         """Total Area = Clarifier Area + Sludge Thickening Area."""
         angle_coeff = 1.285 - 0.013 * self.plate_angle  # transform the angle to coefficient
         unit_area_m2 = 1.1 * (self.flow_per_unit / self.surface_overflow_rate) * angle_coeff
-        clarifiers_area_total = self.unit_area_m2 * self.units_per_lane * self.lanes 
+        clarifiers_area_total = unit_area_m2 * self.units_per_lane * self.lanes 
         daily_sludge_vol = self.sludge_production_kg / self.sludge_density_kg_m3
         sludge_area_m2 = daily_sludge_vol / self.sludge_tank_height_m
         backwash_flow = unit_area_m2 / self.backwash_filtration_rate
