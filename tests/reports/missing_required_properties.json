@@ -1,0 +1,65 @@
+[
+  {
+    "technology_id": 4,
+    "technology_name": "Cascade with coagulant dosing with ferric chloride",
+    "technology_class": "CascadeMixerCoagulationDosing",
+    "missing_property": "power for dosing (kW)",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 27,
+    "technology_name": "Chlorine dosing equipment",
+    "technology_class": "ChlorineDisinfection",
+    "missing_property": "tank height chemical storage",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 27,
+    "technology_name": "Chlorine dosing equipment",
+    "technology_class": "ChlorineDisinfection",
+    "missing_property": "target concentration of dosing chemical",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 27,
+    "technology_name": "Chlorine dosing equipment",
+    "technology_class": "ChlorineDisinfection",
+    "missing_property": "power",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 39,
+    "technology_name": "Chloramine dosing equipment",
+    "technology_class": "ChloramineDisinfection",
+    "missing_property": "tank height chemical storage",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 39,
+    "technology_name": "Chloramine dosing equipment",
+    "technology_class": "ChloramineDisinfection",
+    "missing_property": "target concentration of dosing chemical",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 39,
+    "technology_name": "Chloramine dosing equipment",
+    "technology_class": "ChloramineDisinfection",
+    "missing_property": "power",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 32,
+    "technology_name": "Low pressure uV for disinfection process",
+    "technology_class": "UVdisinfection",
+    "missing_property": "UV power intensity",
+    "source_table": "technology_property"
+  },
+  {
+    "technology_id": 32,
+    "technology_name": "Low pressure uV for disinfection process",
+    "technology_class": "UVdisinfection",
+    "missing_property": "tank height",
+    "source_table": "technology_property"
+  }
+]
