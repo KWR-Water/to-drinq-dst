@@ -1087,7 +1087,6 @@ class TestRSFSingle(unittest.TestCase):
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
-            digest_parameter_list=['filter area'],
         )
         self.assertTrue(rsf_single.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
         self.assertTrue(rsf_single.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
