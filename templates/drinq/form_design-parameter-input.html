@@ -18,9 +18,14 @@
         th {
             background-color: #f4f4f4;
         }
+        .parameter-description {
+            color: #6c757d;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
         @media (min-width: 800px) {
             table {
-                max-width: 900px;
+                max-width: 1100px;
                 width: 100%;
                 margin-left: auto;
                 margin-right: auto;
@@ -58,6 +63,7 @@
                     <th>Parameter</th>
                     <th>Value</th>
                     <th>Unit</th>
+                    <th class="d-none d-md-table-cell">Description</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -71,13 +77,13 @@
                                 name="{{ form.value.html_name }}"
                                 class="parameter-value"
                                 data-param-id="{{ form.instance.designparameter.id }}"
-                                value="{{ form.instance.value|default_if_none:form.initial.value|default:0  }}">
+                                value="{{ form.instance.value|default_if_none:form.initial.value|default_if_none:form.instance.designparameter.defaultvalue|default:0  }}">
                         {% else %}
                             <input type="number"
                                 name="{{ form.value.html_name }}"
                                 class="parameter-value"
                                 data-param-id="{{ form.instance.designparameter.id }}"
-                                value="{{ form.instance.value|default_if_none:form.initial.value|default:0  }}">
+                                value="{{ form.instance.value|default_if_none:form.initial.value|default_if_none:form.instance.designparameter.defaultvalue|default:0  }}">
                         {% endif %}
                         {# keep hidden fields so Django can bind/update instances #}
                         {{ form.designparameter }}
@@ -88,10 +94,51 @@
                             {{ form.instance.designparameter.unit|default_if_none:''|superscript_exponents|safe }}
                         </div>
                     </td>
+                    <td class="d-none d-md-table-cell">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary js-description-modal-trigger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#designParamDescModal{{ form.instance.designparameter.id }}"
+                            data-toggle="modal"
+                            data-target="#designParamDescModal{{ form.instance.designparameter.id }}">
+                            View
+                        </button>
+
+                        <div
+                            class="modal fade"
+                            id="designParamDescModal{{ form.instance.designparameter.id }}"
+                            tabindex="-1"
+                            aria-labelledby="designParamDescModalLabel{{ form.instance.designparameter.id }}"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="designParamDescModalLabel{{ form.instance.designparameter.id }}">
+                                            {{ form.instance.designparameter.name }}
+                                        </h5>
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            data-dismiss="modal"
+                                            aria-label="Close">
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="parameter-description mb-0">
+                                            {{ form.instance.designparameter.description|default_if_none:'No description available.' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+
             <div class="d-flex justify-content-between">
                 <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-secondary mr-2">Cancel or go Back</a>
                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -173,6 +220,31 @@ document.getElementById('design-parameter-form').addEventListener('submit', func
     })
     .catch(err => {
         document.getElementById('api-result').innerHTML = `<span style="color:red;">${err}</span>`;
+    });
+});
+
+document.querySelectorAll('.js-description-modal-trigger').forEach(function(button) {
+    button.addEventListener('click', function() {
+        const targetSelector = (
+            button.getAttribute('data-bs-target') ||
+            button.getAttribute('data-target')
+        );
+        if (!targetSelector) {
+            return;
+        }
+        const modalElement = document.querySelector(targetSelector);
+        if (!modalElement) {
+            return;
+        }
+
+        // Support Bootstrap 5 first; fallback to jQuery modal API (Bootstrap 4).
+        if (window.bootstrap && window.bootstrap.Modal) {
+            window.bootstrap.Modal.getOrCreateInstance(modalElement).show();
+            return;
+        }
+        if (window.jQuery && typeof window.jQuery(modalElement).modal === 'function') {
+            window.jQuery(modalElement).modal('show');
+        }
     });
 });
 </script>

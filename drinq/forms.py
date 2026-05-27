@@ -175,6 +175,67 @@ class SessionSelectForm(forms.Form):
                 user=user)
 
 
+class TreatmentPlantModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        configuration_name = (
+            obj.configuration.name if obj.configuration is not None
+            else 'No configuration'
+        )
+        return (
+            f"{obj.name} "
+            f"(option {obj.option}, configuration: {configuration_name})"
+        )
+
+
+class TreatmentPlantComparisonForm(forms.Form):
+    left_plant = TreatmentPlantModelChoiceField(
+        queryset=TreatmentPlant.objects.none(),
+        required=False,
+        label='Treatment configuration A',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
+    right_plant = TreatmentPlantModelChoiceField(
+        queryset=TreatmentPlant.objects.none(),
+        required=False,
+        label='Treatment configuration B',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        queryset = TreatmentPlant.objects.none()
+        if user is not None and user.is_authenticated:
+            queryset = (
+                TreatmentPlant.objects
+                .filter(configuration__user=user)
+                .select_related('configuration')
+                .order_by('configuration__name', 'option', 'name')
+            )
+        self.fields['left_plant'].queryset = queryset
+        self.fields['right_plant'].queryset = queryset
+
+    def clean(self):
+        cleaned_data = super().clean()
+        left_plant = cleaned_data.get('left_plant')
+        right_plant = cleaned_data.get('right_plant')
+
+        if (left_plant and not right_plant) or (right_plant and not left_plant):
+            raise forms.ValidationError(
+                'Please select both treatment configurations to compare.'
+            )
+
+        if (
+            left_plant is not None
+            and right_plant is not None
+            and left_plant.id == right_plant.id
+        ):
+            raise forms.ValidationError(
+                'Please select two different treatment configurations.'
+            )
+        return cleaned_data
+
+
 class TreatmentDesignSelectionForm(forms.ModelForm):
     option = forms.IntegerField(widget=forms.HiddenInput(), initial=None)
 
@@ -270,7 +331,8 @@ class TreatmentTechPropertyValueForm(forms.ModelForm):
         widgets = {
             'technology': forms.HiddenInput(),
             'technologyproperty': forms.HiddenInput(),
-            'value': forms.NumberInput(attrs={'class': 'parameter-value'}),
+            'value': forms.NumberInput(attrs={
+                'class': 'parameter-value', 'step': 'any'}),
         }
 
 

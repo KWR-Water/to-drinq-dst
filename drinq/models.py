@@ -386,7 +386,7 @@ class TreatmentPlantPropertyValue(models.Model):
         'TreatmentPlantProperty',
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='property')
-    value = models.TextField(blank=True, null=False)
+    value = models.FloatField(blank=True, null=False)
 
     class Meta:
         # managed = False
@@ -429,7 +429,7 @@ class TreatmentPlantTechnologyPropertyValue(models.Model):
         'TechnologyProperty',
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='technologyproperty')
-    value = models.TextField(blank=True, null=False)
+    value = models.FloatField(blank=True, null=False)
 
     class Meta:
         # managed = False
