@@ -8,43 +8,70 @@
 {% block content %}
 {% comment %} <h2>Step {{ step_index }} of {{ total_steps }}</h2> {% endcomment %}
 
+<style>
+  .wizard-card input[type="text"],
+  .wizard-card input[type="number"],
+  .wizard-card input[type="email"],
+  .wizard-card input[type="url"],
+  .wizard-card input[type="password"],
+  .wizard-card select,
+  .wizard-card textarea {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+  }
+
+  .wizard-card textarea {
+    min-height: 120px;
+  }
+
+  .wizard-card .errorlist {
+    margin: 0.5rem 0 0;
+    padding-left: 1rem;
+    color: #dc3545;
+  }
+</style>
+
 <!-- Progress Bar -->
 {% comment %} <div class="progress" style="margin-bottom: 20px;">
     <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
       {{ progress }}%
     </div>
   </div> {% endcomment %}
-  <ul class="nav nav-pills mb-3">
-      <li class="nav-item">
-      <span class="nav-link {% if step == 1 %}active{% endif %}">
-        1. Name
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step == 2 %}active{% endif %}">
-        2. Water source
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step > 2 and step < total_steps %}active{% endif %}">
-        3. Additional questions
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step == total_steps %}active{% endif %}">
-        4. Show configuration
-      </span>
-    </li>
-  </ul>
+{% include 'drinq/includes/wizard_steps_nav.html' %}
 {% if step < total_steps %}
-  <h2>Design consideration questions</h2>
-  <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-primary">
-        Next
-      </button>
+  <div class="card mb-4 shadow-sm wizard-card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-body">
+      <h2 class="card-title mb-4">Design consideration questions</h2>
+      <p class="card-text text-muted">Answer the following questions to refine the treatment configuration options.</p>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for hidden_field in form.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+          <div class="form-group mt-3">
+            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label>
+            {{ field }}
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">
+          Next
+        </button>
       </form>
+    </div>
+  </div>
 {% endif %}
 
 {% comment %} Next{% else %}Submit{% endif %} {% endcomment %}

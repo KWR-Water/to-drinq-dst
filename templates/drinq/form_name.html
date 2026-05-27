@@ -4,32 +4,28 @@
 {% block content %}
 
 <!-- templates/form_name.html -->
-<ul class="nav nav-pills mb-3">
-    <li class="nav-item">
-    <span class="nav-link {% if step == 1 %}active{% endif %}">
-      1. Name
-    </span>
-  </li>
-  <li class="nav-item">
-    <span class="nav-link {% if step == 2 %}active{% endif %}">
-      2. Water source
-    </span>
-  </li>
-  <li class="nav-item">
-    <span class="nav-link {% if step >= 3 and step < total_steps %}active{% endif %}">
-      3. Additional questions
-    </span>
-  </li>
-  <li class="nav-item">
-    <span class="nav-link {% if step == total_steps %}active{% endif %}">
-      4. Show configuration
-    </span>
-  </li>
-</ul>
-<h2>Step 1: Name your design configuration</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Next</button>
-</form>
+{% include 'drinq/includes/wizard_steps_nav.html' %}
+<div class="card mb-4 shadow-sm" style="max-width: 600px; margin: 0 auto;">
+  <div class="card-body">
+    <h2 class="card-title mb-4">Step 1: Name your design configuration</h2>
+    <p class="card-text text-muted">Give your treatment configuration a clear name and optional description.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-group">
+        <label for="id_name"><strong>Name</strong></label>
+        <input type="text" name="name" maxlength="255" class="form-control" id="id_name" placeholder="Enter a descriptive name" required value="{{ form.name.value|default_if_none:'' }}">
+        {{ form.name.errors }}
+      </div>
+      {% if form.description %}
+      <div class="form-group mt-3">
+        <label for="id_description"><strong>Description</strong></label>
+        <textarea name="description" class="form-control" id="id_description" rows="3" placeholder="Optional description">{{ form.description.value|default_if_none:'' }}</textarea>
+        {{ form.description.errors }}
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary mt-3">Next</button>
+    </form>
+  </div>
+</div>
 {% endblock %}

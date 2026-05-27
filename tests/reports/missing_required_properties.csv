@@ -1,0 +1,10 @@
+technology_id,technology_name,technology_class,missing_property,source_table
+4,Cascade with coagulant dosing with ferric chloride,CascadeMixerCoagulationDosing,power for dosing (kW),technology_property
+27,Chlorine dosing equipment,ChlorineDisinfection,tank height chemical storage,technology_property
+27,Chlorine dosing equipment,ChlorineDisinfection,target concentration of dosing chemical,technology_property
+27,Chlorine dosing equipment,ChlorineDisinfection,power,technology_property
+39,Chloramine dosing equipment,ChloramineDisinfection,tank height chemical storage,technology_property
+39,Chloramine dosing equipment,ChloramineDisinfection,target concentration of dosing chemical,technology_property
+39,Chloramine dosing equipment,ChloramineDisinfection,power,technology_property
+32,Low pressure uV for disinfection process,UVdisinfection,UV power intensity,technology_property
+32,Low pressure uV for disinfection process,UVdisinfection,tank height,technology_property

@@ -10,14 +10,12 @@
 {% block content %}
 {% if form.fields.session.queryset.exists %}
   <h2>Select a Saved Design Configuration</h2>
-  <p>
-    Below you can select a previously saved configuration of treatment design options.
-    After selecting a session, you will see the description of the session and the date 
-    it is created.
-    
-    Click "Load Configuration" to proceed with the selected session.
+  <p class="lead">
+     You have previously saved one or more questionnaire sessions for (preliminary) treatment designs. 
+     Each session corresponds to a saved configuration of treatment design options, which you can load and review.
   </p>
   <p>
+    Select a previously saved configuration of treatment design options. Click "Load Configuration" to proceed with the selected session.
     Need to remove options or delete a full configuration?
     <a href="{% url 'configuration_manage' %}">Manage stored configurations</a>.
   </p>
