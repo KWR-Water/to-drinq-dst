@@ -1,7 +1,13 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from drinq.models import MultiStepConfiguration, TreatmentPlant, Technology
+from drinq.models import (
+    MultiStepConfiguration,
+    TreatmentPlant,
+    Technology,
+    TreatmentPlantProperty,
+    TreatmentPlantPropertyValue,
+)
 from drinq.forms import TreatmentDesignSelectionForm
 
 # drinq/test_views.py
@@ -191,6 +197,166 @@ class ConfigurationUpdateViewTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
+
+
+class TreatmentPlantComparisonViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='compare-user',
+            password='secretpass',
+        )
+        self.other_user = User.objects.create_user(
+            username='compare-other-user',
+            password='secretpass',
+        )
+
+        self.configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='compare-session',
+            name='Compare Config',
+        )
+        self.other_configuration = MultiStepConfiguration.objects.create(
+            user=self.other_user,
+            session_key='compare-other-session',
+            name='Other Config',
+        )
+
+        self.plant_one = TreatmentPlant.objects.create(
+            name='Plant Alpha',
+            option=1,
+            configuration=self.configuration,
+        )
+        self.plant_two = TreatmentPlant.objects.create(
+            name='Plant Beta',
+            option=2,
+            configuration=self.configuration,
+        )
+        self.other_user_plant = TreatmentPlant.objects.create(
+            name='Plant Hidden',
+            option=1,
+            configuration=self.other_configuration,
+        )
+
+        flow_property, _ = TreatmentPlantProperty.objects.get_or_create(
+            name='nominal flow rate',
+            defaults={'unit': 'm^3/h'},
+        )
+        co2_property, _ = TreatmentPlantProperty.objects.get_or_create(
+            name='co2 equivalent emissions',
+            defaults={'unit': 'kg/m^3'},
+        )
+
+        TreatmentPlantPropertyValue.objects.create(
+            treatmentplant=self.plant_one,
+            property=flow_property,
+            value='100.0',
+        )
+        TreatmentPlantPropertyValue.objects.create(
+            treatmentplant=self.plant_two,
+            property=flow_property,
+            value='120.0',
+        )
+        TreatmentPlantPropertyValue.objects.create(
+            treatmentplant=self.plant_two,
+            property=co2_property,
+            value='0.12',
+        )
+
+        self.url = reverse('treatmentplant_compare')
+
+    def test_requires_login(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_displays_comparison_values(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            self.url,
+            {
+                'left_plant': self.plant_one.id,
+                'right_plant': self.plant_two.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Compare Treatment Plant KPIs')
+        self.assertContains(response, 'nominal flow rate')
+        self.assertContains(response, '100.0')
+        self.assertContains(response, '120.0')
+        self.assertContains(response, 'co2 equivalent emissions')
+        self.assertContains(response, 'Category KPI Radar')
+
+    def test_rejects_same_plant_selection(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            self.url,
+            {
+                'left_plant': self.plant_one.id,
+                'right_plant': self.plant_one.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'Please select two different treatment configurations.',
+        )
+
+    def test_hides_other_users_treatment_plants_from_selector(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.plant_one.name)
+        self.assertContains(response, self.plant_two.name)
+        self.assertNotContains(response, self.other_user_plant.name)
+
+
+class TestDesignParameterResultsExportCsvView(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='csv-user',
+            password='secretpass',
+        )
+        self.client.force_login(self.user)
+
+        self.configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='csv-session',
+            name='CSV Config',
+        )
+        self.treatment_plant = TreatmentPlant.objects.create(
+            name='CSV Plant',
+            option=1,
+            configuration=self.configuration,
+        )
+
+        flow_property, _ = TreatmentPlantProperty.objects.get_or_create(
+            name='nominal flow rate',
+            defaults={'unit': 'm^3/h'},
+        )
+        TreatmentPlantPropertyValue.objects.create(
+            treatmentplant=self.treatment_plant,
+            property=flow_property,
+            value='100.0',
+        )
+
+        self.url = reverse(
+            'design_parameter_results_export_csv',
+            kwargs={'plant_id': self.treatment_plant.id},
+        )
+
+    def test_exports_csv_download(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/csv', response['Content-Type'])
+        self.assertIn('attachment;', response['Content-Disposition'])
+        self.assertIn('nominal flow rate', response.content.decode('utf-8'))
 
 # How to debug invalid forms:
 # - After form.is_valid(), inspect form.errors to see which fields are invalid.

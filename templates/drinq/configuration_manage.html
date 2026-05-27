@@ -3,6 +3,94 @@
 
 {% block content %}
 <div class="container mt-4">
+    <style>
+        .configuration-card-header {
+            --config-label-width: 24rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .configuration-name-block {
+            flex: 0 0 var(--config-label-width);
+            max-width: var(--config-label-width);
+            word-break: break-word;
+        }
+
+        .configuration-action-group {
+            margin-left: auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .design-option-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
+            justify-content: flex-start;
+        }
+
+        .compare-action-btn {
+            display: none;
+        }
+
+        @media (min-width: 992px) {
+            .design-option-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .compare-action-btn {
+                display: inline-flex;
+            }
+        }
+
+        .description-modal-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .description-modal-overlay.show {
+            display: flex;
+        }
+
+        .description-modal {
+            width: min(40rem, 100%);
+            max-height: 85vh;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 0.25rem;
+            box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.25);
+        }
+
+        @media (max-width: 991.98px) {
+            .configuration-name-block {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+
+            .configuration-action-group {
+                flex: 1 1 100%;
+                margin-left: 0;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+
     <h2>Manage stored treatment design configurations</h2>
     <p class="lead">
         Remove a complete saved configuration or remove a specific design
@@ -18,14 +106,14 @@
     {% if configurations %}
         {% for configuration in configurations %}
             <div class="card mb-4 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
+                <div class="card-header configuration-card-header">
+                    <div class="configuration-name-block">
                         <strong>{{ configuration.name }}</strong>
                         <div class="small text-muted">
                             Created on {{ configuration.date_created|date:'Y-m-d H:i' }}
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="configuration-action-group">
                         <a
                             href="{% url 'form_complete' configuration.session_key %}"
                             class="btn btn-sm btn-outline-primary"
@@ -79,30 +167,45 @@
                                             <td>{{ treatment_plant.name }}</td>
                                             <td>{{ treatment_plant.option }}</td>
                                             <td>
-                                                {{ treatment_plant.description|default:'No description available.' }}
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-info js-view-description"
+                                                    data-option-name="{{ treatment_plant.name|escape }}"
+                                                    data-option-description="{{ treatment_plant.description|default:'No description available.'|escape }}"
+                                                >
+                                                    View description
+                                                </button>
                                             </td>
                                             <td>
-                                                {% if treatment_plant.slug %}
+                                                <div class="design-option-actions">
+                                                    {% if treatment_plant.slug %}
+                                                        <a
+                                                            href="{% url 'design_detail' treatment_plant.slug %}"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                        >
+                                                            View option
+                                                        </a>
+                                                    {% endif %}
                                                     <a
-                                                        href="{% url 'design_detail' treatment_plant.slug %}"
-                                                        class="btn btn-sm btn-outline-secondary"
+                                                        href="{% url 'treatmentplant_compare' %}?left_plant={{ treatment_plant.id }}"
+                                                        class="btn btn-sm btn-outline-primary compare-action-btn"
                                                     >
-                                                        Open
+                                                        Compare
                                                     </a>
-                                                {% endif %}
-                                                <form method="post" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="action" value="delete_option">
-                                                    <input type="hidden" name="configuration_id" value="{{ configuration.id }}">
-                                                    <input type="hidden" name="treatment_plant_id" value="{{ treatment_plant.id }}">
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Delete this design option?');"
-                                                    >
-                                                        Delete option
-                                                    </button>
-                                                </form>
+                                                    <form method="post" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="delete_option">
+                                                        <input type="hidden" name="configuration_id" value="{{ configuration.id }}">
+                                                        <input type="hidden" name="treatment_plant_id" value="{{ treatment_plant.id }}">
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('Delete this design option?');"
+                                                        >
+                                                            Delete option
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -124,4 +227,59 @@
         </div>
     {% endif %}
 </div>
+
+<div id="option-description-modal-overlay" class="description-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="option-description-title">
+    <div class="description-modal card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong id="option-description-title">Treatment option description</strong>
+            <button type="button" class="close js-close-description-modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="card-body">
+            <h6 id="option-description-name" class="mb-2"></h6>
+            <p id="option-description-text" class="mb-0"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const overlay = document.getElementById('option-description-modal-overlay');
+        const titleElement = document.getElementById('option-description-name');
+        const descriptionElement = document.getElementById('option-description-text');
+        const closeButtons = document.querySelectorAll('.js-close-description-modal');
+        const descriptionButtons = document.querySelectorAll('.js-view-description');
+
+        function closeModal() {
+            overlay.classList.remove('show');
+        }
+
+        descriptionButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                titleElement.textContent = button.dataset.optionName || '';
+                descriptionElement.textContent = (
+                    button.dataset.optionDescription || 'No description available.'
+                );
+                overlay.classList.add('show');
+            });
+        });
+
+        closeButtons.forEach(function (button) {
+            button.addEventListener('click', closeModal);
+        });
+
+        overlay.addEventListener('click', function (event) {
+            if (event.target === overlay) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    }());
+</script>
 {% endblock %}

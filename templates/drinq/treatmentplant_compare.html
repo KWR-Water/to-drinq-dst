@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load kpi_format %}
+{% load unit_format %}
+
+{% block content %}
+<body class="bg-light">
+<div class="container mt-4">
+    <h1 class="mb-3">Compare Treatment Plant KPIs</h1>
+    <p class="lead">
+        Select two stored treatment configurations to compare plant-level
+        KPI values. Technology-specific KPIs are intentionally excluded from
+        this page so you can compare options with different technologies.
+    </p>
+
+    <div class="card shadow-sm p-3 bg-white mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label for="id_left_plant" class="form-label">{{ form.left_plant.label }}</label>
+                {{ form.left_plant }}
+            </div>
+            <div class="col-md-5">
+                <label for="id_right_plant" class="form-label">{{ form.right_plant.label }}</label>
+                {{ form.right_plant }}
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Compare</button>
+            </div>
+        </form>
+        {% if form.errors %}
+            <div class="alert alert-danger mt-3 mb-0" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if left_plant and right_plant %}
+        <div class="card shadow-sm p-3 bg-white">
+            <h2 class="mb-3">Comparison</h2>
+            <p class="mb-2">
+                Use the buttons below to open the full KPI details page for
+                each selected treatment configuration.
+            </p>
+            <p class="text-muted small mb-3">
+                This helps you inspect plant and technology KPI details beyond
+                the side-by-side plant-level comparison shown here.
+            </p>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="fw-normal"></th>
+                            <th>A</th>
+                            <th>B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-normal">Configuration name</td>
+                            <td>
+                                {% if left_plant.configuration %}
+                                    {{ left_plant.configuration.name }}
+                                {% else %}
+                                    <em>No configuration</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if right_plant.configuration %}
+                                    {{ right_plant.configuration.name }}
+                                {% else %}
+                                    <em>No configuration</em>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-normal">Option number</td>
+                            <td>{{ left_plant.option }}</td>
+                            <td>{{ right_plant.option }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-normal">Option name</td>
+                            <td class="fw-normal">{{ left_plant.name }}</td>
+                            <td class="fw-normal">{{ right_plant.name }}</td>
+                        </tr>                        
+                        <tr>
+                            <td class="fw-normal">Details page</td>
+                            <td class="text-center">
+                                <a
+                                    href="{% url 'design_parameter_results' left_plant.id %}"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View KPI details
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <a
+                                    href="{% url 'design_parameter_results' right_plant.id %}"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    View KPI details
+                                </a>
+                            </td>
+                        </tr>                        
+                    </tbody>
+                </table>
+            </div>
+            <p class="mb-2">
+                Below is a side-by-side comparison of plant-level KPIs for the
+                selected treatment configurations.
+            </p>
+
+            {% if show_radar_chart %}
+                <button
+                    class="btn btn-outline-secondary btn-sm d-md-none mb-2"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#radar-section"
+                    aria-expanded="false"
+                    aria-controls="radar-section"
+                >
+                    Show or hide radar chart
+                </button>
+                <div id="radar-section" class="collapse d-md-block">
+                <div class="card shadow-sm p-3 bg-white mb-4">
+                    <h3 class="h5 mb-2">Category KPI Radar</h3>
+                    <div style="position: relative; height: 420px;">
+                        <canvas id="category-radar-chart"></canvas>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Values are normalized per KPI to the largest value
+                        between A and B. The radar axis maximum is set to 1.1
+                        to add a small visual margin.
+                    </p>                    
+                </div>
+                </div>
+                <script id="radar-chart-data" type="application/json">{{ radar_chart_data_json|safe }}</script>
+            {% endif %}
+
+            {% if properties_by_category %}
+                {% for category_name, category_props in properties_by_category %}
+                    <div class="mb-4">
+                        <h3 class="h5">{{ category_name|capfirst }}</h3>
+                        <table class="table table-bordered kpi-category-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>Unit</th>
+                                </tr>
+                                <tr class="text-muted small">
+                                    <th class="fw-normal"></th>
+                                    <th class="fw-normal">{{ left_plant.name }}</th>
+                                    <th class="fw-normal">{{ right_plant.name }}</th>
+                                    <th class="fw-normal"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in category_props %}
+                                    {% scaled_kpi_display row.left_value row.property.name as left_display %}
+                                    {% scaled_kpi_display row.right_value row.property.name as right_display %}
+                                    <tr>
+                                        <td>{{ row.property.name }}</td>
+                                        {% if row.left_value is not None %}
+                                            <td>{{ left_display.value }}</td>
+                                        {% else %}
+                                            <td><em>Not available</em></td>
+                                        {% endif %}
+
+                                        {% if row.right_value is not None %}
+                                            <td>{{ right_display.value }}</td>
+                                        {% else %}
+                                            <td><em>Not available</em></td>
+                                        {% endif %}
+
+                                        <td class="align-top">
+                                            {% if row.left_value is None and row.right_value is None %}
+                                                -
+                                            {% elif left_display.unit_prefix == right_display.unit_prefix %}
+                                                {% if left_display.unit_prefix %}{{ left_display.unit_prefix }}{% endif %}{{ row.property.unit|superscript_exponents|safe }}
+                                            {% else %}
+                                                A: {% if left_display.unit_prefix %}{{ left_display.unit_prefix }}{% endif %}{{ row.property.unit|superscript_exponents|safe }}<br>
+                                                B: {% if right_display.unit_prefix %}{{ right_display.unit_prefix }}{% endif %}{{ row.property.unit|superscript_exponents|safe }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <em>No plant-level KPIs available for the selected configurations.</em>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+<br>
+</body>
+{% endblock %}
+
+{% block extra_javascript %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    (function() {
+        const dataScript = document.getElementById('radar-chart-data');
+        const chartCanvas = document.getElementById('category-radar-chart');
+        if (!dataScript || !chartCanvas) {
+            return;
+        }
+
+        const chartData = JSON.parse(dataScript.textContent);
+        if (!chartData.labels || chartData.labels.length === 0) {
+            return;
+        }
+
+        new Chart(chartCanvas, {
+            type: 'radar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'A: ' + chartData.left_label,
+                        data: chartData.left_data,
+                        borderColor: 'rgba(42, 157, 143, 1)',
+                        backgroundColor: 'rgba(42, 157, 143, 0.25)',
+                        pointBackgroundColor: 'rgba(42, 157, 143, 1)',
+                        pointRadius: 3,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'B: ' + chartData.right_label,
+                        data: chartData.right_data,
+                        borderColor: 'rgba(230, 111, 81, 1)',
+                        backgroundColor: 'rgba(230, 111, 81, 0.2)',
+                        pointBackgroundColor: 'rgba(230, 111, 81, 1)',
+                        pointRadius: 3,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 1.1,
+                        ticks: {
+                            stepSize: 0.2,
+                            callback: function(value) {
+                                if (Math.abs(value - 1.1) < 1e-9) {
+                                    return '';
+                                }
+                                return value;
+                            }
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function alignKpiCategoryColumns() {
+            const tables = document.querySelectorAll('.kpi-category-table');
+            if (!tables.length) {
+                return;
+            }
+
+            let widestPropertyColumn = 0;
+            tables.forEach((table) => {
+                const propertyCells = table.querySelectorAll(
+                    'thead tr th:first-child, tbody tr td:first-child'
+                );
+                propertyCells.forEach((cell) => {
+                    const width = cell.getBoundingClientRect().width;
+                    if (width > widestPropertyColumn) {
+                        widestPropertyColumn = width;
+                    }
+                });
+            });
+
+            if (widestPropertyColumn <= 0) {
+                return;
+            }
+
+            tables.forEach((table) => {
+                table.style.tableLayout = 'fixed';
+                for (let index = 1; index <= 4; index += 1) {
+                    const cells = table.querySelectorAll(
+                        'tr > th:nth-child(' + index + '), '
+                        + 'tr > td:nth-child(' + index + ')'
+                    );
+                    cells.forEach((cell) => {
+                        cell.style.width = widestPropertyColumn + 'px';
+                    });
+                }
+            });
+        }
+
+        alignKpiCategoryColumns();
+    })();
+    </script>
+{% endblock %}

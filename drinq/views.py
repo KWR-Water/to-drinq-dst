@@ -2,6 +2,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
+import json
+import csv
 
 import logging
 import numpy as np
@@ -56,6 +58,7 @@ from drinq.forms import (
     WaterSourceForm,
     QuestionWizardForm,
     SessionSelectForm,
+    TreatmentPlantComparisonForm,
     TreatmentDesignSelectionForm,
     DesignParameterValueFormSet,
     TreatmentPlantTechPropertyValueFormSet,
@@ -922,6 +925,14 @@ class TreatmentDesignDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = {}
+        has_plant_kpi_results = TreatmentPlantPropertyValue.objects.filter(
+            treatmentplant=self.object,
+        ).exists()
+        has_technology_kpi_results = (
+            TreatmentPlantTechnologyKPIValue.objects.filter(
+                treatmentplant=self.object,
+            ).exists()
+        )
         treatment_layout = (
             TreatmentPlantLayout.objects
             .filter(treatmentplant=self.object)
@@ -977,6 +988,9 @@ class TreatmentDesignDetailView(generic.DetailView):
         context['plant_adaptability_score'] = adaptability_data['plant_score']
         context['adaptability_criteria_total'] = (
             adaptability_data['criteria_total'])
+        context['has_kpi_results'] = (
+            has_plant_kpi_results or has_technology_kpi_results
+        )
         return context
 
 
@@ -1036,12 +1050,12 @@ class DesignParameterInputView(generic.FormView):
             TreatmentplantDesignParameter.objects.get_or_create(
                 treatmentplant=treatment_plant,
                 designparameter=param,
-                defaults={'value': 0}
+                defaults={'value': param.defaultvalue}
             )
         queryset = TreatmentplantDesignParameter.objects.filter(
             treatmentplant=treatment_plant,
             designparameter__in=design_parameters
-        )
+        ).select_related('designparameter')
         if self.request.method == 'POST':
             return DesignParameterValueFormSet(
                 self.request.POST, queryset=queryset)
@@ -1175,6 +1189,257 @@ class DesignParameterResultsView(generic.DetailView):
         return context
 
 
+class DesignParameterResultsExportCsvView(generic.View):
+    """Export treatment plant KPI results to CSV."""
+
+    def get(self, request, *args, **kwargs):
+        treatment_plant = get_object_or_404(
+            TreatmentPlant,
+            pk=kwargs.get('plant_id'),
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = (
+            'attachment; '
+            f'filename="treatmentplant_kpis_{treatment_plant.id}.csv"'
+        )
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'section',
+            'category_or_step',
+            'technology',
+            'kpi_or_property',
+            'value',
+            'unit',
+        ])
+
+        plant_properties = (
+            TreatmentPlantPropertyValue.objects
+            .filter(treatmentplant=treatment_plant)
+            .select_related('property__category')
+            .order_by('property__category__name', 'property__name')
+        )
+
+        for property_value in plant_properties:
+            category = getattr(property_value.property, 'category', None)
+            category_name = category.name if category else 'Uncategorized'
+            writer.writerow([
+                'plant',
+                category_name,
+                '',
+                property_value.property.name,
+                property_value.value,
+                property_value.property.unit or '',
+            ])
+
+        tech_kpi_qs = (
+            TreatmentPlantTechnologyKPIValue.objects
+            .filter(treatmentplant=treatment_plant)
+            .select_related('technology', 'kpi')
+        )
+        tech_kpis = defaultdict(list)
+        for kpi_value in tech_kpi_qs:
+            tech_kpis[kpi_value.technology_id].append(kpi_value)
+
+        layouts = (
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=treatment_plant)
+            .select_related('technology')
+            .order_by('step')
+        )
+
+        for layout in layouts:
+            if layout.technology_id is None:
+                continue
+            for kpi_value in tech_kpis.get(layout.technology_id, []):
+                writer.writerow([
+                    'technology',
+                    f'Step {layout.step}',
+                    layout.technology.name,
+                    kpi_value.kpi.name,
+                    kpi_value.value,
+                    kpi_value.kpi.unit or '',
+                ])
+
+        return response
+
+
+class TreatmentPlantComparisonView(LoginRequiredMixin, generic.FormView):
+    template_name = 'drinq/treatmentplant_compare.html'
+    form_class = TreatmentPlantComparisonForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        if self.request.GET:
+            kwargs['data'] = self.request.GET
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        left_plant_id = self.request.GET.get('left_plant')
+        right_plant_id = self.request.GET.get('right_plant')
+        if left_plant_id:
+            initial['left_plant'] = left_plant_id
+        if right_plant_id:
+            initial['right_plant'] = right_plant_id
+        return initial
+
+    def _build_properties_by_category(
+        self,
+        left_plant: TreatmentPlant,
+        right_plant: TreatmentPlant,
+    ):
+        left_values = {
+            prop_value.property_id: prop_value
+            for prop_value in (
+                TreatmentPlantPropertyValue.objects
+                .filter(treatmentplant=left_plant)
+                .select_related('property__category')
+            )
+        }
+        right_values = {
+            prop_value.property_id: prop_value
+            for prop_value in (
+                TreatmentPlantPropertyValue.objects
+                .filter(treatmentplant=right_plant)
+                .select_related('property__category')
+            )
+        }
+
+        property_ids = set(left_values.keys()) | set(right_values.keys())
+        properties = (
+            TreatmentPlantProperty.objects
+            .filter(id__in=property_ids)
+            .select_related('category')
+            .order_by('category__name', 'name')
+        )
+
+        properties_by_category = defaultdict(list)
+        for property_obj in properties:
+            category = getattr(property_obj, 'category', None)
+            category_name = category.name if category else 'Uncategorized'
+            left_prop = left_values.get(property_obj.id)
+            right_prop = right_values.get(property_obj.id)
+            properties_by_category[category_name].append({
+                'property': property_obj,
+                'left_value': (
+                    left_prop.value if left_prop is not None else None
+                ),
+                'right_value': (
+                    right_prop.value if right_prop is not None else None
+                ),
+            })
+        return properties_by_category.items()
+
+    def _to_float(self, value):
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return None
+            try:
+                return float(stripped)
+            except ValueError:
+                try:
+                    return float(stripped.replace(',', '.'))
+                except ValueError:
+                    return None
+        return None
+
+    def _build_category_radar_payload(
+        self,
+        properties_by_category,
+        left_plant_name: str,
+        right_plant_name: str,
+    ):
+        labels = []
+        left_scores = []
+        right_scores = []
+
+        for category_name, category_rows in properties_by_category:
+            left_normalized_values = []
+            right_normalized_values = []
+
+            for row in category_rows:
+                left_value = self._to_float(row.get('left_value'))
+                right_value = self._to_float(row.get('right_value'))
+
+                if left_value is None and right_value is None:
+                    continue
+
+                left_abs = abs(left_value) if left_value is not None else 0.0
+                right_abs = (
+                    abs(right_value) if right_value is not None else 0.0
+                )
+                largest_value = max(left_abs, right_abs)
+                axis_max = largest_value if largest_value > 0 else 1.0
+
+                left_normalized_values.append(
+                    (left_value if left_value is not None else 0.0) / axis_max
+                )
+                right_normalized_values.append(
+                    (
+                        right_value if right_value is not None else 0.0
+                    ) / axis_max
+                )
+
+            if not left_normalized_values and not right_normalized_values:
+                continue
+
+            labels.append(str(category_name).capitalize())
+            left_scores.append(
+                round(float(np.mean(left_normalized_values)), 3)
+                if left_normalized_values else 0.0
+            )
+            right_scores.append(
+                round(float(np.mean(right_normalized_values)), 3)
+                if right_normalized_values else 0.0
+            )
+
+        return {
+            'labels': labels,
+            'left_label': left_plant_name,
+            'right_label': right_plant_name,
+            'left_data': left_scores,
+            'right_data': right_scores,
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context['form']
+
+        context['left_plant'] = None
+        context['right_plant'] = None
+        context['properties_by_category'] = []
+
+        if form.is_bound and form.is_valid():
+            left_plant = form.cleaned_data.get('left_plant')
+            right_plant = form.cleaned_data.get('right_plant')
+            context['left_plant'] = left_plant
+            context['right_plant'] = right_plant
+            if left_plant is not None and right_plant is not None:
+                properties_by_category = list(
+                    self._build_properties_by_category(
+                        left_plant=left_plant,
+                        right_plant=right_plant,
+                    )
+                )
+                context['properties_by_category'] = properties_by_category
+                radar_payload = self._build_category_radar_payload(
+                    properties_by_category=properties_by_category,
+                    left_plant_name=left_plant.name,
+                    right_plant_name=right_plant.name,
+                )
+                context['show_radar_chart'] = len(radar_payload['labels']) > 0
+                context['radar_chart_data_json'] = json.dumps(radar_payload)
+        return context
+
+
 class AdaptabilityDetailView(generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/adaptability_details.html'
@@ -1253,10 +1518,24 @@ class TechnologyPropertiesView(generic.FormView):
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list(
                 'technology', flat=True)
-        
-        non_digested_prop_ids = TechnologyPropertyJunction.objects.filter(
-            technology__in=tech_ids, is_digested=False
-        ).values_list('property', flat=True)
+
+        # Persist rows for required (technology-level) design parameters so
+        # unchanged default values are still present during calculations.
+        required_defaults = TechnologyPropertyJunction.objects.filter(
+            technology__in=tech_ids,
+            is_designparameter=True,
+            is_digested=False,
+        ).select_related('technology', 'property')
+        for junction in required_defaults:
+            TreatmentPlantTechnologyPropertyValue.objects.get_or_create(
+                treatmentplant=treatment_plant,
+                technology=junction.technology,
+                technologyproperty=junction.property,
+                defaults={'value': junction.default_value},
+            )
+
+        non_digested_prop_ids = required_defaults.values_list(
+            'property', flat=True)
         queryset = TreatmentPlantTechnologyPropertyValue.objects.filter(
             treatmentplant=treatment_plant,
             technologyproperty_id__in=non_digested_prop_ids
@@ -1472,7 +1751,7 @@ class TechnologyPropertiesView(generic.FormView):
 
             # Technology property default value lookup
             for def_tp in TechnologyPropertyJunction.objects.filter(
-                        technology=technology, is_designparameter=False):
+                        technology=technology, is_digested=False):
                 if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
                     defaultval_tech_props[technology.name].update(
                         {def_tp.property.name: def_tp.default_value})
