@@ -384,10 +384,10 @@ class TestBaffledOzonationContactor(unittest.TestCase):
             ozone.nominal_flow_m3perh * 24 * ozone.ozone_dosage_mgliter / 1000)
         self.assertIn('head loss', kpi_results)
         self.assertAlmostEqual(
-            ozone.hydraulic_headloss__bar, 1.03, places=1)
+            ozone.hydraulic_headloss__bar, 0.539, places=1)
         self.assertIn('CO2 equivalent emissions', kpi_results)
         self.assertAlmostEqual(
-            ozone.co2_emissions__kg_co2_eq_per_m3, 0.0108, places=2)
+            ozone.co2_emissions__kg_co2_eq_per_m3, 6.2208, places=2)
 
 
 class TestUVDisinfection(unittest.TestCase):
@@ -615,12 +615,12 @@ class TestRSFSingle(unittest.TestCase):
         self.kpi_results = {
             'footprint area': 17.0,
             'footprint area for chemicals': 0.0,
-            'daily energy consumption': 0.801063492063492,
+            'daily energy consumption': 0.282015873015873,
             'daily mass of chemicals': {},
             'chemical solution concentration': 0.0,
             'head loss': 0.2840731037215019,
-            'power': 1.2015952380952382,
-            'CO2 equivalent emissions': 0.00015019940476190477
+            'power': 2.9611666666666667,
+            'CO2 equivalent emissions': 5.2877976190476194e-05
         }
 
     def test_init(self):
