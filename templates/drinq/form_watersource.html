@@ -4,32 +4,21 @@
 {% block content %}
 
 <!-- templates/form_watersource.html -->
- <ul class="nav nav-pills mb-3">
-      <li class="nav-item">
-      <span class="nav-link {% if step == 1 %}active{% endif %}">
-        1. Name
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step == 2 %}active{% endif %}">
-        2. Water source
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step >= 3 and step < total_steps %}active{% endif %}">
-        3. Additional questions
-      </span>
-    </li>
-    <li class="nav-item">
-      <span class="nav-link {% if step == total_steps %}active{% endif %}">
-        4. Show configuration
-      </span>
-    </li>
-  </ul>
-<h2>Step 2: Select the water source</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Next</button>
-</form>
+{% include 'drinq/includes/wizard_steps_nav.html' %}
+<div class="card mb-4 shadow-sm" style="max-width: 600px; margin: 0 auto;">
+  <div class="card-body">
+    <h2 class="card-title mb-4">Step 2: Select the water source</h2>
+    <p class="card-text text-muted">Choose the source water type used for this treatment configuration.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-group">
+        <label for="id_water_source"><strong>{{ form.water_source.label }}</strong></label>
+        {{ form.water_source }}
+        {{ form.water_source.errors }}
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">Next</button>
+    </form>
+  </div>
+</div>
 {% endblock %}

@@ -110,6 +110,9 @@ class WaterSourceForm(forms.ModelForm):
         watersource_q = DecidingFactorQuestion.objects.get(
             name=WATERSOURCE_QUESTION_NAME)
         self.fields['water_source'].label = watersource_q.text.capitalize()
+        self.fields['water_source'].widget.attrs.update({
+            'class': 'form-control',
+        })
 
 
 class QuestionAnswerForm(forms.ModelForm):
