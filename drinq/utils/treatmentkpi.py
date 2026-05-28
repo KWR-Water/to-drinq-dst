@@ -689,6 +689,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
     chemical_emission_factor: float
     emission_factor_electricity: float
 
+
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
@@ -1162,6 +1163,7 @@ class FlocculationDynamicMixing(TreatmentKPI):
     unit_area_m2: float
     tanks_area_m2: float   
     emission_factor_electricity: float
+    volume_m3: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1211,7 +1213,11 @@ class FlocculationDynamicMixing(TreatmentKPI):
             unit_height_m=self.tank_height)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
-        
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'volume':
+                self.volume_m3 = self.footprint_area__m2 * self.tank_height
+            self.parameters[tech_property] = self.volume_m3  # overwrite area
+
     def __repr__(self):
         return f"FlocculationDynamicMixing(tank height (m)={self.tank_height}, " \
                 f"retention time (min)={self.retention_time_min}, " \
@@ -1503,6 +1509,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
     total_suspended_solids: float
     overflow_rate_m3_per_m2_per_h: float
     emission_factor_electricity: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1532,6 +1539,10 @@ class ChainScrapedSedimentation(TreatmentKPI):
             self.nominal_flow_m3perh * self.retention_time_min / 60) / (
                 self.lanes * self.units_per_lane)
         self.tank_height_m = self.unit_volume_m3 / self.unit_area_m2
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
 
     def __repr__(self):
         return f"ChainScrapedSedimentation (retention time (min)={self.retention_time_min}, " \
@@ -2448,6 +2459,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
     backwash_area_m2: float
     backwash_pump_head_m: float
     emission_factor_electricity: float
+    filter_area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -2526,6 +2538,10 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             2*(3 * self.backwash_pump_flow_m3_per_h/3600))
         self.backwash_area_m2 = (
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'filter area':
+                self.filter_area_m2 = self.tanks_area_m2
+            self.parameters[tech_property] = self.filter_area_m2  # overwrite filter area
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
@@ -2873,6 +2889,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     unit_height_m: float
     tanks_area_m2: float
     emission_factor_electricity: float
+    volume_m3: float
     
     def __post_init__(self):
         super().__post_init__()
@@ -2912,6 +2929,10 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.superficial_velocity = (
             self.flow_per_unit_m3hr/self.unit_area_m2)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'volume':
+                self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
+            self.parameters[tech_property] = self.volume_m3  # overwrite area
 
     def __repr__(self):
         return f"GAC bed area (m2)={self.unit_area_m2}, " \
@@ -2997,6 +3018,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     power_mixing_intensity_wperm3: float
     chemical_emission_factor: float
     emission_factor_electricity: float
+    area_m2:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3030,6 +3052,10 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.power_mixing_intensity_wperm3 = parameters[
             TPN['power_density']]  # 10 W/m3
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
 
     def __repr__(self):
         return f"PAC tank height (m)={self.tank_height_m}, " \
@@ -3819,6 +3845,7 @@ class AirFlotationDAF(TreatmentKPI):
     tss_in_mgl: float
     unit_area_m2: float
     emission_factor_electricity: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3856,6 +3883,10 @@ class AirFlotationDAF(TreatmentKPI):
             self.min_depth_m, self.unit_volume_m3 / self.unit_area_m2)
         self.unit_width_m = self.unit_depth_m / 0.8
         self.unit_length_m = self.unit_area_m2 / self.unit_width_m
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
 
     def __repr__(self):
         return f"DAF surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
@@ -3993,10 +4024,10 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['scraper_power_coefficient']]
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
-        self.tss_in_mgl = wq_parameters[
-            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
-        self.tss_out_mgl = wq_parameters[
-            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
+        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 150)
+        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 50)
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
@@ -4222,6 +4253,7 @@ class LamellaClarifierSlope(TreatmentKPI):
     backwash_duration_min: float
     power_efficiency_pump: float
     emission_factor_electricity: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4258,6 +4290,10 @@ class LamellaClarifierSlope(TreatmentKPI):
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
     
     def __repr__(self):
         return f"Lamella Slope Plate Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
@@ -4366,6 +4402,7 @@ class LamellaClarifierHorizontal(TreatmentKPI):
     backwash_duration_min: float
     power_efficiency_pump: float
     emission_factor_electricity: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4397,6 +4434,10 @@ class LamellaClarifierHorizontal(TreatmentKPI):
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
     
     def __repr__(self):
         return f"Lamella Slope Plate Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
