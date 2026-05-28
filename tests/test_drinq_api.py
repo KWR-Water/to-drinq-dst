@@ -38,7 +38,7 @@ class DigestingDesignParametersAPITest(TestCase):
         )
         self.population_persons, _ = DesignParameter.objects.get_or_create(name="population persons")  # noqa: E501
         self.avg_cons, _ = DesignParameter.objects.get_or_create(name="average consumption (lppd)")  # noqa: E501
-        self.peak_demand_factor, _ = DesignParameter.objects.get_or_create(name="peak demand factor")  # noqa: E501
+        self.peak_daily_demand_factor, _ = DesignParameter.objects.get_or_create(name="peak daily demand factor")  # noqa: E501
         self.largescale_cons, _ = DesignParameter.objects.get_or_create(name="large-scale consumption (m3/day)")  # noqa: E501
         self.leakage_factor, _ = DesignParameter.objects.get_or_create(name="leakage factor")  # noqa: E501
         self.nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
@@ -52,7 +52,7 @@ class DigestingDesignParametersAPITest(TestCase):
             "parameters": {
                 str(self.population_persons.id): 10000,  # inhabitants
                 str(self.avg_cons.id): 120.5,  # lppd
-                str(self.peak_demand_factor.id): 1.5,  # peak demand factor
+                str(self.peak_daily_demand_factor.id): 1.5,  # peak demand factor
                 str(self.largescale_cons.id): 2000.0,  # m3/day
                 str(self.leakage_factor.id): 0.15  # leakage factor (0 to 1)
             }
@@ -70,7 +70,7 @@ class DigestingDesignParametersAPITest(TestCase):
             "parameters": {
                 str(self.population_persons.id): 10000,  # inhabitants
                 str(self.avg_cons.id): 120.5,  # lppd
-                str(self.peak_demand_factor.id): 1.5,  # peak demand factor
+                str(self.peak_daily_demand_factor.id): 1.5,  # peak demand factor
                 str(self.largescale_cons.id): 2000.0,  # m3/day
                 str(self.leakage_factor.id): 0.15  # leakage factor (0 to 1)
             },
