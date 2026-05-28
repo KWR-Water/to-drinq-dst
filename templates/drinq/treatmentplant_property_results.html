@@ -5,16 +5,16 @@
 
 {% block content %}
 <!-- templates/drinq/treatmentplant_property_results.html -->
-<body class="bg-light">
 <div class="container mt-4">
-  <h1 class="mb-3">Treatment Plant KPIs</h1>
-  <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
-     provided. This page focuses on reviewing treatment plant and technology KPI outcomes.</p>
-    <p class="mb-3">
-        <a href="#further-actions" class="btn btn-sm btn-link p-0">Jump to further actions</a>
-    </p>
     <div class="card shadow-sm p-3 bg-white">
-        <h2>Treatment plant KPIs for plant </h2>
+        <h1 class="mb-3">Treatment Plant KPIs</h1>
+        <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
+             provided. This page focuses on reviewing treatment plant and technology KPI outcomes.</p>
+        <p class="mb-3">
+                <a href="#further-actions" class="btn btn-sm btn-link p-0">Jump to further actions</a>
+        </p>
+        <div class="card shadow-sm p-3 bg-white">
+                <h2>Treatment plant KPIs for plant </h2>
         {% if properties_by_category %}
             {% for category_name, category_props in properties_by_category %}
             <div class="mb-4">

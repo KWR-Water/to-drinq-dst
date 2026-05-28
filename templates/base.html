@@ -50,10 +50,6 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                                <a class="dropdown-item" href="{% url 'db_stats' %}">
-                                    Database statistics</a>
-                            </li>
-                            <li>
                                 <a class="dropdown-item" href="{% url 'form_name' %}">
                                     Start a new design
                                 </a>
@@ -66,6 +62,9 @@
                             </a>
                             <a class="dropdown-item" href="{% url 'treatmentplant_compare' %}">
                                 Compare treatment KPIs
+                            </a>
+                            <a class="dropdown-item" href="{% url 'technology_parameter_overview_select' %}">
+                                Technology parameters overview
                             </a>
                             {% comment %} <li>
                                 <a class="dropdown-item" href="{% url 'design_parameter_input' %}">
@@ -106,7 +105,9 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-Welcome {{ user.username }}!
+<p class="text-muted mb-2">
+    You are currently logged in as {{ user.username }}.
+</p>
 <form action="{% url 'rest_framework:logout' %}" method="post">
   {% csrf_token %}
   <button type="submit" class="btn btn-primary">Log out</button>

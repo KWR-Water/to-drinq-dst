@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-3 bg-white">
+        <h1 class="mb-3">Technology Parameters Overview</h1>
+        <p class="lead">
+            Select a treatment design to view technologies, technology properties,
+            and water quality values (input and target) per technology.
+        </p>
+
+        {% if treatment_plants %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Configuration</th>
+                            <th>Option</th>
+                            <th>Treatment design name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plant in treatment_plants %}
+                            <tr>
+                                <td>
+                                    {% if plant.configuration %}
+                                        {{ plant.configuration.name }}
+                                    {% else %}
+                                        <em>Not assigned</em>
+                                    {% endif %}
+                                </td>
+                                <td>{{ plant.option }}</td>
+                                <td>{{ plant.name }}</td>
+                                <td>
+                                    <a
+                                        href="{% url 'technology_parameter_overview' plant.id %}"
+                                        class="btn btn-outline-primary btn-sm"
+                                    >
+                                        Open overview
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">
+                No treatment designs found.
+                <a href="{% url 'form_name' %}">Start a new design</a>.
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

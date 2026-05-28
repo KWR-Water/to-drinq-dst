@@ -4,60 +4,60 @@
 {% load unit_format %}
 
 {% block content %}
-<body class="bg-light">
 <div class="container mt-4">
-  <h1 class="mb-3">Technology Properties</h1>
-  <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong> at the bottom of this page.</p>
-
   <div class="card shadow-sm p-3 bg-white">
-    <form method="post">
-      {% csrf_token %}
+    <h1 class="mb-3">Technology Properties</h1>
+    <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong> at the bottom of this page.</p>
 
-      {{ formset.management_form }}
-      {{ waterquality_formset.management_form }}
+    <div class="card shadow-sm p-3 bg-white">
+      <form method="post">
+        {% csrf_token %}
 
-      {# Display formset errors #}
-      {% if formset.non_form_errors %}
-        <div class="alert alert-danger">
-          {{ formset.non_form_errors }}
-        </div>
-      {% endif %}
-      {% if waterquality_formset.non_form_errors %}
-        <div class="alert alert-danger">
-          {{ waterquality_formset.non_form_errors }}
-        </div>
-      {% endif %}
+        {{ formset.management_form }}
+        {{ waterquality_formset.management_form }}
+
+        {# Display formset errors #}
+        {% if formset.non_form_errors %}
+          <div class="alert alert-danger">
+            {{ formset.non_form_errors }}
+          </div>
+        {% endif %}
+        {% if waterquality_formset.non_form_errors %}
+          <div class="alert alert-danger">
+            {{ waterquality_formset.non_form_errors }}
+          </div>
+        {% endif %}
 
 
-      {% for tech, items in forms_by_tech.items %}
-      <div class="mb-4">
-        <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
-        <h5 class="mb-2">Operational conditions</h5>
-        {% comment %} <div class="alert alert-info small">DEBUG: {{ items|length }} items for this technology.<br>Items: {{ items|safe }}</div> {% endcomment %}
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped table-sm">
-            <thead class="thead-light">
-              <tr>
-                <th style="width:25%">Property</th>
-                <th style="width:10%">Value</th>
-                <th style="width:10%">Unit</th>
-                <th style="width:55%">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in items %}
-                {{ item.form.technology }}
-                {{ item.form.technologyproperty }}
-                  {% if item.form.id.value %}
-                    {{ item.form.id }}
-                  {% endif %}
-                {% if not item.is_digested %}
+        {% for tech, items in forms_by_tech.items %}
+        <div class="mb-4">
+          <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
+          <h5 class="mb-2">Operational conditions</h5>
+          {% comment %} <div class="alert alert-info small">DEBUG: {{ items|length }} items for this technology.<br>Items: {{ items|safe }}</div> {% endcomment %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-sm">
+              <thead class="thead-light">
                 <tr>
-                  <td class="align-top">{{ item.prop_name }}</td>
-                  <td>
-                    {{ item.form.value }}
-                    {% if item.form.value.errors %}
-                      <div class="text-danger small">{{ item.form.value.errors }}</div>
+                  <th style="width:25%">Property</th>
+                  <th style="width:10%">Value</th>
+                  <th style="width:10%">Unit</th>
+                  <th style="width:55%">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                  {{ item.form.technology }}
+                  {{ item.form.technologyproperty }}
+                    {% if item.form.id.value %}
+                      {{ item.form.id }}
+                    {% endif %}
+                  {% if not item.is_digested %}
+                  <tr>
+                    <td class="align-top">{{ item.prop_name }}</td>
+                    <td>
+                      {{ item.form.value }}
+                      {% if item.form.value.errors %}
+                        <div class="text-danger small">{{ item.form.value.errors }}</div>
                     {% endif %}
                     {% for hidden in item.form.hidden_fields %}
                       {% if hidden.name != 'id' %}{{ hidden }}{% endif %}

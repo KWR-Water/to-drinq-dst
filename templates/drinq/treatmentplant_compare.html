@@ -4,16 +4,15 @@
 {% load unit_format %}
 
 {% block content %}
-<body class="bg-light">
 <div class="container mt-4">
-    <h1 class="mb-3">Compare Treatment Plant KPIs</h1>
-    <p class="lead">
-        Select two stored treatment configurations to compare plant-level
-        KPI values. Technology-specific KPIs are intentionally excluded from
-        this page so you can compare options with different technologies.
-    </p>
-
     <div class="card shadow-sm p-3 bg-white mb-4">
+        <h1 class="mb-3">Compare Treatment Plant KPIs</h1>
+        <p class="lead">
+            Select two stored treatment configurations to compare plant-level
+            KPI values. Technology-specific KPIs are intentionally excluded from
+            this page so you can compare options with different technologies.
+        </p>
+
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-5">
                 <label for="id_left_plant" class="form-label">{{ form.left_plant.label }}</label>
