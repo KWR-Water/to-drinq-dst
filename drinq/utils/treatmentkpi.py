@@ -3883,10 +3883,10 @@ class AirFlotationDAF(TreatmentKPI):
             TPN.get('air_pressure_difference'), 
             parameters.get('air_pressure_difference', 600.0)
         )    
-        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 150)
-        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 50)
+        self.tss_in_mgl = wq_parameters[
+            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # 150 mgl/l
+        self.tss_out_mgl = wq_parameters[
+            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # 50 mgl/l
         self.powereff_compressor = parameters[TPN['power_efficiency']]/100
         self.min_depth_m = parameters [TPN['tank_height']]  # m
         self.unit_area_m2 = (self.flow_per_lane / self.units_per_lane
@@ -4296,10 +4296,10 @@ class LamellaClarifierSlope(TreatmentKPI):
             TPN['backwash_duration']]
         self.backwash_tank_height_m = parameters[
             TPN['backwash_tank_height']]
-        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 150)
-        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 50)
+        self.tss_in_mgl = wq_parameters[
+            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
+        self.tss_out_mgl = wq_parameters[
+            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
@@ -4395,6 +4395,7 @@ class LamellaClarifierSlope(TreatmentKPI):
         specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
         return specific_co2_emissions
 
+
 class LamellaClarifierHorizontal(TreatmentKPI):
     """KPI calculations for Lamella clarifier,horizontal plates."""
     surface_overflow_rate: float
@@ -4403,7 +4404,7 @@ class LamellaClarifierHorizontal(TreatmentKPI):
     units_per_lane: int
     nominal_flow_m3perh: float
     flow_per_lane: float
-    nominal_flow_m3perh:float
+    nominal_flow_m3perh: float
     flow_per_unit: float
     unit_depth_input_m: float
     tss_in_mgl: float
@@ -4440,10 +4441,10 @@ class LamellaClarifierHorizontal(TreatmentKPI):
         self.backwash_filtration_rate = parameters.get(TPN['backwash_filtration_rate'])  
         self.backwash_duration_min = parameters.get(TPN['backwash_duration'])  
         self.backwash_tank_height_m = parameters.get(TPN['backwash_tank_height'])  
-        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 150)
-        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 50)
+        self.tss_in_mgl = wq_parameters[
+            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
+        self.tss_out_mgl = wq_parameters[
+            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[

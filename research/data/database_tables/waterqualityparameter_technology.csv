@@ -11,3 +11,9 @@ id,waterqualityparameter,technology,is_inputparameter,is_targetparameter,default
 10,4,16,0,1,5
 11,4,8,0,1,5
 12,4,45,0,1,5
+13,4,5,1,0,150
+14,4,5,0,1,50
+15,4,6,1,0,150
+16,4,6,0,1,50
+17,4,8,1,0,150
+18,4,8,0,1,50
