@@ -102,6 +102,16 @@
                             <td>Calculate the performance of the plant and specify design parameters</td>
                             <td><a href="{% url 'design_parameter_input' treatment_plant.id %}" class="btn btn-primary">Calculate performance</a></td>
                         </tr>
+                        {% if has_kpi_results %}
+                            <tr>
+                                <td>View the latest calculated KPI results for this treatment option</td>
+                                <td>
+                                    <a href="{% url 'design_parameter_results' treatment_plant.id %}" class="btn btn-outline-primary">
+                                        View KPI results
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
