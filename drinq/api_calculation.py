@@ -695,8 +695,7 @@ class NominalFlowKPI(PlantKPI):
             population_persons=population_persons,
             avg_consumption_lppd=avg_consumption_lppd)
         expected_flow = flow_population + largescaleconsumption_m3pd/24
-        self.value = expected_flow * (
-            1 + leakage_factor) * peak_daily_demand_factor
+        self.value = expected_flow * (1 + leakage_factor) * peak_daily_demand_factor
         return self.value
 
 

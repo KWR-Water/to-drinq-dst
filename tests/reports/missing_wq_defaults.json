@@ -84,20 +84,6 @@
     "source_table": "waterqualityparameter_technology"
   },
   {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 5,
-    "technology_name": "Lamella clarifier, horizontal floors",
-    "technology_class": "LamellaClarifierHorizontal",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
     "technology_id": 18,
     "technology_name": "Rapid sand filtration, submerged, single medium",
     "technology_class": "RapidSandSingleMediumFiltration",

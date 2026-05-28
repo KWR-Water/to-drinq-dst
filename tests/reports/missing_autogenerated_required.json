@@ -1,12 +1,5 @@
 [
   {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_property": "sludge tank height",
-    "source_table": "technology_property"
-  },
-  {
     "technology_id": 8,
     "technology_name": "Flotation with saturated air",
     "technology_class": "AirFlotationDAF",
@@ -39,13 +32,6 @@
     "technology_name": "Side stream nanofiltration",
     "technology_class": "MembraneFiltration",
     "missing_property": "pressure vessel orientation",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 27,
-    "technology_name": "Chlorine dosing equipment",
-    "technology_class": "ChlorineDisinfection",
-    "missing_property": "power",
     "source_table": "technology_property"
   },
   {

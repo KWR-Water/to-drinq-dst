@@ -3034,7 +3034,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     power_mixing_intensity_wperm3: float
     chemical_emission_factor: float
     emission_factor_electricity: float
-    area_m2:float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3098,7 +3098,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         """Calculates total dry PAC required per day."""
         hourly_mass = (self.nominal_flow_m3perh *
                        self.pac_dosage_mg_liter) / 1000
-        return self._single_chemical_value(hourly_mass * 24)
+        return self._single_chemical_value(hourly_mass * 24) 
     
     @property
     def chemical_solution_concentration__mg_per_l(self) -> float:
@@ -3147,9 +3147,9 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             self.pac_bulk_density_g_cm3 * GRAVITY_M_PER_S2 *
             flow_chemical_m3_s * dosing_head_m) / (
                 0.8 * 1000)
-        return (
-            self.flow_per_lane_m3perh * self.power_mixing_intensity_wperm3 *
-            self.lanes + 0.1 + power_pump_kw)  # Estimation of H202 dosage pumps of 0.1kW
+        power_mixing_kw = (self.flow_per_lane_m3perh * self.power_mixing_intensity_wperm3 *
+            self.lanes) / 1000
+        return (power_mixing_kw + power_pump_kw)  # Estimation of H202 dosage pumps of 0.1kW
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:

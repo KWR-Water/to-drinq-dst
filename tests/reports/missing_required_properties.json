@@ -42,20 +42,6 @@
     "source_table": "technology_property"
   },
   {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_property": "sludge tank height",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 27,
-    "technology_name": "Chlorine dosing equipment",
-    "technology_class": "ChlorineDisinfection",
-    "missing_property": "power",
-    "source_table": "technology_property"
-  },
-  {
     "technology_id": 27,
     "technology_name": "Chlorine dosing equipment",
     "technology_class": "ChlorineDisinfection",

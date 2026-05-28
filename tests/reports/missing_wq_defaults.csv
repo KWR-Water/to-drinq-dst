@@ -11,8 +11,6 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 36,Polymeric ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 37,Ceramic ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 7,Chain-scraped sedimentation tank,ChainScrapedSedimentation,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-5,"Lamella clarifier, horizontal floors",LamellaClarifierHorizontal,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 18,"Rapid sand filtration, submerged, single medium",RapidSandSingleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 19,"Rapid sand filtration, submerged, dual media, sand",RapidSandDoubleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
