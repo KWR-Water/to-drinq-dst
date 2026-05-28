@@ -688,8 +688,9 @@ class CoagulationDynamicMixing(TreatmentKPI):
     chemicals_area_m2: float
     chemical_emission_factor: float
     emission_factor_electricity: float
-
-
+    dosing_flow_rate_liter: float
+    
+    
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
@@ -741,6 +742,10 @@ class CoagulationDynamicMixing(TreatmentKPI):
             storage_time_days=self.storage_time_days,
             tank_height_m=self.chem_tank_height,
         )
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'nominal dosing flow rate':
+                self.dosing_flow_rate_liter = 1000 * self.volume_chemical_day / 24
+            self.parameters[tech_property] = self.dosing_flow_rate_liter  # overwrite filter area
 
     def __repr__(self):
         return f"CoagulationDynamicMixing(tank height (m)={self.tank_height}, " \
@@ -1775,6 +1780,7 @@ class ChloramineDisinfection(TreatmentKPI):
     ammonia_concentration_mgperltr: float
     chemical_emission_factor: float
     emission_factor_electricity: float
+    volume_m3: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1824,6 +1830,10 @@ class ChloramineDisinfection(TreatmentKPI):
         ammonia_mass = self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
         self.volume_chlorine_m3day = chlorine_mass / (1000 * 1.19)
         self.volume_ammonia_m3day = ammonia_mass / (1000 * 0.68)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'volume':
+                self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
+            self.parameters[tech_property] = self.volume_m3  # overwrite area        
     
     def __repr__(self):
         return f"ChloramineDisinfection(tank height (m)={self.tank_height_m}, " \
@@ -4160,6 +4170,7 @@ class UVdisinfection(TreatmentKPI):
     unit_volume_m3: float
     power_per_m3_kW: float
     emission_factor_electricity: float
+    dosing_flow_rate_liter: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4186,6 +4197,10 @@ class UVdisinfection(TreatmentKPI):
             self.average_intensity_mWpercm2)
         self.storage_time_days = 30  # FIX: should not be hardcoded!
         self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'nominal dosing flow rate':
+                self.dosing_flow_rate_liter = 1000 * self.volume_chemical_day / 24
+            self.parameters[tech_property] = self.dosing_flow_rate_liter  # overwrite filter area
 
     def __repr__(self):
         return f"UV tank height (m)={self.tank_height_m}, " \
