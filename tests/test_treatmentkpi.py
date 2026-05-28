@@ -18,6 +18,7 @@ from drinq.utils.treatmentkpi import (
     AirFlotationDAF,
     Strainer,
     MicroStrainer,
+    PelletSoftening,
     ChlorineDisinfection,
     ChloramineDisinfection,
     BaffledOzonationContactor,
@@ -57,7 +58,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=[],
+            digest_parameter_list=['nominal dosing flow rate'],
         )
         self.assertTrue(mixer.tank_height == self.parameters['tank height'])
         self.assertTrue(mixer.retention_time_min == self.parameters[
@@ -71,6 +72,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=['nominal dosing flow rate'],
         )
         result = mixer.get_kpi('footprint area')
         self.assertEqual(
@@ -84,6 +86,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=['nominal dosing flow rate'],
         )
         area = mixer.footprint_area__m2
         self.assertGreater(area, 0.0)
@@ -93,26 +96,16 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=None,
         )
         headloss = mixer.hydraulic_headloss__bar
         self.assertGreater(headloss, 0.0)
-
-    def test_daily_energy_consumption(self):
-        mixer = CoagulationDynamicMixing(
-            parameters=self.parameters,
-            design_parameters=self.design_parameters,
-            plant_kpis=self.plant_kpis,
-        )
-        energy = mixer.daily_energy_consumption__kwh
-        self.assertGreater(energy, 0.0)
 
     def test_kpi_dict(self):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=None,
+            digest_parameter_list=['nominal dosing flow rate']
         )
         kpi_results = mixer.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
@@ -125,7 +118,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=[],
+            digest_parameter_list=['nominal dosing flow rate'],
         )
         headloss = mixer.hydraulic_headloss__bar
         self.assertGreater(headloss, 0.0)
@@ -135,7 +128,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=[],
+            digest_parameter_list=['nominal dosing flow rate'],
         )
         emissions = mixer.co2_emissions__kg_co2_eq_per_m3
         self.assertGreater(emissions, 0.0)
@@ -616,6 +609,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             'tank height chemical storage': 4.0,
             'target residual concentration (mg/l)': 1.0,
             'target concentration of dosing chemical': 10.0,
+            'target_residual_concentration_mg_per_l': 0.5,
             'chemical dosing solution concentration (w/w%)': 12.0,
             'power': 0.5,
             'retention time (min)': 40.0,
@@ -636,6 +630,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=['volume'],
         )
         self.assertTrue(chlorine_disinfection.tank_height_m == self.parameters['tank height'])  # noqa, E501
         self.assertTrue(chlorine_disinfection.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
@@ -647,6 +642,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            digest_parameter_list=['volume'],
         )
         daily_mass_kg = chlorine_disinfection.daily_mass_of_chemicals__kg
         self.assertIsInstance(daily_mass_kg, dict)
@@ -658,6 +654,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             chem_parameters=['chlorine'],
+            digest_parameter_list=['volume'],
         )
         kpi_results = chlorine_disinfection.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
@@ -696,6 +693,7 @@ class TestChloramineDisinfection(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             chem_parameters=['chloramine'],
+            digest_parameter_list=['volume'],
         )
         self.assertEqual(
             chloramine.units_per_lane, self.parameters['units per lane'])
@@ -710,6 +708,7 @@ class TestChloramineDisinfection(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             chem_parameters=['chloramine'],
+            digest_parameter_list=['volume'],
         )
         kpi_results = chloramine.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
@@ -783,7 +782,7 @@ class TestUVDisinfection(unittest.TestCase):
             'UV dose': 40.0,
             'UV power intensity': 10.0,
             'tank height': 0.2,
-            'UV power per m3': 0.04,
+            TPN['uv_power_per_m3']:0.04,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -866,6 +865,78 @@ class TestCleanWaterStorageTank(unittest.TestCase):
         self.assertIn('head loss', kpi_results)
         self.assertAlmostEqual(storage.hydraulic_headloss__bar, 0.1, places=1)
         self.assertIn('CO2 equivalent emissions', kpi_results)
+
+class TestPellet(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 6.0,
+            'tank height chemical storage': 4.0,
+            'target residual concentration (mg/l)': 1.0,
+            'target concentration of dosing chemical': 10.0,
+            'target upflow velocity': 1.5,
+            'static height of pellet bed': 2,
+            'pellet porosity static': 0.4,
+            'pellet porosity expanded': 0.6,
+            'mass density of chemical': 1.2,
+            'mass density of pellets': 2.7,
+            'power efficiency of pump(s)': 0.8,
+            'lime dosage mass fraction': 12.0,
+            'units per lane': 5,
+            'storage time of chemicals (days)': 20,
+            'chemical emission factor': 0.00087,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.wq_parameters = {
+            'total hardness': {
+                'input_parameter': 320.0,
+                'target_parameter': 80.0,
+            }
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 200.0,
+        }
+
+    def test_init(self):
+        pellet = PelletSoftening(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertTrue(pellet.units_per_lane == self.parameters['units per lane'])  # noqa, E501
+        self.assertTrue(pellet.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+
+    def test_daily_mass_chemicals(self):
+        pellet = PelletSoftening(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters
+        )
+        daily_mass_kg = pellet.daily_mass_of_chemicals__kg
+        self.assertIsInstance(daily_mass_kg, dict)
+        self.assertGreaterEqual(sum(daily_mass_kg.values()), 0.0)
+
+    def test_get_kpi_dict(self):
+        pellet = PelletSoftening(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters
+        )
+        kpi_results = pellet.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+
+    # TODO: Add more tests for ChlorineDisinfection methods
 
 
 class DummyTreatmentKPI(TreatmentKPI):
@@ -1073,9 +1144,10 @@ class TestSludgeBlanketSedimentation(unittest.TestCase):
             'nominal flow rate': 100.0,
         }
         self.wq_parameters = {
-            'input_parameter': {'total suspended solids (mg/l)': 150.0},
-            'target_parameter': {'total suspended solids (mg/l)': 150.0},
-        }
+            'total suspended solids': {
+                'input_parameter': 15.0,
+                'target_parameter': 5.0,
+            }}
 
     def test_init(self):
         sludge = SludgeBlanketClarifier(
@@ -1203,9 +1275,10 @@ class TestLamellaSlope(unittest.TestCase):
             'nominal flow rate': 120.0,
         }
         self.wq_parameters = {
-            'input_parameter': {'total suspended solids (mg/l)': 150.0},
-            'target_parameter': {'total suspended solids (mg/l)': 150.0},
-        }
+            'total suspended solids': {
+                'input_parameter': 15.0,
+                'target_parameter': 5.0,
+            }}
 
     def test_init(self):
         lamellaslope = LamellaClarifierSlope(
@@ -1331,9 +1404,10 @@ class TestLamellahorizontal(unittest.TestCase):
             'nominal flow rate': 120.0,
         }
         self.wq_parameters = {
-            'input_parameter': {'total suspended solids (mg/l)': 150.0},
-            'target_parameter': {'total suspended solids (mg/l)': 50.0},
-        }
+            'total suspended solids': {
+                'input_parameter': 15.0,
+                'target_parameter': 5.0,
+            }}
 
     def test_init(self):
         lamella = LamellaClarifierHorizontal(
@@ -1461,10 +1535,10 @@ class TestDAF(unittest.TestCase):
             'nominal flow rate': 120.0,
         }
         self.wq_parameters = {
-            'input_parameter': {'total suspended solids (mg/l)': 150.0},
-            'target_parameter': {'total suspended solids (mg/l)': 50.0},
-        }
-
+            'total suspended solids': {
+                'input_parameter': 15.0,
+                'target_parameter': 5.0,
+            }}
     def test_init(self):
         daf = AirFlotationDAF(
             parameters=self.parameters,

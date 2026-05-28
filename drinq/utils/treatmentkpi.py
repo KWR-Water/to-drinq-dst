@@ -1697,10 +1697,6 @@ class ChlorineDisinfection(TreatmentKPI):
 
     @property
     def footprint_area__m2(self) -> float:
-        unit_volume_m3 = calculate_unit_volume_m3(
-            flow_per_lane_m3h=self.flow_per_lane_m3perh,
-            units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
         unit_area_m2 = calculate_unit_area_tank(
             unit_volume_m3=self.unit_volume_m3,
             unit_height_m=self.tank_height_m)
@@ -1746,8 +1742,16 @@ class ChlorineDisinfection(TreatmentKPI):
 
     @property
     def power__kw(self) -> float:
-        return self.power_of_dosing_kw
-
+        dosing_per_lane = calculate_dosing_mass__perday_perunit(
+            concentration_mgL=self.chlorine_concentration_mgL,
+            flow_per_lane_m3hr=self.flow_per_lane_m3perh,
+            units_per_lane=1,
+        )
+        volume_chlorine_m3day = dosing_per_lane * self.lanes
+        chlorine_dosing_flow_m3s = volume_chlorine_m3day / (24 * 3600)
+        power_chlorine_kw = (
+            chlorine_dosing_flow_m3s * 9.81 * 1190* (self.chemicals_tank_height_m +1)) / (0.7 * 1000)
+        return  power_chlorine_kw
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
@@ -1830,6 +1834,10 @@ class ChloramineDisinfection(TreatmentKPI):
         ammonia_mass = self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
         self.volume_chlorine_m3day = chlorine_mass / (1000 * 1.19)
         self.volume_ammonia_m3day = ammonia_mass / (1000 * 0.68)
+        self.unit_volume_m3 = calculate_unit_volume_m3(
+            flow_per_lane_m3h=self.flow_per_lane_m3perh,
+            units_per_lane=self.units_per_lane,
+            retention_time_min=self.retention_time_min)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
                 self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
@@ -1862,7 +1870,7 @@ class ChloramineDisinfection(TreatmentKPI):
             units_per_lane=self.units_per_lane,
             retention_time_min=self.retention_time_min)
         unit_area_m2 = calculate_unit_area_tank(
-            unit_volume_m3=unit_volume_m3,
+            unit_volume_m3=self.unit_volume_m3,
             unit_height_m=self.tank_height_m)
         chemicals_area_m2 = self.footprint_area_for_chemicals__m2
         return np.ceil(unit_area_m2 * self.number_of_units + chemicals_area_m2)
@@ -1909,7 +1917,6 @@ class ChloramineDisinfection(TreatmentKPI):
             680) / (0.7 * 1000)  # storage at -33 Â°C, efficiency 70%?
         return power_chlorine_kw + power_ammonia_kw
 
-    
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
@@ -3419,6 +3426,7 @@ class PelletSoftening(TreatmentKPI):
     seed_req_kg: float
     chemical_emission_factor: float
     emission_factor_electricity: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3448,8 +3456,8 @@ class PelletSoftening(TreatmentKPI):
         self.h_static_m = parameters[TPN['static_height_of_pellet_bed']]
         self.porosity_static = parameters[TPN['pellet_porosity_static']]
         self.porosity_expanded = parameters[TPN['pellet_porosity_expanded']]
-        self.rho_pellet = parameters[TPN['mass_density_of_pellets']]  # kg/m3
-        self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]  # g/cm3
+        self.rho_pellet = parameters[TPN['mass_density_of_pellets']] * 1000  # kg/m3
+        self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]* 1000  # g/cm3
         # TODO: Greg, shall we leave this or allow user input for water temp.?
         self.rho_water = DENS_WATER_KG_PER_M3  # assumption, kg/m3
         self.power_efficiency_pumps = parameters[
@@ -3457,6 +3465,7 @@ class PelletSoftening(TreatmentKPI):
         self.lime_purity_factor = parameters[
             TPN['lime_dosage_mass_fraction']]  # kg lime/kg CaCO3
         self.storage_days_chemicals = parameters[TPN['storage_time_of_chemicals_days']]
+        
         (
             self.unit_diam_m,
             self.unit_depth_m,
@@ -3477,6 +3486,10 @@ class PelletSoftening(TreatmentKPI):
                 nominal_flow_m3perh=self.nominal_flow_m3perh,
                 delta_c=self.delta_c,
                 lime_mass_fraction=self.lime_purity_factor)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
 
     def __repr__(self):
         return f"Pellet Softening unit diameter (m)={self.unit_diam_m}, " \
@@ -4158,7 +4171,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
 
 
 class UVdisinfection(TreatmentKPI):
-    """KPI calculations for a UV/H2O2 Advanced Oxidation Process (AOP) unit."""
+    """KPI calculations for a UV for Disinfection."""
     tank_height_m: float
     uv_dose_mjpercm2: float
     lanes: int
@@ -4170,7 +4183,6 @@ class UVdisinfection(TreatmentKPI):
     unit_volume_m3: float
     power_per_m3_kW: float
     emission_factor_electricity: float
-    dosing_flow_rate_liter: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4191,16 +4203,12 @@ class UVdisinfection(TreatmentKPI):
         self.average_intensity_mWpercm2 = parameters[
             TPN['uv_power_intensity']]  # 10 mW/cm2
         self.tank_height_m = parameters[TPN['tank_height']]  # 0.15 m  
-        self.power_per_m3_kW = parameters[TPN['power_per_m3']]  # 0.040 kW/m3            
+        self.power_per_m3_kW = parameters[TPN['uv_power_per_m3']]  # 0.040 kW/m3            
         self.exposure_time_sec = (
             self.uv_dose_mjpercm2 /
             self.average_intensity_mWpercm2)
         self.storage_time_days = 30  # FIX: should not be hardcoded!
         self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec
-        for tech_property in self.digest_parameter_list:
-            if tech_property == 'nominal dosing flow rate':
-                self.dosing_flow_rate_liter = 1000 * self.volume_chemical_day / 24
-            self.parameters[tech_property] = self.dosing_flow_rate_liter  # overwrite filter area
 
     def __repr__(self):
         return f"UV tank height (m)={self.tank_height_m}, " \
