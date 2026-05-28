@@ -2991,12 +2991,6 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     def power__kw(self) -> float:
         power_kw = 0
         return power_kw  
-    
-    @property
-    def daily_energy_consumption__kwh(self) -> float:
-        """Apply a reduced duty-cycle factor to daily energy use."""
-        return self.power__kw * 24.0 
-
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
@@ -3146,12 +3140,6 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return (
             self.flow_per_lane_m3perh * self.power_mixing_intensity_wperm3 *
             self.lanes + 0.1 + power_pump_kw)  # Estimation of H202 dosage pumps of 0.1kW
-
-    @property
-    def daily_energy_consumption__kwh(self) -> float:
-        """Apply a reduced duty-cycle factor to daily energy use."""
-        return self.power__kw * 24
-
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
