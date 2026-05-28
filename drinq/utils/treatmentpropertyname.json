@@ -166,5 +166,7 @@
   "upper_bound_power_per_m3": "upper bound uUV power per m3",
   "sludge_tank_height": "sludge tank height",
   "filtration_rate": "filtration rate",
-  "gac_porosity": "GAC porosity"
+  "gac_porosity": "GAC porosity",
+  "air_pressure_difference": "air pressure difference"
+
 }
