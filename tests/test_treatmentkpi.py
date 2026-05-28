@@ -782,7 +782,7 @@ class TestUVDisinfection(unittest.TestCase):
             'UV dose': 40.0,
             'UV power intensity': 10.0,
             'tank height': 0.2,
-            TPN['uv_power_per_m3']:0.04,
+            'UV power per m3':0.04,
         }
         self.design_parameters = {
             'number of lanes': 2,

@@ -4203,7 +4203,7 @@ class UVdisinfection(TreatmentKPI):
         self.average_intensity_mWpercm2 = parameters[
             TPN['uv_power_intensity']]  # 10 mW/cm2
         self.tank_height_m = parameters[TPN['tank_height']]  # 0.15 m  
-        self.power_per_m3_kW = parameters[TPN['uv_power_per_m3']]  # 0.040 kW/m3            
+        self.power_per_m3_kW = parameters[TPN['power_per_m3']]  # 0.040 kW/m3            
         self.exposure_time_sec = (
             self.uv_dose_mjpercm2 /
             self.average_intensity_mWpercm2)
