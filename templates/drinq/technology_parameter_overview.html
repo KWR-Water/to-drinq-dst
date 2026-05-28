@@ -4,60 +4,60 @@
 {% load kpi_format %}
 
 {% block content %}
-<body class="bg-light">
 <div class="container mt-4">
-    <h1 class="mb-3">Technology Parameters and Water Quality Values</h1>
-    <p class="lead">
-        Treatment design: <strong>{{ treatment_plant.name }}</strong>
-        (option {{ treatment_plant.option }}).
-    </p>
+    <div class="card shadow-sm p-3 bg-white">
+        <h1 class="mb-3">Technology Parameters and Water Quality Values</h1>
+        <p class="lead">
+            Treatment design: <strong>{{ treatment_plant.name }}</strong>
+            (option {{ treatment_plant.option }}).
+        </p>
 
-    <div class="mb-3 d-flex gap-2 flex-wrap">
-        <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-outline-secondary btn-sm">
-            Back to treatment design details
-        </a>
-        <a href="{% url 'technology_parameter_overview_select' %}" class="btn btn-outline-primary btn-sm">
-            Select another treatment design
-        </a>
-    </div>
+        <div class="mb-3 d-flex gap-2 flex-wrap">
+            <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-outline-secondary btn-sm">
+                Back to treatment design details
+            </a>
+            <a href="{% url 'technology_parameter_overview_select' %}" class="btn btn-outline-primary btn-sm">
+                Select another treatment design
+            </a>
+        </div>
 
-    <div class="card shadow-sm p-3 bg-white mb-4">
-        <h2 class="h6 mb-2">Filter technology properties by type</h2>
-        <div class="d-flex gap-3 flex-wrap">
-            <div class="form-check">
-                <input
-                    class="form-check-input js-property-filter"
-                    type="checkbox"
-                    id="filter-designparameter"
-                    data-filter="design"
-                    checked
-                >
-                <label class="form-check-label" for="filter-designparameter">
-                    Show user-specified
-                </label>
-            </div>
-            <div class="form-check">
-                <input
-                    class="form-check-input js-property-filter"
-                    type="checkbox"
-                    id="filter-digested"
-                    data-filter="digested"
-                    checked
-                >
-                <label class="form-check-label" for="filter-digested">
-                    Show calculated by application
-                </label>
-            </div>
-            <div class="form-check">
-                <input
-                    class="form-check-input js-property-filter"
-                    type="checkbox"
-                    id="filter-fixed"
-                    data-filter="fixed"
-                    checked
-                >
-                <label class="form-check-label" for="filter-fixed">
-                    Show fixed (neither flag)
+        <div class="card shadow-sm p-3 bg-white mb-4">
+            <h2 class="h6 mb-2">Filter technology properties by type</h2>
+            <div class="d-flex gap-3 flex-wrap">
+                <div class="form-check">
+                    <input
+                        class="form-check-input js-property-filter"
+                        type="checkbox"
+                        id="filter-designparameter"
+                        data-filter="design"
+                        checked
+                    >
+                    <label class="form-check-label" for="filter-designparameter">
+                        Show user-specified
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input
+                        class="form-check-input js-property-filter"
+                        type="checkbox"
+                        id="filter-digested"
+                        data-filter="digested"
+                        checked
+                    >
+                    <label class="form-check-label" for="filter-digested">
+                        Show calculated by application
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input
+                        class="form-check-input js-property-filter"
+                        type="checkbox"
+                        id="filter-fixed"
+                        data-filter="fixed"
+                        checked
+                    >
+                    <label class="form-check-label" for="filter-fixed">
+                        Show fixed (neither flag)
                 </label>
             </div>
         </div>

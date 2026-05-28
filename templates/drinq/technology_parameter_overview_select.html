@@ -2,15 +2,14 @@
 {% load i18n %}
 
 {% block content %}
-<body class="bg-light">
 <div class="container mt-4">
-    <h1 class="mb-3">Technology Parameters Overview</h1>
-    <p class="lead">
-        Select a treatment design to view technologies, technology properties,
-        and water quality values (input and target) per technology.
-    </p>
-
     <div class="card shadow-sm p-3 bg-white">
+        <h1 class="mb-3">Technology Parameters Overview</h1>
+        <p class="lead">
+            Select a treatment design to view technologies, technology properties,
+            and water quality values (input and target) per technology.
+        </p>
+
         {% if treatment_plants %}
             <div class="table-responsive">
                 <table class="table table-striped table-bordered align-middle">
@@ -55,6 +54,4 @@
         {% endif %}
     </div>
 </div>
-<br>
-</body>
 {% endblock %}

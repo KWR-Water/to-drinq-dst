@@ -1,16 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<body class="bg-light">
-<div class="container mt-5">
-  <h1>Welcome to the design support tool</h1>
-  <p class="lead">
-    This tool supports you in designing small-scale drinking water treatment 
-    plants. It guides you through a series of steps, from naming your design, 
-    selecting a water source, answering additional questions, to finally 
-    showing you a recommended configuration for your treatment plant.
-  </p>
-  <div class="form-container bg-white p-4 shadow rounded">
+<div class="container mt-4">
+  <div class="card shadow-sm p-4 bg-white">
+    <h1 class="mb-3">Welcome to the design support tool</h1>
+    <p class="lead">
+      This tool supports you in designing small-scale drinking water treatment 
+      plants. It guides you through a series of steps, from naming your design, 
+      selecting a water source, answering additional questions, to finally 
+      showing you a recommended configuration for your treatment plant.
+    </p>
     <div class="card mt-4 shadow-sm">
       <div class="card-body">
         <h3>Getting started</h3>
@@ -52,5 +51,4 @@
     </div>
   </div>
 </div>
-</body>
 {% endblock %}

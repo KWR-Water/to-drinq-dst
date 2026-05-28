@@ -3,55 +3,54 @@
 
 <!-- templates/session_select.html -->
 
-<head>
-    <title>Select a previously stored configuration of treatment design options</title>
-</head>
-
 {% block content %}
-{% if form.fields.session.queryset.exists %}
-  <h2>Select a Saved Design Configuration</h2>
-  <p class="lead">
-     You have previously saved one or more questionnaire sessions for (preliminary) treatment designs. 
-     Each session corresponds to a saved configuration of treatment design options, which you can load and review.
-  </p>
-  <p>
-    Select a previously saved configuration of treatment design options. Click "Load Configuration" to proceed with the selected session.
-    Need to remove options or delete a full configuration?
-    <a href="{% url 'configuration_manage' %}">Manage stored configurations</a>.
-  </p>
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-group">
-      <label for="session-select"><strong>Name</strong></label>
-      <select id="session-select" name="session" class="form-control">
-        {% for session in form.fields.session.queryset %}
-            <option
-                value="{{ session.id }}" 
-                data-description="{{ session.description|escape }}" 
-                data-created="{{ session.date_created|date:'Y-m-d H:i' }}">
-                {{ session.name }}
-            </option>
-        {% endfor %}
-      </select>
-    </div>
+<div class="container mt-4">
+  <div class="card shadow-sm p-3 bg-white">
+    {% if form.fields.session.queryset.exists %}
+      <h2 class="mb-3">Select a Saved Design Configuration</h2>
+      <p class="lead">
+         You have previously saved one or more questionnaire sessions for (preliminary) treatment designs. 
+         Each session corresponds to a saved configuration of treatment design options, which you can load and review.
+      </p>
+      <p>
+        Select a previously saved configuration of treatment design options. Click "Load Configuration" to proceed with the selected session.
+        Need to remove options or delete a full configuration?
+        <a href="{% url 'configuration_manage' %}">Manage stored configurations</a>.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="session-select"><strong>Name</strong></label>
+          <select id="session-select" name="session" class="form-control">
+            {% for session in form.fields.session.queryset %}
+                <option
+                    value="{{ session.id }}" 
+                    data-description="{{ session.description|escape }}" 
+                    data-created="{{ session.date_created|date:'Y-m-d H:i' }}">
+                    {{ session.name }}
+                </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <div id="metadata-box" class="mt-3" style="display: none;">
-      <strong>Description</strong>
-      <p id="session-description"></p>
-      <strong>Created on</strong>
-      <p id="session-created"></p>
-    </div>
+        <div id="metadata-box" class="mt-3" style="display: none;">
+          <strong>Description</strong>
+          <p id="session-description"></p>
+          <strong>Created on</strong>
+          <p id="session-created"></p>
+        </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Load Configuration</button>
-  </form>
-{% else %}
-  <div class="alert alert-info mt-5">
-    <h4>No saved configurations found.</h4>
-    <p>You haven't saved any questionnaire sessions for preliminary treatment designs yet.</p>
-    <a href="{% url 'form_name' %}" class="btn btn-success mt-3">Start New Design</a>
+        <button type="submit" class="btn btn-primary mt-3">Load Configuration</button>
+      </form>
+    {% else %}
+      <div class="alert alert-info mt-5">
+        <h4>No saved configurations found.</h4>
+        <p>You haven't saved any questionnaire sessions for preliminary treatment designs yet.</p>
+        <a href="{% url 'form_name' %}" class="btn btn-success mt-3">Start New Design</a>
+      </div>
+    {% endif %}
   </div>
-{% endif %}
-
+</div>
 
 <script>
     const select = document.getElementById('session-select');
