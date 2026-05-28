@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load unit_format %}
+{% load kpi_format %}
+
+{% block content %}
+<body class="bg-light">
+<div class="container mt-4">
+    <h1 class="mb-3">Technology Parameters and Water Quality Values</h1>
+    <p class="lead">
+        Treatment design: <strong>{{ treatment_plant.name }}</strong>
+        (option {{ treatment_plant.option }}).
+    </p>
+
+    <div class="mb-3 d-flex gap-2 flex-wrap">
+        <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-outline-secondary btn-sm">
+            Back to treatment design details
+        </a>
+        <a href="{% url 'technology_parameter_overview_select' %}" class="btn btn-outline-primary btn-sm">
+            Select another treatment design
+        </a>
+    </div>
+
+    <div class="card shadow-sm p-3 bg-white mb-4">
+        <h2 class="h6 mb-2">Filter technology properties by type</h2>
+        <div class="d-flex gap-3 flex-wrap">
+            <div class="form-check">
+                <input
+                    class="form-check-input js-property-filter"
+                    type="checkbox"
+                    id="filter-designparameter"
+                    data-filter="design"
+                    checked
+                >
+                <label class="form-check-label" for="filter-designparameter">
+                    Show user-specified
+                </label>
+            </div>
+            <div class="form-check">
+                <input
+                    class="form-check-input js-property-filter"
+                    type="checkbox"
+                    id="filter-digested"
+                    data-filter="digested"
+                    checked
+                >
+                <label class="form-check-label" for="filter-digested">
+                    Show calculated by application
+                </label>
+            </div>
+            <div class="form-check">
+                <input
+                    class="form-check-input js-property-filter"
+                    type="checkbox"
+                    id="filter-fixed"
+                    data-filter="fixed"
+                    checked
+                >
+                <label class="form-check-label" for="filter-fixed">
+                    Show fixed (neither flag)
+                </label>
+            </div>
+        </div>
+        <p class="form-text mb-0 mt-2">
+            Child properties (those with a parent property defined) are omitted from the table.
+        </p>
+    </div>
+
+    {% if technology_sections %}
+        {% for section in technology_sections %}
+            <div class="card shadow-sm p-3 bg-white mb-4">
+                <h2 class="h4 mb-3">
+                    Step {{ section.step }}: {{ section.technology.name }}
+                </h2>
+
+                <h3 class="h5">Technology properties</h3>
+                {% if section.property_rows %}
+                    <div class="table-responsive mb-3">
+                        <table class="table table-striped table-bordered table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="js-name-column">Property</th>
+                                    <th>Value</th>
+                                    <th>Unit</th>
+                                    <th>Type</th>
+                                    <th>Value source</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in section.property_rows %}
+                                    <tr
+                                        class="js-property-row"
+                                        data-is-design="{{ row.is_designparameter|yesno:'true,false' }}"
+                                        data-is-digested="{{ row.is_digested|yesno:'true,false' }}"
+                                        data-is-fixed="{{ row.is_fixed_parameter|yesno:'true,false' }}"
+                                    >
+                                        <td class="js-name-column">{{ row.name }}</td>
+                                        <td>
+                                            {% if row.value is not None %}
+                                                {{ row.value|format_parameter_value }}
+                                            {% else %}
+                                                <em>Not available</em>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {% if row.unit %}
+                                                {{ row.unit|superscript_exponents|safe }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ row.parameter_type_short }}</td>
+                                        <td class="text-muted">{{ row.value_source }}</td>
+                                        <td>
+                                            {% if row.description %}
+                                                {{ row.description }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small d-none js-no-property-rows mb-3">
+                        No technology properties match the selected filters.
+                    </p>
+                {% else %}
+                    <p><em>No technology properties available for this technology.</em></p>
+                {% endif %}
+
+                <h3 class="h5 mt-4">Water quality values</h3>
+                {% if section.water_quality_rows %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="js-name-column">Parameter</th>
+                                    <th>Input value</th>
+                                    <th>Input source</th>
+                                    <th>Target value</th>
+                                    <th>Target source</th>
+                                    <th>Unit</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in section.water_quality_rows %}
+                                    <tr>
+                                        <td class="js-name-column">{{ row.name }}</td>
+                                        <td>
+                                            {% if row.input_value is not None %}
+                                                {{ row.input_value|format_parameter_value }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.input_source %}
+                                                {{ row.input_source }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.target_value is not None %}
+                                                {{ row.target_value|format_parameter_value }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.target_source %}
+                                                {{ row.target_source }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {% if row.unit %}
+                                                {{ row.unit|superscript_exponents|safe }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.description %}
+                                                {{ row.description }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p><em>No water quality values available for this technology.</em></p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card shadow-sm p-3 bg-white">
+            <p class="mb-0"><em>No technologies are configured for this treatment design.</em></p>
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm p-3 bg-white">
+        <h3 class="h6">Legend</h3>
+        <ul class="mb-0 small text-muted">
+            <li><strong>User-specified design parameter</strong>: parameter which are or can be set by the user.</li>
+            <li><strong>Calculated by application</strong>: parameter which are calculated by the application during the treatment plant KPI calculation.</li>
+            <li><strong>Stored value</strong>: value stored, which is either user-specified or calculated by the application.</li>
+            <li><strong>Default value</strong>: fallback to default value.</li>
+        </ul>
+    </div>
+</div>
+<br>
+</body>
+
+<script>
+    (function () {
+        function syncNameColumnWidth() {
+            const nameCells = Array.from(
+                document.querySelectorAll('.js-name-column')
+            );
+            if (!nameCells.length) {
+                return;
+            }
+
+            nameCells.forEach(function (cell) {
+                cell.style.width = '';
+                cell.style.minWidth = '';
+            });
+
+            let maxWidth = 0;
+            nameCells.forEach(function (cell) {
+                if (cell.offsetParent === null) {
+                    return;
+                }
+                maxWidth = Math.max(maxWidth, cell.getBoundingClientRect().width);
+            });
+
+            if (maxWidth <= 0) {
+                return;
+            }
+
+            const widthPx = Math.ceil(maxWidth) + 'px';
+            nameCells.forEach(function (cell) {
+                cell.style.width = widthPx;
+                cell.style.minWidth = widthPx;
+            });
+        }
+
+        function applyPropertyFilters() {
+            const designChecked = document.querySelector('#filter-designparameter')?.checked;
+            const digestedChecked = document.querySelector('#filter-digested')?.checked;
+            const fixedChecked = document.querySelector('#filter-fixed')?.checked;
+            const rows = document.querySelectorAll('.js-property-row');
+
+            rows.forEach(function (row) {
+                const isDesign = row.dataset.isDesign === 'true';
+                const isDigested = row.dataset.isDigested === 'true';
+                const isFixed = row.dataset.isFixed === 'true';
+
+                const showByDesign = isDesign && designChecked;
+                const showByDigested = isDigested && digestedChecked;
+                const showByFixed = isFixed && fixedChecked;
+                const shouldShow = showByDesign || showByDigested || showByFixed;
+
+                row.classList.toggle('d-none', !shouldShow);
+            });
+
+            const propertyTables = document.querySelectorAll('table');
+            propertyTables.forEach(function (table) {
+                const sectionCard = table.closest('.card');
+                if (!sectionCard) {
+                    return;
+                }
+                const scopedRows = table.querySelectorAll('.js-property-row');
+                if (!scopedRows.length) {
+                    return;
+                }
+                const hasVisibleRow = Array.from(scopedRows).some(function (row) {
+                    return !row.classList.contains('d-none');
+                });
+                const emptyMessage = sectionCard.querySelector('.js-no-property-rows');
+                if (emptyMessage) {
+                    emptyMessage.classList.toggle('d-none', hasVisibleRow);
+                }
+            });
+
+            syncNameColumnWidth();
+        }
+
+        document.querySelectorAll('.js-property-filter').forEach(function (el) {
+            el.addEventListener('change', applyPropertyFilters);
+        });
+        applyPropertyFilters();
+        window.addEventListener('resize', syncNameColumnWidth);
+    })();
+</script>
+
+{% endblock %}

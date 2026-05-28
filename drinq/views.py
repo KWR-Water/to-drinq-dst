@@ -1440,6 +1440,190 @@ class TreatmentPlantComparisonView(LoginRequiredMixin, generic.FormView):
         return context
 
 
+class TechnologyParameterOverviewSelectionView(generic.TemplateView):
+    """Show treatment designs that can be opened in the technology overview."""
+
+    template_name = 'drinq/technology_parameter_overview_select.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        queryset = (
+            TreatmentPlant.objects
+            .select_related('configuration')
+            .order_by('configuration__name', 'option', 'name')
+        )
+        if self.request.user.is_authenticated:
+            queryset = queryset.filter(configuration__user=self.request.user)
+        context['treatment_plants'] = queryset
+        return context
+
+
+class TechnologyParameterOverviewView(generic.DetailView):
+    """Read-only overview of technology properties and water quality values."""
+
+    model = TreatmentPlant
+    template_name = 'drinq/technology_parameter_overview.html'
+    pk_url_kwarg = 'plant_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        treatment_plant = self.object
+
+        layouts = list(
+            TreatmentPlantLayout.objects
+            .filter(treatmentplant=treatment_plant)
+            .select_related('technology')
+            .order_by('step')
+        )
+        technology_ids = [
+            layout.technology_id
+            for layout in layouts
+            if layout.technology_id is not None
+        ]
+
+        value_rows = TreatmentPlantTechnologyPropertyValue.objects.filter(
+            treatmentplant=treatment_plant,
+            technology_id__in=technology_ids,
+        )
+        value_map = {
+            (row.technology_id, row.technologyproperty_id): row.value
+            for row in value_rows
+        }
+
+        junctions = list(
+            TechnologyPropertyJunction.objects
+            .filter(
+                technology_id__in=technology_ids,
+                property__parent_property__isnull=True,
+            )
+            .select_related('technology', 'property')
+            .order_by('technology_id', 'property__name')
+        )
+        properties_by_technology = defaultdict(list)
+        for junction in junctions:
+            stored_value = value_map.get(
+                (junction.technology_id, junction.property_id)
+            )
+            resolved_value = (
+                stored_value
+                if stored_value is not None
+                else junction.default_value
+            )
+            value_source = (
+                'Stored value'
+                if stored_value is not None
+                else 'Default value'
+            )
+
+            if junction.is_designparameter and junction.is_digested:
+                parameter_type = 'User-specified and calculated'
+                parameter_type_short = 'User-specified'
+            elif junction.is_designparameter:
+                parameter_type = 'User-specified design parameter'
+                parameter_type_short = 'User-specified'
+            elif junction.is_digested:
+                parameter_type = 'Calculated by application'
+                parameter_type_short = 'Calculated'
+            else:
+                parameter_type = 'Fixed technology parameter'
+                parameter_type_short = 'Fixed'
+            is_fixed_parameter = (
+                not junction.is_designparameter
+                and not junction.is_digested
+            )
+
+            properties_by_technology[junction.technology_id].append({
+                'name': junction.property.name,
+                'description': junction.property.description,
+                'unit': junction.property.unit,
+                'is_designparameter': junction.is_designparameter,
+                'is_digested': junction.is_digested,
+                'value': resolved_value,
+                'value_source': value_source,
+                'parameter_type': parameter_type,
+                'parameter_type_short': parameter_type_short,
+                'is_fixed_parameter': is_fixed_parameter,
+            })
+
+        wq_junctions = list(
+            WaterqualityParameterTechnologyJunction.objects
+            .filter(technology_id__in=technology_ids)
+            .select_related('waterqualityparameter')
+            .order_by('technology_id', 'waterqualityparameter__name')
+        )
+        wq_value_rows = (
+            TreatmentPlantWaterQualityParameterValue.objects.filter(
+                treatmentplant=treatment_plant,
+                wq_tech_parameter_id__in=[
+                    junction.id
+                    for junction in wq_junctions
+                ],
+            )
+        )
+        wq_value_map = {
+            row.wq_tech_parameter_id: row.value
+            for row in wq_value_rows
+        }
+
+        water_quality_by_technology = defaultdict(dict)
+        for junction in wq_junctions:
+            parameter = junction.waterqualityparameter
+            per_tech = water_quality_by_technology[junction.technology_id]
+            if parameter.id not in per_tech:
+                per_tech[parameter.id] = {
+                    'name': parameter.name,
+                    'description': parameter.description,
+                    'unit': parameter.unit,
+                    'input_value': None,
+                    'input_source': None,
+                    'target_value': None,
+                    'target_source': None,
+                }
+
+            stored_value = wq_value_map.get(junction.id)
+            resolved_value = (
+                stored_value
+                if stored_value is not None
+                else junction.default_value
+            )
+            value_source = (
+                'Stored value'
+                if stored_value is not None
+                else 'Default value'
+            )
+
+            if junction.is_inputparameter:
+                per_tech[parameter.id]['input_value'] = resolved_value
+                per_tech[parameter.id]['input_source'] = value_source
+            if junction.is_targetparameter:
+                per_tech[parameter.id]['target_value'] = resolved_value
+                per_tech[parameter.id]['target_source'] = value_source
+
+        technology_sections = []
+        for layout in layouts:
+            if layout.technology is None:
+                continue
+            technology_sections.append({
+                'step': layout.step,
+                'technology': layout.technology,
+                'property_rows': properties_by_technology.get(
+                    layout.technology_id,
+                    [],
+                ),
+                'water_quality_rows': sorted(
+                    water_quality_by_technology.get(
+                        layout.technology_id,
+                        {},
+                    ).values(),
+                    key=lambda row: row['name'].lower(),
+                ),
+            })
+
+        context['technology_sections'] = technology_sections
+        context['treatment_plant'] = treatment_plant
+        return context
+
+
 class AdaptabilityDetailView(generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/adaptability_details.html'
@@ -2209,26 +2393,6 @@ class TechnologyPropertiesView(generic.FormView):
         context['waterquality_params_by_tech'] = waterquality_params_by_tech
         # --- End new context variable ---
         return context
-
-
-def db_stats(request: HttpResponse):
-    """Puts database statistics in a dictionary. The corresponding HTML
-    template is `db_stats.html`.
-
-    Args:
-        request (HttpResponse): http response object.
-
-    Returns:
-        Dict[str, Any]: dictionary with database statistics (counts, etc.)
-    """
-    num_compounds = Compound.objects.all().count()
-    num_technologies = Technology.objects.all().count()
-
-    context = {
-        'num_compounds': num_compounds,
-        'num_technologies': num_technologies,
-    }
-    return render(request, 'drinq/db_stats.html', context=context)
 
 
 def compound_search(request: HttpResponse):

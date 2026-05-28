@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% load kpi_format %}
 
 {% block content %}
 <body class="bg-light">
@@ -36,6 +37,42 @@
 
     <div class="card shadow-sm p-3 bg-white">
         <h2 class="h4">Adaptability scores per technology and criterion</h2>
+        <div class="mb-3">
+            <h3 class="h6 mb-2">Legend: Adaptability score meanings</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0" id="adapt-legend-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:6em">Symbol</th>
+                            <th>Meaning</th>
+                            <th style="width:6em">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="text-success fw-bold">+</span></td>
+                            <td>Robust</td>
+                            <td>1.0</td>
+                        </tr>
+                        <tr>
+                            <td><span class="text-primary fw-bold">0/+</span></td>
+                            <td>Mixed</td>
+                            <td>0.75</td>
+                        </tr>
+                        <tr>
+                            <td><span class="text-secondary fw-bold">0</span></td>
+                            <td>Not relevant / indifferent</td>
+                            <td>0.5</td>
+                        </tr>
+                        <tr>
+                            <td><span class="text-danger fw-bold">-</span></td>
+                            <td>Performance decreases</td>
+                            <td>0.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
@@ -55,7 +92,7 @@
                         {% for score in row.criterion_scores %}
                             <td>
                                 {% if score is not None %}
-                                    {{ score|floatformat:2 }}
+                                    {{ score|adaptability_symbol_html }}
                                 {% else %}
                                     <em>N/A</em>
                                 {% endif %}
@@ -78,4 +115,19 @@
     </div>
 </div>
 </body>
+</body>
+<script>
+    // Make legend table match main table width
+    (function() {
+        function syncLegendWidth() {
+            var mainTable = document.querySelector('.table.table-striped');
+            var legendTable = document.getElementById('adapt-legend-table');
+            if (!mainTable || !legendTable) return;
+            legendTable.style.width = mainTable.offsetWidth + 'px';
+        }
+        window.addEventListener('resize', syncLegendWidth);
+        window.addEventListener('DOMContentLoaded', syncLegendWidth);
+        setTimeout(syncLegendWidth, 100); // for late layout
+    })();
+</script>
 {% endblock %}

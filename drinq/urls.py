@@ -25,7 +25,6 @@ from accounts.api import UserViewSet
 
 urlpatterns = [
     path("", views.index, name='drinq'),
-    path('db_stats/', views.db_stats, name='db_stats'),
     # path('form/', views.dst_form_surfacewater, name='drinq_form'),
     # path('multi_form/', views.MultiStepQuestionnaire.as_view(
     #     [
@@ -98,6 +97,16 @@ urlpatterns = [
         'treatmentplant/<int:plant_id>/technology/',
         views.TechnologyPropertiesView.as_view(),
         name='technology_properties',
+    ),
+    path(
+        'treatmentplant/technology-overview/',
+        views.TechnologyParameterOverviewSelectionView.as_view(),
+        name='technology_parameter_overview_select',
+    ),
+    path(
+        'treatmentplant/<int:plant_id>/technology-overview/',
+        views.TechnologyParameterOverviewView.as_view(),
+        name='technology_parameter_overview',
     ),
     path('api/process_parameters/',
          DigestDesignParametersAPI.as_view(),
