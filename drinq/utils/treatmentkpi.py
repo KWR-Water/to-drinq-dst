@@ -4031,10 +4031,10 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['scraper_power_coefficient']]
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
-        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 150)
-        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 50)
+        self.tss_in_mgl = wq_parameters[
+            'total suspended solids'][INPUT_WQPARAMETER_KEY]  # mgl/l
+        self.tss_out_mgl = wq_parameters[
+            'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
