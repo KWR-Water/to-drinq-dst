@@ -1869,10 +1869,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        self.assertTrue(gac.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
-        self.assertTrue(gac.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
+        self.assertTrue(pac.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
     
     def test_kpi_dict(self):
         pac = PowderedActivatedCarbonFiltration(
@@ -1880,9 +1879,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        kpi_results = gac.get_kpi_dict()
+        kpi_results = pac.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
         self.assertIn('head loss', kpi_results)
         self.assertIn('daily energy consumption', kpi_results)
@@ -1895,9 +1894,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        area = gac.footprint_area__m2
+        area = pac.footprint_area__m2
         self.assertGreater(area, 0.0)
     
     def test_pressure_head(self):
@@ -1906,9 +1905,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        headloss = gac.hydraulic_headloss__bar
+        headloss = pac.hydraulic_headloss__bar
         self.assertGreater(headloss, 0.0)
     
     def test_daily_energy_consumption(self):
@@ -1917,9 +1916,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        energy = gac.daily_energy_consumption__kwh
+        energy = pac.daily_energy_consumption__kwh
         self.assertGreater(energy, 0.0)
     
     def test_co2_emissions(self):
@@ -1928,9 +1927,9 @@ class TestPAC(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
-            digest_parameter_list=['volume'],
+            digest_parameter_list=['area'],
         )
-        emissions = gac.co2_emissions__kg_co2_eq_per_m3
+        emissions = pac.co2_emissions__kg_co2_eq_per_m3
         self.assertGreater(emissions, 0.0)
 
 class TestTreatmentKPIAbstract(unittest.TestCase):

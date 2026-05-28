@@ -3122,7 +3122,18 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
     @property
     def power__kw(self) -> float:
         """Total power for UV lamps in AOP mode."""
+        seconds_per_day = 86400
+        dosing_head_m = self.silo_height_m + 2.0
+        total_mass_kg = self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
+        volume_chemical_day = total_mass_kg / self.pac_bulk_density_g_cm3
+        flow_chemical_m3_s = volume_chemical_day / seconds_per_day
+        power_pump_kw = (
+            self.pac_bulk_density_g_cm3 * GRAVITY_M_PER_S2 *
+            flow_chemical_m3_s * dosing_head_m) / (
+                0.8 * 1000)
         return (
+            self.flow_per_lane_m3perh * self.power_mixing_intensity_wperm3 *
+            self.lanes + 0.1 + power_pump_kw)  # Estimation of H202 dosage pumps of 0.1kW
             self.flow_per_lane_m3perh * self.energy_per_m3_kwh *
             self.lanes + 0.1)  # Estimation of H202 dosage pumps of 0.1kW
 
