@@ -500,7 +500,6 @@ def calculate_hydraulic_headloss_rapid_sand_filters_m(
     headloss_m = headloss_sand + headloss_anthr + tank_height
     return meters_of_water_to_bar(headloss_m)
 
-
 def calculate_backwash_headloss_filter(
     density_filter_media_kg_per_m3: float,
     water_density_kg_per_m3: float,
@@ -2466,28 +2465,37 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             self.lanes, self.nominal_flow_m3perh)
         self.units_per_lane = parameters[TPN['units_per_lane']]
         self.hydraulic_loading_rate_m3m2h = parameters[
-            TPN['hydraulic_loading_rate']]
+            TPN['filtration_rate']]
         self.sand_porosity = parameters[
             TPN['sand_porosity']]
         self.sand_density_kg_per_m3 = parameters[
             TPN['sand_density']]
         self.sand_media_grain_size = parameters[
             TPN['sand_media_grain_size']]
+        self.anthracite_porosity = parameters[
+            TPN['anthracite_porosity']]
+        self.anthracite_density_kg_per_m3 = parameters[
+            TPN['anthracite_density']]
+        self.anthracite_media_grain_size = parameters[
+            TPN['anthracite_media_grain_size']]
         self.backwash_duration_min = parameters[
             TPN['backwash_duration']]
         self.backwash_tank_height_m = parameters[
             TPN['backwash_tank_height']] 
         self.backwash_hydraulic_loading_rate_m3m2h = parameters[
-            TPN['backwash_hydraulic_loading_rate']]
-        self.efficiency_pump = parameters[
-            TPN['power_efficiency_of_pumps']] / 100
+            TPN['backwash_filtration_rate']]
+        self.efficiency_pumps = parameters[
+            TPN['power_efficiency_of_pumps']] / 100  # to fraction
         self.unit_area_m2 = (
             self.flow_per_lane_m3perh /
             self.hydraulic_loading_rate_m3m2h)
+        self.tanks_area_m2 = (
+            self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.sand_bed_height_m = parameters[
-            TPN['sand_bed_height']]
+            TPN['sand_filter_bed_height']]
         self.anthracite_bed_height_m = parameters[
-            TPN['anthracite_bed_height']]
+            TPN['anthracite_filter_bed_height']]
+        self.water_viscosity = WATER_VISCOSITY_N_S_PER_M2  
         self.unit_height_m = (
             self.sand_bed_height_m +
             self.anthracite_bed_height_m + 1)  # additional height: 1m
@@ -2495,18 +2503,17 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
         self.power_lane_kw = (
             DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 *
             self.flow_per_lane_m3perh * self.unit_height_m
-            ) / (self.efficiency_pump * 3600 * 1000)  # pumping power per lane
+            ) / (self.efficiency_pumps * 3600 * 1000)  # pumping power per lane
         self.backwash_pump_flow_m3_per_h = (
-            np.ceil(self.unit_area_m2 * self.backwash_flow_rate_m3_per_m2_per_h)  # noqa: E501
+            np.ceil(self.unit_area_m2 * self.backwash_hydraulic_loading_rate_m3m2h)  # noqa: E501
             )
         self.backwash_pump_head_m = np.ceil(
             calculate_backwash_headloss_m(
                 water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
-                water_viscosity=self.water_viscosity,
                 sand_porosity=self.sand_porosity,
                 anthracite_porosity=self.anthracite_porosity,
                 sand_density_kg_per_m3=self.sand_density_kg_per_m3,
-                antracite_density_kg_per_m3=self.anthracite_density_kg_per_m3,
+                anthracite_density_kg_per_m3=self.anthracite_density_kg_per_m3,
                 sand_bed_height_m=self.sand_bed_height_m,
                 anthracite_bed_height_m=self.anthracite_bed_height_m,
                 tank_height=self.unit_height_m)
@@ -2566,10 +2573,10 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             anthracite_porosity=self.sand_porosity,
             anthracite_media_grain_size=self.anthracite_media_grain_size,
             hydraulic_loading_rate_m3m2h=self.hydraulic_loading_rate_m3m2h,
-            sand_bed_depth_m=self.sand_bed_height_m,
-            anthracite_bed_depth_m=self.anthracite_bed_height_m,
+            sand_bed_height_m=self.sand_bed_height_m,
+            anthracite_bed_height_m=self.anthracite_bed_height_m,
             tank_height=self.unit_height_m)
-
+        
     @property
     def power__kw(self) -> float:
         backwash_power_watts = (
@@ -2577,7 +2584,7 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             self.backwash_pump_head_m * self.backwash_pump_flow_m3_per_h/3600
         )
         backwash_power_kw = backwash_power_watts / (
-            self.efficiency_pump * 1000)
+            self.efficiency_pumps * 1000)
         power_kw = (self.lanes * self.power_lane_kw) + backwash_power_kw
         return power_kw
 
@@ -3809,7 +3816,7 @@ class AirFlotationDAF(TreatmentKPI):
     pressure_difference_kpa: float
     bubble_diameter_m: float
     powereff_compressor: float
-    total_suspended_solids_mgL: float
+    tss_in_mgl: float
     unit_area_m2: float
     emission_factor_electricity: float
 
@@ -3831,13 +3838,24 @@ class AirFlotationDAF(TreatmentKPI):
         self.recirculation_ratio = parameters[TPN['recirculation_ratio']]
         self.air_density = parameters[TPN['mass_density_of_air']]  # kg/m3
         self.retention_time_min = parameters [TPN['retention_time_min']]  # minutes_min = parameters.get(TPN['retention_time'], 120.0)  # minutes       
-        self.pressure_difference_kpa = parameters[TPN['air_pressure_difference']]  # kPa
-        self.total_suspended_solids_mgL = wq_parameters[
-            INPUT_WQPARAMETER_KEY]['total_suspended_solids']  # 200 mg/l default
+        self.pressure_difference_kpa = parameters.get(
+            TPN.get('air_pressure_difference'), 
+            parameters.get('air_pressure_difference', 600.0)
+        )    
+        self.tss_in_mgl = wq_parameters[INPUT_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 150)
+        self.tss_out_mgl = wq_parameters[TARGET_WQPARAMETER_KEY].get(
+            'total suspended solids (mg/l)', 50)
         self.powereff_compressor = parameters[TPN['power_efficiency']]/100
         self.min_depth_m = parameters [TPN['tank_height']]  # m
         self.unit_area_m2 = (self.flow_per_lane / self.units_per_lane
                              ) / self.surface_overflow_rate
+        self.unit_volume_m3 = self.unit_area_m2 * (
+            self.retention_time_min / 60.0)
+        self.unit_depth_m = max(
+            self.min_depth_m, self.unit_volume_m3 / self.unit_area_m2)
+        self.unit_width_m = self.unit_depth_m / 0.8
+        self.unit_length_m = self.unit_area_m2 / self.unit_width_m
 
     def __repr__(self):
         return f"DAF surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \
@@ -3867,14 +3885,6 @@ class AirFlotationDAF(TreatmentKPI):
     @property
     def footprint_area__m2(self) -> float:
         """Total area for DAF tanks + recirculation units."""
-        self.unit_volume_m3 = self.unit_area_m2 * (
-            self.retention_time_min / 60.0)
-        
-        self.unit_depth_m = max(
-            self.min_depth, self.unit_volume_m3 / self.unit_area_m2)
-        self.unit_width_m = self.unit_depth_m / 0.8
-        self.unit_length_m = self.unit_area_m2 / self.unit_width_m
-
         daf_area = self.unit_area_m2 * self.lanes * self.units_per_lane
         area_recirc = (
             self.recirculation_ratio * self.flow_per_lane * self.lanes
@@ -3884,7 +3894,7 @@ class AirFlotationDAF(TreatmentKPI):
     def air_mass__kg(self) -> float:
         """Calculates total air required in kg/day."""
         air_required_unit = (
-            self.air_solids_ratio * self.total_suspended_solids_mgL * (
+            self.air_solids_ratio * self.tss_in_mgl * (
                 self.flow_per_lane / self.units_per_lane) * 24.0) / 1000.0
         self.unit_depth_m
         return air_required_unit * self.lanes * self.units_per_lane

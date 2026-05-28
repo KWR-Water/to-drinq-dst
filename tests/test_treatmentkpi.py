@@ -1287,19 +1287,19 @@ class TestDAF(unittest.TestCase):
         )
 
         self.parameters = {
-            'tank height': 4.0,#
-            'air solids ratio': 0.05,#
-            'mass density of air' : 1204, #
-            'retention time (min)': 60.0,#
-            'surface overflow rate': 20,#
-            'recirculation ratio' : 0.2,#
-            'units per lane': 3,#
-            'air pressure difference in DAF': 600,
+            'tank height': 4.0,
+            'air solids ratio': 0.05,
+            'mass density of air' : 1204, 
+            'retention time (min)': 60.0,
+            'surface overflow rate': 20,
+            'recirculation ratio' : 0.2,
+            'units per lane': 3,
+            'air_pressure_difference': 600,
             'backwash filtration rate': 50,
             'backwash duration': 15,
             'backwash tank height' : 1,
             'mass density of TSS': 30,
-            'power efficiency': 0.8 #
+            'power efficiency': 0.8 
 
         }
         self.design_parameters = {
@@ -1321,9 +1321,8 @@ class TestDAF(unittest.TestCase):
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
         )
-        self.assertTrue(lamellaslope.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
-        self.assertTrue(lamellaslope.lanes == self.design_parameters['number of lanes'])  # noqa, E501
-        self.assertTrue(lamellaslope.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+        self.assertTrue(daf.lanes == self.design_parameters['number of lanes'])  # noqa, E501
+        self.assertTrue(daf.flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
 
     def test_get_kpi(self):
         daf = AirFlotationDAF(
@@ -1489,6 +1488,16 @@ class TestRSFSingle(unittest.TestCase):
         )
         energy = rsf_single.daily_energy_consumption__kwh
         self.assertGreater(energy, 0.0)
+    
+    def test_co2_emissions(self):
+        rsf_single = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        emissions = rsf_single.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 class TestRSFDouble(unittest.TestCase):
     def setUp(self):
@@ -1496,14 +1505,18 @@ class TestRSFDouble(unittest.TestCase):
             TPN['units_per_lane']: 2,
             TPN['filtration_rate']: 60,
             TPN['backwash_tank_height']:0.5,
+            TPN['backwash_filtration_rate']:30,
             TPN['sand_porosity']: 0.4,
             TPN['sand_density']: 2800,
             TPN['sand_media_grain_size']:0.45,
             TPN['backwash_duration']: 30,
             TPN['backwash_tank_height']: 2,
-            TPN['efficiency_backwash_pump']:70,
-            TPN['sand_bed_height']: 0.5,
-            TPN['anthracite_bed_height']:0.7
+            TPN['power_efficiency_of_pumps']:70,
+            TPN['sand_filter_bed_height']: 0.5,
+            TPN['anthracite_filter_bed_height']:0.7,
+            TPN['anthracite_porosity']: 0.6,
+            TPN['anthracite_density']: 1400,
+            TPN['anthracite_media_grain_size']: 0.8
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -1532,7 +1545,7 @@ class TestRSFDouble(unittest.TestCase):
             plant_kpis=self.plant_kpis,
             digest_parameter_list=['filter area'],
         )
-        kpi_results = rsf.get_kpi_dict()
+        kpi_results = rsf_double.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
         self.assertIn('head loss', kpi_results)
         self.assertIn('daily energy consumption', kpi_results)
@@ -1540,7 +1553,7 @@ class TestRSFDouble(unittest.TestCase):
 
     
     def test_footprint_area(self):
-        rsf = RapidSandDoubleMediumFiltration(
+        rsf_double = RapidSandDoubleMediumFiltration(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
@@ -1568,6 +1581,16 @@ class TestRSFDouble(unittest.TestCase):
         )
         energy = rsf_double.daily_energy_consumption__kwh
         self.assertGreater(energy, 0.0)
+
+    def test_co2_emissions(self):
+        rsf_double = RapidSandSingleMediumFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['filter area'],
+        )
+        emissions = rsf_double.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
     
 
