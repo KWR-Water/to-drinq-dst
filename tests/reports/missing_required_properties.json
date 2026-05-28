@@ -3,42 +3,7 @@
     "technology_id": 33,
     "technology_name": "Inline dosing of ferric chloride",
     "technology_class": "CoagulationInlineMixing",
-    "missing_property": "chemical dosing solution concentration (w/w%)",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 33,
-    "technology_name": "Inline dosing of ferric chloride",
-    "technology_class": "CoagulationInlineMixing",
-    "missing_property": "mass density of chemical",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 33,
-    "technology_name": "Inline dosing of ferric chloride",
-    "technology_class": "CoagulationInlineMixing",
-    "missing_property": "storage time of chemicals (days)",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 33,
-    "technology_name": "Inline dosing of ferric chloride",
-    "technology_class": "CoagulationInlineMixing",
     "missing_property": "tank height chemical storage",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 33,
-    "technology_name": "Inline dosing of ferric chloride",
-    "technology_class": "CoagulationInlineMixing",
-    "missing_property": "target concentration of dosing chemical",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 52,
-    "technology_name": "Flocculation with dynamic mixing",
-    "technology_class": "FlocculationDynamicMixing",
-    "missing_property": "power efficiency of mixer(s)",
     "source_table": "technology_property"
   },
   {
@@ -70,17 +35,10 @@
     "source_table": "technology_property"
   },
   {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_property": "mass density of TSS",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_property": "plate angle",
+    "technology_id": 8,
+    "technology_name": "Flotation with saturated air",
+    "technology_class": "AirFlotationDAF",
+    "missing_property": "surface overflow rate",
     "source_table": "technology_property"
   },
   {
@@ -88,34 +46,6 @@
     "technology_name": "Lamella clarifier, sloped plates",
     "technology_class": "LamellaClarifierSlope",
     "missing_property": "sludge tank height",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 6,
-    "technology_name": "Lamella clarifier, sloped plates",
-    "technology_class": "LamellaClarifierSlope",
-    "missing_property": "surface overflow rate",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 5,
-    "technology_name": "Lamella clarifier, horizontal floors",
-    "technology_class": "LamellaClarifierHorizontal",
-    "missing_property": "mass density of TSS",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 5,
-    "technology_name": "Lamella clarifier, horizontal floors",
-    "technology_class": "LamellaClarifierHorizontal",
-    "missing_property": "surface overflow rate",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 19,
-    "technology_name": "Rapid sand filtration, submerged, dual media, sand",
-    "technology_class": "RapidSandDoubleMediumFiltration",
-    "missing_property": "power efficiency of pump(s)",
     "source_table": "technology_property"
   },
   {
@@ -148,14 +78,14 @@
   },
   {
     "technology_id": 32,
-    "technology_name": "Low pressure uV for disinfection process",
+    "technology_name": "Low pressure UV for disinfection",
     "technology_class": "UVdisinfection",
     "missing_property": "UV power intensity",
     "source_table": "technology_property"
   },
   {
     "technology_id": 32,
-    "technology_name": "Low pressure uV for disinfection process",
+    "technology_name": "Low pressure UV for disinfection",
     "technology_class": "UVdisinfection",
     "missing_property": "tank height",
     "source_table": "technology_property"

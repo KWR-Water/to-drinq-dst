@@ -22,5 +22,5 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 31,Baffled ozone contact reactor,BaffledOzonationContactor,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 27,Chlorine dosing equipment,ChlorineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 39,Chloramine dosing equipment,ChloramineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-32,Low pressure uV for disinfection process,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
+32,Low pressure UV for disinfection,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 43,Clean water storage tank,CleanWaterStorageTank,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology

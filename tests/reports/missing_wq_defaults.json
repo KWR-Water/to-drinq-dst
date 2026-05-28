@@ -162,7 +162,7 @@
   },
   {
     "technology_id": 32,
-    "technology_name": "Low pressure uV for disinfection process",
+    "technology_name": "Low pressure UV for disinfection",
     "technology_class": "UVdisinfection",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"

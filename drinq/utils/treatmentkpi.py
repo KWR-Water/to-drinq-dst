@@ -2985,7 +2985,6 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         power_kw = 0
         return power_kw  
 
-
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
@@ -3134,9 +3133,6 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         return (
             self.flow_per_lane_m3perh * self.power_mixing_intensity_wperm3 *
             self.lanes + 0.1 + power_pump_kw)  # Estimation of H202 dosage pumps of 0.1kW
-            self.flow_per_lane_m3perh * self.energy_per_m3_kwh *
-            self.lanes + 0.1)  # Estimation of H202 dosage pumps of 0.1kW
-
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
