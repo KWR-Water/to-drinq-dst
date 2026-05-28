@@ -12,6 +12,7 @@ from drinq.utils.treatmentkpi import (
     FlocculationDynamicMixing,
     LamellaClarifierSlope,
     LamellaClarifierHorizontal,
+    SludgeBlanketClarifier,
     AirFlotationDAF,
     Strainer,
     MicroStrainer,
@@ -1036,8 +1037,124 @@ class TestChainScrapedSedimentation(unittest.TestCase):
             plant_kpis=self.plant_kpis,
             wq_parameters=self.wq_parameters,
         )
-        sedimentation = sedimentation.co2_emissions__kg_co2_eq_per_m3
-        self.assertGreater(sedimentation, 0.0)
+        emissions = sedimentation.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
+
+class TestSludgeBlanketSedimentation(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'tank height': 3.0,
+            'retention time (min)': 600.0,
+            'scraper power coefficient': 0.1,
+            'backwash filtration rate': 50,
+            'backwash duration': 15,
+            'backwash tank height' : 1,
+            'units per lane': 3,
+            'surface overflow rate': 5.0,#
+            'mass density of TSS': 30,
+            'power efficiency of pump(s)': 0.8,
+            'power_density': 0.05
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+        self.wq_parameters = {
+            'input_parameter': {'total suspended solids (mg/l)': 150.0},
+            'target_parameter': {'total suspended solids (mg/l)': 150.0},
+        }
+
+    def test_init(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertTrue(sludge.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
+        self.assertTrue(sludge.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
+        self.assertTrue(sludge.lanes == self.design_parameters['number of lanes'])  # noqa, E501
+        self.assertTrue(sludge.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
+
+    def test_get_kpi(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        result = sludge.get_kpi('footprint area')
+        self.assertEqual(
+            result, sludge.footprint_area__m2)
+        result = sludge.get_kpi('head loss')
+        self.assertEqual(
+            result, sludge.hydraulic_headloss__bar)
+
+    def test_footprint_area(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        area = sludge.footprint_area__m2
+        self.assertGreater(area, 0.0)
+
+    def test_pressure_head(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = sludge.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_daily_energy_consumption(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        energy = sludge.daily_energy_consumption__kwh
+        self.assertGreater(energy, 0.0)
+
+    def test_kpi_dict(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = sludge.get_kpi_dict()
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('daily energy consumption', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+    
+    def test_pressure_head(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        headloss = sludge.hydraulic_headloss__bar
+        self.assertGreater(headloss, 0.0)
+
+    def test_co2_emissions(self):
+        sludge = SludgeBlanketClarifier(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+        )
+        emissions = sludge.co2_emissions__kg_co2_eq_per_m3
+        self.assertGreater(emissions, 0.0)
 
 class TestLamellaSlope(unittest.TestCase):
     def setUp(self):
