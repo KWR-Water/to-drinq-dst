@@ -4,9 +4,4 @@ technology_id,technology_name,technology_class,missing_property,source_table
 26,Side stream nanofiltration,MembraneFiltration,operating pressure (bar),technology_property
 26,Side stream nanofiltration,MembraneFiltration,power efficiency of pump(s),technology_property
 26,Side stream nanofiltration,MembraneFiltration,pressure vessel orientation,technology_property
-27,Chlorine dosing equipment,ChlorineDisinfection,tank height chemical storage,technology_property
-27,Chlorine dosing equipment,ChlorineDisinfection,target concentration of dosing chemical,technology_property
-32,Low pressure UV for disinfection,UVdisinfection,UV power intensity,technology_property
-32,Low pressure UV for disinfection,UVdisinfection,tank height,technology_property
 33,Inline dosing of ferric chloride,CoagulationInlineMixing,tank height chemical storage,technology_property
-39,Chloramine dosing equipment,ChloramineDisinfection,tank height chemical storage,technology_property

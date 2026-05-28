@@ -40,40 +40,5 @@
     "technology_class": "AirFlotationDAF",
     "missing_property": "surface overflow rate",
     "source_table": "technology_property"
-  },
-  {
-    "technology_id": 27,
-    "technology_name": "Chlorine dosing equipment",
-    "technology_class": "ChlorineDisinfection",
-    "missing_property": "tank height chemical storage",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 27,
-    "technology_name": "Chlorine dosing equipment",
-    "technology_class": "ChlorineDisinfection",
-    "missing_property": "target concentration of dosing chemical",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 39,
-    "technology_name": "Chloramine dosing equipment",
-    "technology_class": "ChloramineDisinfection",
-    "missing_property": "tank height chemical storage",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 32,
-    "technology_name": "Low pressure UV for disinfection",
-    "technology_class": "UVdisinfection",
-    "missing_property": "UV power intensity",
-    "source_table": "technology_property"
-  },
-  {
-    "technology_id": 32,
-    "technology_name": "Low pressure UV for disinfection",
-    "technology_class": "UVdisinfection",
-    "missing_property": "tank height",
-    "source_table": "technology_property"
   }
 ]

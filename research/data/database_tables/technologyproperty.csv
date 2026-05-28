@@ -27,7 +27,7 @@ id,name,unit,description,category,parent_property
 26,chemical dosing solution concentration (w/w%),%,concentration of chemical in dosing solution (in w/w%),4,
 27,target residual concentration (mg/l),g/m^3,nominal (design) value for residuals of chemical agents per unit water volume,4,
 28,UV dose,mJ/cm^2,nominal design value for low pressure UV dose (typically between 30 and 70 mJ/cm2),3,
-29,UV intensity,mW/cm2,nominal design value for UV power intensity (typically 10 mW/cm2),1,
+29,UV power intensity,mW/cm2,nominal design value for UV power intensity (typically 10 mW/cm2),1,
 30,dynamic mixer unit department volume,m^2,volume of the asset's unit department,1,
 31,lower bound surface overflow rate,m^3/m^2/hour,lower bound of surface overflow rate (m3/m2/hr),1,110
 32,upper bound surface overflow rate,m^3/m^2/hour,upper bound of surface overflow rate (m3/m2/hr),1,110
@@ -167,3 +167,4 @@ id,name,unit,description,category,parent_property
 166,GAC porosity,,porosity of GAC particles,1,
 167,sludge tank height,m,height of the sludge thickener,1,
 168,air pressure difference,kPa,air pressure difference for DAF,1,
+169,bed height,m,bed height,1,

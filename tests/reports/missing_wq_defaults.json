@@ -77,13 +77,6 @@
     "source_table": "waterqualityparameter_technology"
   },
   {
-    "technology_id": 7,
-    "technology_name": "Chain-scraped sedimentation tank",
-    "technology_class": "ChainScrapedSedimentation",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
     "technology_id": 18,
     "technology_name": "Rapid sand filtration, submerged, single medium",
     "technology_class": "RapidSandSingleMediumFiltration",
@@ -134,14 +127,14 @@
   },
   {
     "technology_id": 27,
-    "technology_name": "Chlorine dosing equipment",
+    "technology_name": "Chlorination",
     "technology_class": "ChlorineDisinfection",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"
   },
   {
     "technology_id": 39,
-    "technology_name": "Chloramine dosing equipment",
+    "technology_name": "Chloramination",
     "technology_class": "ChloramineDisinfection",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"

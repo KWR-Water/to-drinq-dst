@@ -167,6 +167,6 @@
   "sludge_tank_height": "sludge tank height",
   "filtration_rate": "filtration rate",
   "gac_porosity": "GAC porosity",
-  "air_pressure_difference": "air pressure difference"
-
+  "air_pressure_difference": "air pressure difference",
+  "bed_height": "bed height"
 }

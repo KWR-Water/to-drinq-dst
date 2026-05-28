@@ -3297,6 +3297,7 @@ class BaffledOzonationContactor(TreatmentKPI):
     lane_volume_m3: float
     lane_area_m2: float
     tank_area_m2: float
+    volume_m3: float
     equipment_area_m2: float
     chemical_emission_factor: float
     emission_factor_electricity: float
@@ -3322,8 +3323,14 @@ class BaffledOzonationContactor(TreatmentKPI):
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.ozone_dosage_mgliter = parameters[
             TPN['target_concentration_of_dosing_chemical']]  # 3 mg/l
-        self.energy_per_kg_ozone_kwh = parameters.get(
-            TPN['energy_consumption_per_kg_ozone'], 8.0)
+        self.energy_per_kg_ozone_kwh = parameters[
+            TPN['energy_consumption_per_kg_ozone']]  # 8
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'volume':
+                self.volume_m3 = (
+                    self.flow_per_lane_m3perh * self.lanes *
+                    self.retention_time_min) / 60.0
+            self.parameters[tech_property] = self.volume_m3  # overwrite volume
 
     def __repr__(self):
         return f"Ozonation tank height (m)={self.tank_height_m}, " \
@@ -3366,9 +3373,7 @@ class BaffledOzonationContactor(TreatmentKPI):
         """
         Total Area = Contact Tank Area + Ozonator Equipment Room.
         """
-        lane_volume_m3 = (
-            self.flow_per_lane_m3perh * self.lanes *
-            self.retention_time_min) / 60.0
+        lane_volume_m3 = self.volume_m3 / self.lanes
         lane_area_m2 = lane_volume_m3 / self.tank_height_m
         tanks_area_m2 = lane_area_m2 * self.lanes
         ozone_flow_kg_per_h = (
@@ -3457,7 +3462,7 @@ class PelletSoftening(TreatmentKPI):
         self.porosity_expanded = parameters[TPN['pellet_porosity_expanded']]
         self.rho_pellet = parameters[TPN['mass_density_of_pellets']] * 1000  # kg/m3
         self.rho_lime_gcm3 = parameters[TPN['mass_density_of_chemical']]* 1000  # g/cm3
-        # TODO: Greg, shall we leave this or allow user input for water temp.?
+        # TODO: shall we leave this or allow user input for water temp.?
         self.rho_water = DENS_WATER_KG_PER_M3  # assumption, kg/m3
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
@@ -3725,17 +3730,18 @@ class AnionicIEX(TreatmentKPI):
     lanes: int
     units_per_lane: int
     nominal_flow_m3perh: float
-    doc_in:float
-    target_doc:float
-    delta_doc_eq_m3:float
-    resin_doc_capacity_gl:float
-    nacl_density:float
-    storage_days:int
+    doc_in_mgl: float
+    doc_target_mgl: float
+    delta_doc_eq_m3: float
+    resin_doc_capacity_gl: float
+    nacl_density: float
+    storage_days: int
     cycle_h: float
     resin_cap: float
-    unit_depth_m: float
+    bed_height_m: float
     unit_area_m2: float
     unit_diam_m: float
+    ebct_min: float
     chemical_emission_factor: float
     emission_factor_electricity: float
 
@@ -3744,30 +3750,37 @@ class AnionicIEX(TreatmentKPI):
         parameters = self.parameters
         plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
-        # wq_parameters = self.wq_parameters
+        wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['units_per_lane']]
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
-        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
+        self.chemical_emission_factor = parameters[
+            TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/self.units_per_lane 
-        self.doc_in = self.parameters.get(TPN['influent_doc_mgL'], None)
-        self.target_doc = self.parameters.get(TPN['target_doc_mgL'], None) 
-        self.delta_doc_gm3 = max(0.0, self.doc_in_mgL - self.target_doc_mgL)
-        self.ebct_min = float(parameters.get(TPN['ebct_minutes'], 4.0))
-        self.resin_doc_capacity_gl = self.parameters.get(TPN['resin_capacity_g_per_l'], 18.0)
-        self.nacl_density = 1200 # kg/m3
-        self.nacl_dose_per_m3_resin = 150.0 #kg per m3 of water
-        self.unit_depth_m = self.parameters.get(TPN['bed_depth_m'], 4.0)
-        self.storage_days = self.parameters.get(TPN['storage_time_days'], 30)
+        self.flow_per_unit_m3hr = self.flow_per_lane_m3perh / self.units_per_lane
+        self.doc_in_mgl = wq_parameters[
+            'dissolved organic carbon'][INPUT_WQPARAMETER_KEY]  # mgl/l
+        self.doc_target_mgl = wq_parameters[
+            'dissolved organic carbon'][TARGET_WQPARAMETER_KEY]  # mgl/l        
+        self.delta_doc_gm3 = max(0.0, self.doc_in_mgl - self.doc_target_mgl)
+        self.ebct_min = parameters[TPN['empty_bed_contact_time']]  # 4 min.
+        self.resin_doc_capacity_gl = self.parameters[
+            TPN['resin_volume_exchange']]  # 18 eq/l
+        self.nacl_density = 1200  # kg/m3
+        self.nacl_dose_per_m3_resin = 150.0  # kg per m3 of water
+        self.bed_height_m = self.parameters[TPN['bed_height']]
+        self.unit_area_m2 = 1.1 * (
+            self.flow_per_unit_m3hr * self.ebct_min) / 60.0 / self.bed_height_m
+        self.storage_days = self.parameters[
+            TPN['storage_time_of_chemicals_days']]
 
     def __repr__(self):
-        return f"Anion IEX bed depth (m)={self.unit_depth_m}, " \
+        return f"Anion IEX bed height (m)={self.bed_height_m}, " \
             f"delta DOC (mg/L)={self.delta_doc_gm3}, " \
             f"EBCT (min)={self.ebct_min}, " \
             f"resin DOC capacity (g/L)={self.resin_doc_capacity_gl}."
@@ -3804,8 +3817,8 @@ class AnionicIEX(TreatmentKPI):
         salt_vol = (
             self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
             * self.storage_days
-        ) / self.nacl_density 
-        area_salt = salt_vol / 2.0 # 2.0m stacking height safety factor
+        ) / self.nacl_density
+        area_salt = salt_vol / 2.0  # 2.0m stacking height safety factor
         return area_salt
 
     @property
@@ -3819,10 +3832,9 @@ class AnionicIEX(TreatmentKPI):
     @property
     def footprint_area__m2(self) -> float:
         """Total area including vessels, chemical storage, and waste tanks."""
-        unit_area_m2 = self.flow_per_unit_m3hr / self.surface_overflow_rate       
-        unit_area_m2 = unit_area_m2 * self.lanes * self.units_per_lane
-        
-        v_resin_total = unit_area_m2 * self.lanes * (self.units_per_lane - 1)
+        # unit_area_m2 = self.flow_per_unit_m3hr / self.surface_overflow_rate  # TODO: please check!!!
+        # unit_area_m2 = self.unit_area_m2 * self.lanes * self.units_per_lane
+        v_resin_total = self.unit_area_m2 * self.lanes * (self.units_per_lane - 1)
         regens_per_day = 24 / self.cycle_h
         bv_waste_factor = 4.0  # Brine + slow rinse volumes
         waste_storage_vol = (v_resin_total * regens_per_day *
