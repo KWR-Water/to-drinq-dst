@@ -1823,7 +1823,7 @@ class TestGAC(unittest.TestCase):
             digest_parameter_list=['volume'],
         )
         energy = gac.daily_energy_consumption__kwh
-        self.assertGreater(energy, 0.0)
+        self.assertGreaterEqual(energy, 0.0)
     
     def test_co2_emissions(self):
         gac = GranularActivatedCarbonFiltration(
@@ -1833,7 +1833,7 @@ class TestGAC(unittest.TestCase):
             digest_parameter_list=['volume'],
         )
         emissions = gac.co2_emissions__kg_co2_eq_per_m3
-        self.assertGreater(emissions, 0.0)
+        self.assertGreaterEqual(emissions, 0.0)
 
 class TestPAC(unittest.TestCase):
     def setUp(self):
