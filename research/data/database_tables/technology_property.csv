@@ -485,3 +485,7 @@ id,technology,property,defaultvalue,is_designparameter,is_digested
 485,19,61,80,1,0
 486,7,97,0,0,1
 487,5,97,0,0,1
+488,27,1,0,0,1
+489,27,35,2,0,0
+490,27,36,5,0,0
+491,27,20,2.5,0,0
