@@ -690,7 +690,6 @@ class CoagulationDynamicMixing(TreatmentKPI):
     emission_factor_electricity: float
     dosing_flow_rate_liter: float
     
-    
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
@@ -3078,7 +3077,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
                f"silo height (m)={self.silo_height_m}, " \
                f"dosage (mg/L)={self.pac_dosage_mg_liter}, " \
                f"nominal flow (m3/hr)={self.nominal_flow_m3perh})"
-                       
+
     def get_kpi(self, kpi: str) -> float:
         """Get the value for a KPI"""
         function_name = TECH_KPI_MAPPINGS.get(kpi, None)
@@ -3092,13 +3091,13 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         if kpi_list:
             return {kpi: self.get_kpi(kpi=kpi) for kpi in kpi_list}
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
-
+    
     @property
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates total dry PAC required per day."""
         hourly_mass = (self.nominal_flow_m3perh *
                        self.pac_dosage_mg_liter) / 1000
-        return self._single_chemical_value(hourly_mass * 24) 
+        return self._single_chemical_value(hourly_mass * 24)
     
     @property
     def chemical_solution_concentration__mg_per_l(self) -> float:
