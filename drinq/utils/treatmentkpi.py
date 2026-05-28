@@ -1625,6 +1625,7 @@ class ChlorineDisinfection(TreatmentKPI):
     chlorine_concentration_mgL: float
     emission_factor_electricity: float
     chemical_emission_factor : float
+    volume_m3: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -1648,8 +1649,6 @@ class ChlorineDisinfection(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
-        self.power_of_dosing_kw = parameters[
-            TPN['power']]
         self.retention_time_min = parameters[
             TPN['retention_time_min']]
         self.target_residual_chlorine_mgL = parameters[
@@ -1662,6 +1661,14 @@ class ChlorineDisinfection(TreatmentKPI):
             residual_chlorine_mgL=self.target_residual_chlorine_mgL,
             dosing_solution_concentration_w_w=self.chlorine_solution_w_w
         )
+        self.unit_volume_m3 = calculate_unit_volume_m3(
+            flow_per_lane_m3h=self.flow_per_lane_m3perh,
+            units_per_lane=self.units_per_lane,
+            retention_time_min=self.retention_time_min)
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'volume':
+                self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
+            self.parameters[tech_property] = self.volume_m3  # overwrite area
 
     def __repr__(self):
         return f"ChlorineDisinfection(tank height (m)={self.tank_height_m}, " \
@@ -1690,10 +1697,10 @@ class ChlorineDisinfection(TreatmentKPI):
             units_per_lane=self.units_per_lane,
             retention_time_min=self.retention_time_min)
         unit_area_m2 = calculate_unit_area_tank(
-            unit_volume_m3=unit_volume_m3,
+            unit_volume_m3=self.unit_volume_m3,
             unit_height_m=self.tank_height_m)
         chemicals_area_m2 = self.footprint_area_for_chemicals__m2
-        return np.ceil(unit_area_m2 * self.lanes + chemicals_area_m2)
+        return np.ceil(unit_area_m2 * self.lanes * self.units_per_lane + chemicals_area_m2)
 
     @property
     def footprint_area_for_chemicals__m2(self) -> float:

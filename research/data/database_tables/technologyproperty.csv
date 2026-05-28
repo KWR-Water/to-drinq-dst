@@ -59,8 +59,8 @@ id,name,unit,description,category,parent_property
 58,upper bound pipe roughness,,upper bound pipe roughness,1,111
 59,lower bound level difference,m,lower bound level difference,1,160
 60,upper bound level difference,m,upper bound level difference,1,160
-61,power efficiency of pump(s),%,"power efficiency of pumps, a percentage",3,
-62,motor efficiency of pump(s),%,"motor efficiency of pumps, a percentage",3,
+61,power efficiency of pump(s),%,"power efficiency of pumps, a value between 0 and 1",3,
+62,motor efficiency of pump(s),%,"motor efficiency of pumps, a value between 0 and 1",3,
 63,lower bound screen velocity,m/s,lower bound screen velocity,1,109
 64,upper bound screen velocity,m/s,upper bound screen velocity,1,109
 65,blockage factor,,"screens blockage factor, a value between 0 and 1",1,
@@ -82,7 +82,7 @@ id,name,unit,description,category,parent_property
 81,energy intensity,kWh/m^3,energy intensity of UV lamps energy consumption,2,
 82,lower bound of energy intensity,kWh/m^3,lower bound of energy intensity of UV lamps energy consumption,2,81
 83,upper bound of energy intensity,kWh/m^3,upper bound of energy intensity of UV lamps energy consumption,2,81
-84,bar spacing,m,space between bar screens or grid screens (m),1,
+84,bar spacing,m,space between bar screens or grid screens (m),1,103
 85,lower bound NF flow recovery rate,,lower bound NF flow recovery rate,1,116
 86,upper bound NF flow recovery rate,126,upper bound NF flow recovery rate,1,116
 87,lower bound RO flow recovery rate,,lower bound RO flow recovery rate,1,116
@@ -164,4 +164,6 @@ id,name,unit,description,category,parent_property
 163,upper bound UV dose,mJ/cm^2,upper bound of UV dose (mJ/cm^2),,28
 164,lower bound UV power per m3,kW/m^3,lower bound of UV power intensity (kW/m^3),3,161
 165,upper bound UV power per m3,kW/m^3,upper bound of UV power intensity (kW/m^3),3,161
-166,GAC porosity,,porosity of GAC particles,4,
+166,GAC porosity,,porosity of GAC particles,1,
+167,sludge tank height,m,height of the sludge thickener,1,
+168,air pressure difference,kPa,air pressure difference for DAF,1,
