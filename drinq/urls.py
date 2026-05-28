@@ -80,6 +80,16 @@ urlpatterns = [
         name='design_parameter_results'
     ),
     path(
+        'treatmentplant/<int:plant_id>/results/export/csv/',
+        views.DesignParameterResultsExportCsvView.as_view(),
+        name='design_parameter_results_export_csv',
+    ),
+    path(
+        'treatmentplant/compare/',
+        views.TreatmentPlantComparisonView.as_view(),
+        name='treatmentplant_compare',
+    ),
+    path(
         'treatmentplant/<int:plant_id>/adaptability/',
         views.AdaptabilityDetailView.as_view(),
         name='adaptability_details',

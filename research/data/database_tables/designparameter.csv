@@ -4,10 +4,10 @@ id,name,description,unit,slug,category,default_value
 3,leakage factor,"leakage factor as a fraction, i.e. a value of 0.1 corresponds to 10%","[0, 0.1, ..., 1]",leakage_factor,1,0.1
 4,large-scale consumption,"large-scale consumption from industry, agiculture, etc. in cubic metres a day",m^3/day,largescale_consumption_m3perday,1,0
 5,number of lanes,number of parallel lanes in a treatment plant,,number_lanes,1,2
-6,peak demand factor,"Factor of peak water demand, i.e. the nominal flow multiplied by the peak factor demand is the expected peak flow. Most times, this is about 1.4 (140%). ",[>= 1],peak_factor,1,1.4
+6,peak demand factor,"Daily factor of peak water demand, i.e. the nominal flow multiplied by the daily peak factor demand is the expected peak flow for a day. Most times, this is about 1.4 (140%)",[>= 1],peak_factor,1,1.4
 7,PLC costs,Costs for PLC hardware and software,euro,PLC_costs_eur,2,0
-8,personnel costs,Costs for personel,euro,personnel_costs_EUR_Costs,2,0
-9,depreciation period,period of depreciation,year,depreciation_period_year_period,2,30
+8,personnel costs,Annual costs for personnel,euro/year,personnel_costs_EUR_Costs,2,0
+9,depreciation period,Period of depreciation,year,depreciation_period_year_period,2,30
 10,interest rate,yearly interest rate,%,interest_rate_yearly,2,3.5
 11,emission factor (electricity),plant-wide emission factor for electricity consumption,kg/kWh,emission_factor_plantwide,5,0.455
 12,operation and maintenance rate,"operation and maintenance rate, i.e. a percentage rate which is multiplied with the total investment costs to get the operational expenditure (OPEX).",%,operation_and_maintenance_rate,2,5

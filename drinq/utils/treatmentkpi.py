@@ -3964,6 +3964,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
     backwash_tank_height_m: float
     scraper_power_coeff_kw_m2: float
     power_efficiency_pumps: float
+    area_m2: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4000,6 +4001,10 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
             TPN['power_density']]  # W/m3
+        for tech_property in self.digest_parameter_list:
+            if tech_property == 'area':
+                self.area_m2 = self.footprint_area__m2
+            self.parameters[tech_property] = self.area_m2  # overwrite area
 
     def __repr__(self):
         return f"Sludge Blanket Clarifier surface overflow rate (m3/m2/h)={self.surface_overflow_rate}, " \

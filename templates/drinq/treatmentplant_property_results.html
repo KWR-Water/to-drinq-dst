@@ -9,17 +9,17 @@
 <div class="container mt-4">
   <h1 class="mb-3">Treatment Plant KPIs</h1>
   <p class="lead">Review the calculated KPIs for plant <strong>{{ object.name }}</strong> based on the design parameters you
-     provided. If you wish to adjust the input parameters, click the button below to return to the input form.</p>
-    <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
-        <a href="{% url 'adaptability_details' object.id %}" class="btn btn-outline-primary ms-2">View full adaptability details</a>
-    <p></p>
+     provided. This page focuses on reviewing treatment plant and technology KPI outcomes.</p>
+    <p class="mb-3">
+        <a href="#further-actions" class="btn btn-sm btn-link p-0">Jump to further actions</a>
+    </p>
     <div class="card shadow-sm p-3 bg-white">
         <h2>Treatment plant KPIs for plant </h2>
         {% if properties_by_category %}
             {% for category_name, category_props in properties_by_category %}
             <div class="mb-4">
-                <h3>{{ category_name|capfirst }}</h3>
-                <table class="table table-bordered">
+                <h3 class="h4">{{ category_name|capfirst }}</h3>
+                <table class="table table-bordered plant-kpi-table">
                     <tr>
                         <th>Property</th>
                         <th>Value</th>
@@ -59,7 +59,7 @@
                             <em>Not available</em>
                         {% endif %}
                     </p>
-                    <table class="table table-bordered">
+                    <table class="table table-bordered technology-kpi-table">
                         <thead>
                             <tr>
                                 <th>KPI</th>
@@ -88,8 +88,78 @@
             <div class="mt-5"><em>No technology KPIs available for this plant.</em></div>
         {% endif %}
     </div>
+
+    <div id="further-actions" class="card shadow-sm p-3 bg-white mt-4">
+        <h3 class="h3 mb-2">Further actions</h3>
+        <p class="text-muted mb-3">
+            Use these actions to refine inputs, inspect adaptability details,
+            compare configurations, or export results.
+        </p>
+        <div class="row g-2 g-md-3">
+            <div class="col-12 col-sm-6 col-lg-3 d-grid">
+                <a href="{% url 'design_parameter_input' object.id %}" class="btn btn-primary">Back to parameter input</a>
+                <div class="form-text text-muted">Update and recalculate parameters.</div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3 d-grid">
+                <a href="{% url 'adaptability_details' object.id %}" class="btn btn-outline-primary">View full adaptability details</a>
+                <div class="form-text text-muted">Inspect adaptability per technology.</div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3 d-grid">
+                <a href="{% url 'treatmentplant_compare' %}?left_plant={{ object.id }}" class="btn btn-outline-secondary">Compare with another treatment configuration</a>
+                <div class="form-text text-muted">Open side-by-side KPI comparison.</div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3 d-grid">
+                <a href="{% url 'design_parameter_results_export_csv' object.id %}" class="btn btn-outline-success">Export KPI results (CSV)</a>
+                <div class="form-text text-muted">Download plant and technology KPIs.</div>
+            </div>
+        </div>
+    </div>
 </div>
 <br>
 </body>
 
+{% endblock %}
+
+{% block extra_javascript %}
+    {{ block.super }}
+    <script>
+    (function() {
+        function alignFirstColumn(tableSelector) {
+            const tables = document.querySelectorAll(tableSelector);
+            if (!tables.length) {
+                return;
+            }
+
+            let widestFirstColumn = 0;
+            tables.forEach((table) => {
+                const firstColumnCells = table.querySelectorAll(
+                    'thead tr th:first-child, tbody tr td:first-child'
+                );
+                firstColumnCells.forEach((cell) => {
+                    const width = cell.getBoundingClientRect().width;
+                    if (width > widestFirstColumn) {
+                        widestFirstColumn = width;
+                    }
+                });
+            });
+
+            if (widestFirstColumn <= 0) {
+                return;
+            }
+
+            tables.forEach((table) => {
+                table.style.tableLayout = 'fixed';
+                const firstColumnCells = table.querySelectorAll(
+                    'thead tr th:first-child, tbody tr td:first-child'
+                );
+                firstColumnCells.forEach((cell) => {
+                    cell.style.width = widestFirstColumn + 'px';
+                });
+            });
+        }
+
+        alignFirstColumn('.plant-kpi-table');
+        alignFirstColumn('.technology-kpi-table');
+    })();
+    </script>
 {% endblock %}
