@@ -9,6 +9,7 @@ from drinq.utils.treatmentkpi import (
     ChainScrapedSedimentation,
     RapidSandSingleMediumFiltration,
     RapidSandDoubleMediumFiltration,
+    RapidSandPressurizedVesselFiltration,
     FlocculationDynamicMixing,
     LamellaClarifierSlope,
     LamellaClarifierHorizontal,
@@ -837,7 +838,7 @@ class TestCIEX(unittest.TestCase):
             'storage time of chemicals (days)': 20,
             'chemical emission factor': 0.5,
             'mass density of chemical':1.2,
-            'power efficiency of pump(s)': 0.8,
+            'power efficiency of pump(s)': 80,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -902,7 +903,7 @@ class TestAIEX(unittest.TestCase):
             'storage time of chemicals (days)': 20,
             'chemical emission factor': 0.5,
             'mass density of chemical':1.2,
-            'power efficiency of pump(s)': 0.8,
+            'power efficiency of pump(s)': 80,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -2016,6 +2017,61 @@ class TestRSFDouble(unittest.TestCase):
         )
         emissions = rsf_double.co2_emissions__kg_co2_eq_per_m3
         self.assertGreater(emissions, 0.0)
+
+class TestRSFPress(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'units per lane': 2.5,
+            'backwash duration': 30,
+            'backwash tank height': 2.0,
+            'backwash filtration rate': 2,
+            'power efficiency of pump(s)': 80,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+        self.wq_parameters = {}
+        self.kpi_results = {
+            'footprint area': 17.0,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 0.282015873015873,
+            'daily mass of chemicals': {},
+            'chemical solution concentration': 0.0,
+            'head loss': 0.2840731037215019,
+            'power': 2.9611666666666667,
+            'CO2 equivalent emissions': 5.2877976190476194e-05
+        }
+
+    def test_init(self):
+        rsf_press = RapidSandPressurizedVesselFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
+        )
+        self.assertTrue(rsf_press.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
+        #self.assertTrue(rsf_press.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
+    
+    def test_get_kpi_dict(self):
+        rsf_press = RapidSandPressurizedVesselFiltration(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
+            digest_parameter_list=['filter area'],
+        )
+        kpi_results = rsf_press.get_kpi_dict()
+        self.maxDiff = None
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
 class TestGAC(unittest.TestCase):
     def setUp(self):
