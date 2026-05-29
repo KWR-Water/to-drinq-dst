@@ -10,3 +10,6 @@ Missing TreatmentPlantTechnologyPropertyValue for technology_id=40 and technolog
 Construction cost parameters not found for technology: Coagulant dosing with ferric chloride by dynamic mixing
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
 Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
+Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation

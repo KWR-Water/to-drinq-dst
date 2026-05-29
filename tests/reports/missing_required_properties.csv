@@ -5,3 +5,5 @@ technology_id,technology_name,technology_class,missing_property,source_table
 26,Side stream nanofiltration,MembraneFiltration,power efficiency of pump(s),technology_property
 26,Side stream nanofiltration,MembraneFiltration,pressure vessel orientation,technology_property
 8,Flotation with saturated air,AirFlotationDAF,surface overflow rate,technology_property
+21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,backwash filtration rate,technology_property
+17,Cation exchange (CIEX) filtration unit,CationIonExchange,mass density of chemical,technology_property

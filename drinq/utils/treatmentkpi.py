@@ -3449,9 +3449,11 @@ class PelletSoftening(TreatmentKPI):
             NOMINAL_FLOW_RATE_NAME, None)
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
-            EMISSION_FACTOR_ELEC_NAME, None) 
+            EMISSION_FACTOR_ELEC_NAME, None)
+        operational_units = (
+            self.units_per_lane - 1) if self.units_per_lane > 1 else self.units_per_lane  # noqa: E501
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
-            self.lanes * (self.units_per_lane - 1))
+            self.lanes * operational_units)
         self.total_hardness_in_mgliter = wq_parameters['total hardness'][
             INPUT_WQPARAMETER_KEY]
         self.target_hardness_mgliter = wq_parameters['total hardness'][

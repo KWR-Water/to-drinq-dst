@@ -617,22 +617,40 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
 class QuestionsCompleteView(generic.TemplateView):
     template_name = "drinq/form_complete.html"
 
+    def _get_configuration_or_404(
+            self,
+            *,
+            session_key: str | None = None,
+            configuration_id: int | None = None) -> MultiStepConfiguration:
+        queryset = MultiStepConfiguration.objects
+        if self.request.user.is_authenticated:
+            queryset = queryset.filter(user=self.request.user)
+
+        if session_key is not None:
+            queryset = queryset.filter(session_key=session_key)
+        if configuration_id is not None:
+            queryset = queryset.filter(id=configuration_id)
+
+        try:
+            return queryset.get()
+        except MultiStepConfiguration.DoesNotExist:
+            raise Http404('Configuration does not exist.')
+
     def dispatch(self, request, *args, **kwargs):
         session_key = kwargs.get('session_key', None)
         session = request.session
         if session_key is None:
             session_key = session.get('session_key', None)
-        if 'configuration_id' not in session and session_key is not None:
-            configuration = MultiStepConfiguration.objects.get(
+        if session_key is not None:
+            configuration = self._get_configuration_or_404(
                 session_key=session_key)
-            if configuration is not None:
-                session['configuration_id'] = configuration.id
+            session['configuration_id'] = configuration.id
+            session['session_key'] = configuration.session_key
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpResponse, *args, **kwargs):
         session_key = kwargs.get('session_key', None)
-        configuration = MultiStepConfiguration.objects.get(
-                session_key=session_key)
+        configuration = self._get_configuration_or_404(session_key=session_key)
         try:
             results = QuestionAnswer.objects.filter(
                 configuration__id=configuration.id)
@@ -676,13 +694,8 @@ class QuestionsCompleteView(generic.TemplateView):
         selected_techs = kwargs.get('selected_techs', [])
         choices, technologies, treatment_options = {}, [], []
         config_id = self.request.session['configuration_id']
-        session_key = MultiStepConfiguration.objects.get(
-            id=config_id).session_key
-        if session_key is not None:
-            configuration = MultiStepConfiguration.objects.get(
-                session_key=session_key)
-        else:
-            configuration = None
+        configuration = self._get_configuration_or_404(
+            configuration_id=config_id)
         named_option_ids = TreatmentPlant.objects.filter(
                 configuration=configuration).values_list(
                     'option', flat=True)

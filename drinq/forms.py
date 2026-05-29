@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate
 # from django.contrib.auth.models import User
 from accounts.models import CustomUser, UserProfile
@@ -175,15 +176,79 @@ class SessionSelectForm(forms.Form):
                 user=user)
 
 
+DEFAULT_OPTION_NAME_DISPLAY_MAX_CHARS = 45
+
+
+def _get_option_name_display_max_chars() -> int:
+    configured_value = getattr(
+        settings,
+        'TREATMENT_PLANT_OPTION_NAME_DISPLAY_MAX_CHARS',
+        DEFAULT_OPTION_NAME_DISPLAY_MAX_CHARS,
+    )
+    if isinstance(configured_value, int) and configured_value >= 4:
+        return configured_value
+    return DEFAULT_OPTION_NAME_DISPLAY_MAX_CHARS
+
+
+def _abbreviate_option_name(name: str, max_chars: int) -> str:
+    if len(name) <= max_chars:
+        return name
+    return f"{name[:max_chars - 3].rstrip()}..."
+
+
+def _format_treatment_plant_label(
+    plant: TreatmentPlant,
+    abbreviate_option_name: bool,
+    option_name_max_chars: int | None = None,
+) -> str:
+    if option_name_max_chars is None:
+        option_name_max_chars = _get_option_name_display_max_chars()
+    configuration_name = (
+        plant.configuration.name if plant.configuration is not None
+        else 'No configuration'
+    )
+    option_name = (
+        _abbreviate_option_name(plant.name, option_name_max_chars)
+        if abbreviate_option_name
+        else plant.name
+    )
+    return f"{configuration_name} [{plant.option}]: {option_name}"
+
+
+class TreatmentPlantSelect(forms.Select):
+    def create_option(
+        self,
+        name,
+        value,
+        label,
+        selected,
+        index,
+        subindex=None,
+        attrs=None,
+    ):
+        option = super().create_option(
+            name,
+            value,
+            label,
+            selected,
+            index,
+            subindex=subindex,
+            attrs=attrs,
+        )
+        instance = getattr(value, 'instance', None)
+        if instance is not None:
+            option['attrs']['title'] = _format_treatment_plant_label(
+                instance,
+                abbreviate_option_name=False,
+            )
+        return option
+
+
 class TreatmentPlantModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        configuration_name = (
-            obj.configuration.name if obj.configuration is not None
-            else 'No configuration'
-        )
-        return (
-            f"{obj.name} "
-            f"(option {obj.option}, configuration: {configuration_name})"
+        return _format_treatment_plant_label(
+            obj,
+            abbreviate_option_name=True,
         )
 
 
@@ -192,13 +257,13 @@ class TreatmentPlantComparisonForm(forms.Form):
         queryset=TreatmentPlant.objects.none(),
         required=False,
         label='Treatment configuration A',
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=TreatmentPlantSelect(attrs={'class': 'form-control'}),
     )
     right_plant = TreatmentPlantModelChoiceField(
         queryset=TreatmentPlant.objects.none(),
         required=False,
         label='Treatment configuration B',
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=TreatmentPlantSelect(attrs={'class': 'form-control'}),
     )
 
     def __init__(self, *args, **kwargs):

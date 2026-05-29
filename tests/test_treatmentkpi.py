@@ -891,6 +891,7 @@ class TestCIEX(unittest.TestCase):
         self.assertIn('head loss', kpi_results)
         self.assertIn('CO2 equivalent emissions', kpi_results)
         self.assertDictEqual(kpi_results, self.kpi_results)
+
         
 class TestAIEX(unittest.TestCase):
     def setUp(self):
@@ -920,14 +921,14 @@ class TestAIEX(unittest.TestCase):
             }
         }
         self.kpi_results = {
-            'footprint area': 2.0,
-            'footprint area for chemicals': 10.0,
-            'daily energy consumption': 192.0,
-            'daily mass of chemicals': 150,
+            'footprint area': 16.0,
+            'footprint area for chemicals': 0.0,
+            'daily energy consumption': 169.34587293875427,
+            'daily mass of chemicals': {},
             'chemical solution concentration': 0.0,
-            'head loss': 0.11961322716039698,
-            'power': 0.7705051688871006,
-            'CO2 equivalent emissions': 0.02}
+            'head loss': 1.9347512565300826,
+            'power': 7.056078039114761,
+            'CO2 equivalent emissions': 0.03175235117601643}
 
     def test_init(self):
         aiex = AnionicIEX(

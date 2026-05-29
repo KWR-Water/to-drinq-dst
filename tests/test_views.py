@@ -1,6 +1,10 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.test.client import RequestFactory
+from django.http import HttpResponse
+from unittest.mock import patch
 from drinq.models import (
     MultiStepConfiguration,
     TreatmentPlant,
@@ -9,6 +13,7 @@ from drinq.models import (
     TreatmentPlantPropertyValue,
 )
 from drinq.forms import TreatmentDesignSelectionForm
+from drinq.views import QuestionsCompleteView
 
 # drinq/test_views.py
 
@@ -281,7 +286,7 @@ class TreatmentPlantComparisonViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Compare Treatment Plant KPIs')
+        self.assertContains(response, 'Compare treatment plant KPIs')
         self.assertContains(response, 'nominal flow rate')
         self.assertContains(response, '100.0')
         self.assertContains(response, '120.0')
@@ -312,6 +317,63 @@ class TreatmentPlantComparisonViewTests(TestCase):
         self.assertContains(response, self.plant_one.name)
         self.assertContains(response, self.plant_two.name)
         self.assertNotContains(response, self.other_user_plant.name)
+
+    def test_uses_shorter_selector_option_label_format(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Compare Config [1]: Plant Alpha')
+        self.assertContains(response, 'Compare Config [2]: Plant Beta')
+        self.assertNotContains(response, 'option 1')
+        self.assertNotContains(response, 'configuration: Compare Config')
+
+    def test_abbreviates_long_option_name_and_sets_full_tooltip(self):
+        self.client.force_login(self.user)
+        long_name = (
+            'Plant name that is intentionally very long so it gets '
+            'abbreviated in selector'
+        )
+        long_plant = TreatmentPlant.objects.create(
+            name=long_name,
+            option=3,
+            configuration=self.configuration,
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'Compare Config [3]: Plant name that is intentionally very long...'
+        )
+        self.assertContains(
+            response,
+            f'title="Compare Config [3]: {long_plant.name}"',
+            html=False,
+        )
+
+    @override_settings(
+        TREATMENT_PLANT_OPTION_NAME_DISPLAY_MAX_CHARS=20,
+    )
+    def test_respects_configurable_option_name_display_max_chars(self):
+        self.client.force_login(self.user)
+        long_name = 'Long option label for setting override behavior'
+        TreatmentPlant.objects.create(
+            name=long_name,
+            option=4,
+            configuration=self.configuration,
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Compare Config [4]: Long option label...')
+        self.assertContains(
+            response,
+            f'title="Compare Config [4]: {long_name}"',
+            html=False,
+        )
 
 
 class TestDesignParameterResultsExportCsvView(TestCase):
@@ -357,6 +419,90 @@ class TestDesignParameterResultsExportCsvView(TestCase):
         self.assertIn('text/csv', response['Content-Type'])
         self.assertIn('attachment;', response['Content-Disposition'])
         self.assertIn('nominal flow rate', response.content.decode('utf-8'))
+
+
+class QuestionsCompleteViewDispatchTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='dispatch-user',
+            password='secretpass',
+        )
+
+        self.initial_configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='dispatch-initial-session',
+            name='Initial configuration',
+        )
+        self.selected_configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='dispatch-selected-session',
+            name='Selected configuration',
+        )
+
+    def _build_request(self):
+        request = self.factory.get(
+            reverse(
+                'form_complete',
+                kwargs={'session_key': self.selected_configuration.session_key},
+            )
+        )
+        request.user = self.user
+
+        middleware = SessionMiddleware(lambda _request: None)
+        middleware.process_request(request)
+        request.session.save()
+        request.session['configuration_id'] = self.initial_configuration.id
+
+        return request
+
+    @patch.object(QuestionsCompleteView, 'get')
+    def test_dispatch_updates_configuration_id_for_selected_session_key(
+            self,
+            mock_get):
+        mock_get.return_value = HttpResponse('ok')
+        request = self._build_request()
+
+        response = QuestionsCompleteView.as_view()(
+            request,
+            session_key=self.selected_configuration.session_key,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            request.session['configuration_id'],
+            self.selected_configuration.id,
+        )
+
+    @patch.object(QuestionsCompleteView, 'get')
+    def test_dispatch_uses_authenticated_user_for_session_key_lookup(
+            self,
+            mock_get):
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username='dispatch-other-user',
+            password='secretpass',
+        )
+        MultiStepConfiguration.objects.create(
+            user=other_user,
+            session_key=self.selected_configuration.session_key,
+            name='Other user configuration',
+        )
+
+        mock_get.return_value = HttpResponse('ok')
+        request = self._build_request()
+
+        response = QuestionsCompleteView.as_view()(
+            request,
+            session_key=self.selected_configuration.session_key,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            request.session['configuration_id'],
+            self.selected_configuration.id,
+        )
 
 # How to debug invalid forms:
 # - After form.is_valid(), inspect form.errors to see which fields are invalid.
