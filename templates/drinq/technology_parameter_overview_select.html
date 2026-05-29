@@ -4,9 +4,9 @@
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-sm p-3 bg-white">
-        <h1 class="mb-3">Technology parameters overview</h1>
+        <h1 class="mb-3">Technology and design parameters overview</h1>
         <p class="lead">
-            Select a treatment design to view technologies, technology properties,
+            Select a treatment design to view technologies, technology properties, design parameters,
             and water quality values (input and target) per technology.
         </p>
 
@@ -34,12 +34,20 @@
                                 <td>{{ plant.option }}</td>
                                 <td>{{ plant.name }}</td>
                                 <td>
-                                    <a
-                                        href="{% url 'technology_parameter_overview' plant.id %}"
-                                        class="btn btn-outline-primary btn-sm"
-                                    >
-                                        Open overview
-                                    </a>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a
+                                            href="{% url 'technology_parameter_overview' plant.id %}"
+                                            class="btn btn-outline-primary btn-sm"
+                                        >
+                                            Technology overview
+                                        </a>
+                                        <a
+                                            href="{% url 'design_parameter_overview' plant.id %}"
+                                            class="btn btn-outline-secondary btn-sm"
+                                        >
+                                            Design parameters
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

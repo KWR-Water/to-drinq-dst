@@ -108,6 +108,11 @@ urlpatterns = [
         views.TechnologyParameterOverviewView.as_view(),
         name='technology_parameter_overview',
     ),
+    path(
+        'treatmentplant/<int:plant_id>/design-parameter-overview/',
+        views.DesignParameterOverviewView.as_view(),
+        name='design_parameter_overview',
+    ),
     path('api/process_parameters/',
          DigestDesignParametersAPI.as_view(),
          name='api_process_parameters'),

@@ -129,6 +129,9 @@
         <a href="{% url 'technology_parameter_overview' treatment_plant.id %}" class="btn btn-outline-secondary btn-sm">
             View technology parameters and water quality values
         </a>
+        <a href="{% url 'design_parameter_overview' treatment_plant.id %}" class="btn btn-outline-secondary btn-sm">
+            View plant-wide design parameters
+        </a>
     </p>
     <h5 class="card-title">Technologies in option {{ treatment_plant.option }}  of plant: "{{ treatment_plant.name }}"</h5>
     <div class="card mt-4 shadow-sm">

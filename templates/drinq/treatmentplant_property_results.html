@@ -84,6 +84,35 @@
                     </table>
                 {% endfor %}
             </div>
+
+            <div class="card shadow-sm p-3 bg-white mt-4">
+                <h3 class="h4">Technology contribution by KPI</h3>
+                <p class="text-muted mb-3">
+                    Stacked bars show how each technology contributes to each KPI total.
+                </p>
+                <div class="btn-group mb-3" role="group" aria-label="Chart mode selector">
+                    <button
+                        type="button"
+                        id="technology-kpi-chart-mode-absolute"
+                        class="btn btn-sm btn-outline-primary active"
+                    >
+                        Absolute values
+                    </button>
+                    <button
+                        type="button"
+                        id="technology-kpi-chart-mode-normalized"
+                        class="btn btn-sm btn-outline-primary"
+                    >
+                        Normalized (100%)
+                    </button>
+                </div>
+                <div style="height: 430px;">
+                    <canvas id="technology-kpi-stacked-chart" aria-label="Stacked bar chart of technology KPI contributions" role="img"></canvas>
+                </div>
+                <div id="technology-kpi-stacked-chart-empty" class="form-text text-muted d-none mt-2">
+                    Not enough technology KPI data to render the stacked chart.
+                </div>
+            </div>
         {% else %}
             <div class="mt-5"><em>No technology KPIs available for this plant.</em></div>
         {% endif %}
@@ -122,8 +151,270 @@
 
 {% block extra_javascript %}
     {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="technology-kpi-rows" type="application/json">
+    [
+    {% for row in technology_kpis_ordered %}
+        {
+            "technology_name": "{{ row.technology.name|escapejs }}",
+            "kpis": [
+            {% for kpi_value in row.kpis %}
+                {
+                    "name": "{{ kpi_value.kpi.name|escapejs }}",
+                    "unit": "{{ kpi_value.kpi.unit|default_if_none:''|escapejs }}",
+                    "value": {% if kpi_value.value is None %}null{% else %}{{ kpi_value.value }}{% endif %}
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+    </script>
     <script>
     (function() {
+        const stackedChartCanvas = document.getElementById('technology-kpi-stacked-chart');
+        const stackedChartEmpty = document.getElementById('technology-kpi-stacked-chart-empty');
+        const technologyKpiRowsScript = document.getElementById('technology-kpi-rows');
+        const absoluteModeButton = document.getElementById('technology-kpi-chart-mode-absolute');
+        const normalizedModeButton = document.getElementById('technology-kpi-chart-mode-normalized');
+        let chartMode = 'absolute';
+        let stackedChartInstance = null;
+
+        function setModeButtonState() {
+            if (!absoluteModeButton || !normalizedModeButton) {
+                return;
+            }
+
+            absoluteModeButton.classList.toggle('active', chartMode === 'absolute');
+            normalizedModeButton.classList.toggle('active', chartMode === 'normalized');
+        }
+
+        function renderTechnologyKpiStackedChart() {
+            if (!stackedChartCanvas || !technologyKpiRowsScript || typeof Chart === 'undefined') {
+                return;
+            }
+
+            const rows = JSON.parse(technologyKpiRowsScript.textContent);
+            const technologyNames = [];
+            const kpiByName = {};
+
+            function isExcludedKpiName(kpiName) {
+                const normalizedName = String(kpiName || '').trim().toLowerCase();
+                return normalizedName === 'chemical solution concentration';
+            }
+
+            rows.forEach((row) => {
+                const technologyName = row.technology_name;
+                if (!technologyName) {
+                    return;
+                }
+                technologyNames.push(technologyName);
+
+                (row.kpis || []).forEach((kpiValue) => {
+                    if (!kpiValue || kpiValue.value === null) {
+                        return;
+                    }
+
+                    const kpiName = String(kpiValue.name || '').trim();
+                    if (!kpiName || isExcludedKpiName(kpiName)) {
+                        return;
+                    }
+
+                    const numericValue = Number(kpiValue.value);
+                    if (!Number.isFinite(numericValue)) {
+                        return;
+                    }
+
+                    if (!kpiByName[kpiName]) {
+                        kpiByName[kpiName] = {
+                            unit: kpiValue.unit || '',
+                            valuesByTechnology: {}
+                        };
+                    }
+                    kpiByName[kpiName].valuesByTechnology[technologyName] = numericValue;
+                });
+            });
+
+            const kpiLabels = Object.keys(kpiByName);
+            if (!kpiLabels.length || !technologyNames.length) {
+                if (stackedChartEmpty) {
+                    stackedChartEmpty.classList.remove('d-none');
+                }
+                return;
+            }
+
+            const palette = [
+                'rgba(42, 157, 143, 0.85)',
+                'rgba(230, 111, 81, 0.85)',
+                'rgba(38, 70, 83, 0.85)',
+                'rgba(233, 196, 106, 0.85)',
+                'rgba(69, 123, 157, 0.85)',
+                'rgba(244, 162, 97, 0.85)',
+                'rgba(29, 53, 87, 0.85)',
+                'rgba(67, 170, 139, 0.85)'
+            ];
+
+            const datasets = technologyNames.map((technologyName, index) => {
+                return {
+                    label: technologyName,
+                    data: kpiLabels.map((kpiName) => {
+                        const value = kpiByName[kpiName].valuesByTechnology[technologyName];
+                        return Number.isFinite(value) ? value : 0;
+                    }),
+                    backgroundColor: palette[index % palette.length],
+                    borderColor: palette[index % palette.length].replace('0.85', '1'),
+                    borderWidth: 1
+                };
+            });
+
+            const normalizedDatasets = datasets.map((dataset, datasetIndex) => {
+                const normalizedData = dataset.data.map((value, valueIndex) => {
+                    const total = datasets.reduce((sum, currentDataset) => {
+                        return sum + (Number(currentDataset.data[valueIndex]) || 0);
+                    }, 0);
+                    if (total <= 0) {
+                        return 0;
+                    }
+                    return (Number(value) / total) * 100;
+                });
+
+                return {
+                    label: dataset.label,
+                    data: normalizedData,
+                    backgroundColor: dataset.backgroundColor,
+                    borderColor: dataset.borderColor,
+                    borderWidth: dataset.borderWidth,
+                    absoluteData: dataset.data,
+                    datasetOrder: datasetIndex
+                };
+            });
+
+            function getDatasetsForMode() {
+                if (chartMode === 'normalized') {
+                    return normalizedDatasets;
+                }
+                return datasets;
+            }
+
+            function getYAxisConfigForMode() {
+                if (chartMode === 'normalized') {
+                    return {
+                        stacked: true,
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Contribution per KPI (%)'
+                        }
+                    };
+                }
+
+                return {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'KPI value (unit per KPI)'
+                    }
+                };
+            }
+
+            function getTooltipLabel(context) {
+                const label = context.dataset.label || '';
+                const value = context.parsed.y;
+                const kpiName = context.label;
+                const unit = (kpiByName[kpiName] && kpiByName[kpiName].unit) || '';
+
+                if (chartMode === 'normalized') {
+                    const absoluteValue = context.dataset.absoluteData
+                        ? Number(context.dataset.absoluteData[context.dataIndex]) : 0;
+                    const percentageText = Number(value).toLocaleString(undefined, {
+                        maximumFractionDigits: 2
+                    });
+                    const absoluteValueText = Number(absoluteValue).toLocaleString(undefined, {
+                        maximumFractionDigits: 4
+                    });
+                    return label + ': ' + percentageText + '%'
+                        + ' (' + absoluteValueText + (unit ? ' ' + unit : '') + ')';
+                }
+
+                const valueText = Number(value).toLocaleString(undefined, {
+                    maximumFractionDigits: 4
+                });
+                return label + ': ' + valueText + (unit ? ' ' + unit : '');
+            }
+
+            function createOrUpdateChart() {
+                const dataForMode = getDatasetsForMode();
+                const yAxisConfig = getYAxisConfigForMode();
+
+                if (!stackedChartInstance) {
+                    stackedChartInstance = new Chart(stackedChartCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: kpiLabels,
+                            datasets: dataForMode
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: getTooltipLabel
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 20
+                                    }
+                                },
+                                y: yAxisConfig
+                            }
+                        }
+                    });
+                    return;
+                }
+
+                stackedChartInstance.data.datasets = dataForMode;
+                stackedChartInstance.options.scales.y = yAxisConfig;
+                stackedChartInstance.update();
+            }
+
+            setModeButtonState();
+            createOrUpdateChart();
+
+            if (absoluteModeButton) {
+                absoluteModeButton.addEventListener('click', function() {
+                    chartMode = 'absolute';
+                    setModeButtonState();
+                    createOrUpdateChart();
+                });
+            }
+
+            if (normalizedModeButton) {
+                normalizedModeButton.addEventListener('click', function() {
+                    chartMode = 'normalized';
+                    setModeButtonState();
+                    createOrUpdateChart();
+                });
+            }
+        }
+
+        renderTechnologyKpiStackedChart();
+
         function alignFirstColumn(tableSelector) {
             const tables = document.querySelectorAll(tableSelector);
             if (!tables.length) {

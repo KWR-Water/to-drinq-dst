@@ -1637,6 +1637,59 @@ class TechnologyParameterOverviewView(generic.DetailView):
         return context
 
 
+class DesignParameterOverviewView(generic.DetailView):
+    """Read-only overview of plant-wide design parameter values."""
+
+    model = TreatmentPlant
+    template_name = 'drinq/design_parameter_overview.html'
+    pk_url_kwarg = 'plant_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        treatment_plant = self.object
+
+        parameter_rows = list(
+            TreatmentplantDesignParameter.objects
+            .filter(treatmentplant=treatment_plant)
+            .select_related('designparameter', 'designparameter__category')
+            .order_by('designparameter__name')
+        )
+
+        design_parameter_rows = []
+        for parameter_row in parameter_rows:
+            design_parameter = parameter_row.designparameter
+            if design_parameter is None:
+                continue
+
+            stored_value = parameter_row.value
+            resolved_value = (
+                stored_value
+                if stored_value is not None
+                else design_parameter.defaultvalue
+            )
+
+            category_name = None
+            if design_parameter.category is not None:
+                category_name = design_parameter.category.name
+
+            design_parameter_rows.append({
+                'name': design_parameter.name,
+                'category': category_name,
+                'description': design_parameter.description,
+                'unit': design_parameter.unit,
+                'value': resolved_value,
+                'value_source': (
+                    'Stored value'
+                    if stored_value is not None
+                    else 'Default value'
+                ),
+            })
+
+        context['design_parameter_rows'] = design_parameter_rows
+        context['treatment_plant'] = treatment_plant
+        return context
+
+
 class AdaptabilityDetailView(generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/adaptability_details.html'
