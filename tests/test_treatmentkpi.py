@@ -20,9 +20,11 @@ from drinq.utils.treatmentkpi import (
     MicroStrainer,
     PelletSoftening,
     CationIonExchange,
+    AnionicIEX,
     ChlorineDisinfection,
     ChloramineDisinfection,
     BaffledOzonationContactor,
+    MembraneFiltration,
     UVdisinfection,
     CleanWaterStorageTank,
     calculate_chemical_storage_area__m2,
@@ -830,11 +832,12 @@ class TestCIEX(unittest.TestCase):
     def setUp(self):
         self.parameters = {
             'units per lane': 2.5,
-            'regeneration duration': 40.0,
+            'regeneration duration': 10.0,
             'tank height': 2,
             'storage time of chemicals (days)': 20,
             'chemical emission factor': 0.5,
-            'mass density of chemical':1.2
+            'mass density of chemical':1.2,
+            'power efficiency of pump(s)': 0.8,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -888,6 +891,70 @@ class TestCIEX(unittest.TestCase):
         self.assertIn('CO2 equivalent emissions', kpi_results)
         self.assertDictEqual(kpi_results, self.kpi_results)
         
+class TestAIEX(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'units per lane': 2.5,
+            'empty bed contact time': 4,
+            'regeneration duration': 10.0,
+            'bed height': 2,
+            'resin volume exchange': 18,
+            'storage time of chemicals (days)': 20,
+            'chemical emission factor': 0.5,
+            'mass density of chemical':1.2,
+            'power efficiency of pump(s)': 0.8,
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+
+        self.wq_parameters = {
+            'dissolved organic carbon': {
+                'input_parameter': 20.0,
+                'target_parameter': 3.0,
+            }
+        }
+        self.kpi_results = {
+            'footprint area': 2.0,
+            'footprint area for chemicals': 10.0,
+            'daily energy consumption': 192.0,
+            'daily mass of chemicals': 150,
+            'chemical solution concentration': 0.0,
+            'head loss': 0.11961322716039698,
+            'power': 0.7705051688871006,
+            'CO2 equivalent emissions': 0.02}
+
+    def test_init(self):
+        aiex = AnionicIEX(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertEqual(aiex.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(aiex.bed_height_m, self.parameters['bed height'])
+        self.assertEqual(aiex.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
+
+    def test_get_kpi_dict(self):
+        aiex = AnionicIEX(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = aiex.get_kpi_dict()
+        self.maxDiff = None
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
 class TestCleanWaterStorageTank(unittest.TestCase):
     def setUp(self):
@@ -1000,6 +1067,68 @@ class TestPellet(unittest.TestCase):
         self.assertIn('CO2 equivalent emissions', kpi_results)
 
     # TODO: Add more tests for ChlorineDisinfection methods
+
+class TestMembranes(unittest.TestCase):
+    def setUp(self):
+        self.parameters = {
+            'units per lane': 2.5,
+            'regeneration duration': 40.0,
+            'tank height': 2,
+            'storage time of chemicals (days)': 20,
+            'chemical emission factor': 0.5,
+            'mass density of chemical':1.2
+        }
+        self.design_parameters = {
+            'number of lanes': 2,
+            'emission factor (electricity)': 0.45,
+        }
+        self.plant_kpis = {
+            'nominal flow rate': 100.0,
+        }
+
+        self.wq_parameters = {
+            'total hardness': {
+                'input_parameter': 320.0,
+                'target_parameter': 80.0,
+            }
+        }
+        self.kpi_results = {
+            'footprint area': 2.0,
+            'footprint area for chemicals': 10.0,
+            'daily energy consumption': 192.0,
+            'daily mass of chemicals': 150,
+            'chemical solution concentration': 0.0,
+            'head loss': 0.11961322716039698,
+            'power': 0.7705051688871006,
+            'CO2 equivalent emissions': 0.02}
+
+    def test_init(self):
+        ciex = CationIonExchange(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters,
+        )
+        self.assertEqual(ciex.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(ciex.tank_height_m, self.parameters['tank height'])
+        self.assertEqual(ciex.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
+
+    def test_get_kpi_dict(self):
+        ciex = CationIonExchange(
+            parameters=self.parameters,
+            design_parameters=self.design_parameters,
+            plant_kpis=self.plant_kpis,
+            digest_parameter_list=['area'],
+            wq_parameters=self.wq_parameters,
+        )
+        kpi_results = ciex.get_kpi_dict()
+        self.maxDiff = None
+        self.assertIn('footprint area', kpi_results)
+        self.assertIn('daily mass of chemicals', kpi_results)
+        self.assertIn('head loss', kpi_results)
+        self.assertIn('CO2 equivalent emissions', kpi_results)
+        self.assertDictEqual(kpi_results, self.kpi_results)
 
 
 class DummyTreatmentKPI(TreatmentKPI):

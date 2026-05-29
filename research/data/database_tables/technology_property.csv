@@ -494,3 +494,6 @@ id,technology,property,defaultvalue,is_designparameter,is_digested
 494,39,20,2.5,0,0
 495,39,15,2,1,0
 496,16,169,4,1,0
+497,16,61,80,0,0
+498,17,61,80,0,0
+499,16,150,10,0,0

@@ -3586,13 +3586,14 @@ class CationIonExchange(TreatmentKPI):
     lanes: int
     units_per_lane: int
     nominal_flow_m3perh: float
-    hardness_in: float
-    target_hardness: float
+    total_hardness_in_mgliter: float
+    target_hardness_mgliter: float
     delta_c_eq_m3: float
     resin_capacity_eqperliter: float
     cycle_h: float
     nacl_density: float
     storage_days: int
+    power_efficiency_pumps:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3616,7 +3617,8 @@ class CationIonExchange(TreatmentKPI):
             INPUT_WQPARAMETER_KEY]
         self.target_hardness_mgliter = wq_parameters['total hardness'][
             TARGET_WQPARAMETER_KEY]
-        
+        self.power_efficiency_pumps = parameters[
+            TPN['power_efficiency_of_pumps']]
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
         self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
@@ -3693,7 +3695,7 @@ class CationIonExchange(TreatmentKPI):
         unit_surface_rate=self.flow_per_unit_m3hr/ a_unit
         unit_surface_rate_mps = unit_surface_rate / 3600
         resin_porocity = 0.4
-        bead_diameter = 0.007 # 7mm bead diameter
+        bead_diameter = 0.0007 # 0.7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
         pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
@@ -3702,7 +3704,7 @@ class CationIonExchange(TreatmentKPI):
 
     @property
     def power__kw(self) -> float:
-        eff = 0.75
+        eff = self.power_efficiency_pumps
         headloss_m=self.hydraulic_headloss__bar * METER_PER_BAR
         power_service_kW=(self.nominal_flow_m3perh / 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * headloss_m) / (eff * 1000)
 
@@ -3746,6 +3748,7 @@ class AnionicIEX(TreatmentKPI):
     ebct_min: float
     chemical_emission_factor: float
     emission_factor_electricity: float
+    power_efficiency_pumps:float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3770,9 +3773,12 @@ class AnionicIEX(TreatmentKPI):
         self.doc_target_mgl = wq_parameters[
             'dissolved organic carbon'][TARGET_WQPARAMETER_KEY]  # mgl/l        
         self.delta_doc_gm3 = max(0.0, self.doc_in_mgl - self.doc_target_mgl)
+        self.cycle_h = parameters[TPN['regeneration_duration']]
         self.ebct_min = parameters[TPN['empty_bed_contact_time']]  # 4 min.
         self.resin_doc_capacity_gl = self.parameters[
             TPN['resin_volume_exchange']]  # 18 eq/l
+        self.power_efficiency_pumps = parameters[
+            TPN['power_efficiency_of_pumps']]
         self.nacl_density = 1200  # kg/m3
         self.nacl_dose_per_m3_resin = 150.0  # kg per m3 of water
         self.bed_height_m = self.parameters[TPN['bed_height']]
@@ -3804,13 +3810,13 @@ class AnionicIEX(TreatmentKPI):
     @property
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Total salt (NaCl) consumed per day based on resin volume regenerated."""
-
-        daily_doc_load_g = self.delta_doc_mgL * self.nominal_flow_m3perh * 24.0        
-        resin_exhausted_l_day = daily_doc_load_g / self.resin_capacity_g_per_l
+        resin_doc_capacity_gl = 15 # Assuming operating capacity of 15g/l
+        daily_doc_load_g = self.delta_doc_gm3 * self.nominal_flow_m3perh * 24.0        
+        resin_exhausted_l_day = daily_doc_load_g / resin_doc_capacity_gl
 
         resin_m3_day = resin_exhausted_l_day / 1000.0
         return self._single_chemical_value(
-            resin_m3_day * self.salt_dose_kg_per_m3_resin
+            resin_m3_day * self.nacl_dose_per_m3_resin
         )
 
     @property
@@ -3836,34 +3842,38 @@ class AnionicIEX(TreatmentKPI):
         """Total area including vessels, chemical storage, and waste tanks."""
         # unit_area_m2 = self.flow_per_unit_m3hr / self.surface_overflow_rate  # TODO: please check!!!
         # unit_area_m2 = self.unit_area_m2 * self.lanes * self.units_per_lane
-        v_resin_total = self.unit_area_m2 * self.lanes * (self.units_per_lane - 1)
+        total_vessels_area = self.unit_area_m2 * self.lanes * self.units_per_lane
+        total_active_units = (self.lanes * self.units_per_lane) - 1
+        v_resin_total = self.unit_area_m2 * total_active_units * self.bed_height_m
         regens_per_day = 24 / self.cycle_h
         bv_waste_factor = 4.0  # Brine + slow rinse volumes
         waste_storage_vol = (v_resin_total * regens_per_day *
                              bv_waste_factor) * (12 / 24)  # 12h buffer
         area_waste_tank = waste_storage_vol / 3.0
-        return np.ceil((unit_area_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25) # 20% spacing factor for maintenance
+        raw_footprint = total_vessels_area + self.footprint_area_for_chemicals__m2 + area_waste_tank
+        return float(np.ceil(raw_footprint * 1.20)) # 20% spacing factor for maintenance
 
     @property
     def hydraulic_headloss__bar(self) -> float:
         """Calculates pressure drop using the Ergun Equation + Internal Losses."""
-        eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
+        eq_per_cycle = self.delta_doc_gm3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_doc_capacity_gl) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.bed_depth
+        a_unit = resin_volume_unit__m3/ self.bed_height_m
         unit_surface_rate=self.flow_per_unit_m3hr/ a_unit
         unit_surface_rate_mps = unit_surface_rate / 3600
         resin_porocity = 0.4
-        bead_diameter = 0.0007 # 7mm bead diameter
+        bead_diameter = 0.0007 # 0.7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
-        pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
+        pressure_drop_pa = (term_laminar + term_turbulent) * self.bed_height_m
         headloss_bar = pressure_drop_pa / 100000
-        return headloss_bar + meters_of_water_to_bar(self.tank_height_m ) 
+        tank_height_m = self.bed_height_m + 1.5
+        return headloss_bar + meters_of_water_to_bar(tank_height_m ) 
 
     @property
     def power__kw(self) -> float:
         """Total power for service pumps and regeneration pumps."""
-        eff = 0.75
+        eff = self.power_efficiency_pumps
         head_m = self.hydraulic_headloss__bar * 10.197 # Bar to meters
         p_service = (self.nominal_flow_m3perh / 3600 * 1000 * 9.81 * head_m) / (eff * 1000)
         p_regen = p_service * 0.05
