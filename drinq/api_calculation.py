@@ -458,13 +458,13 @@ class TechnologyPerformanceCalculator:
                         match technology.lower():
                             case 'micro strainer':
                                 microstrainer = MicroStrainer(**tech_kwargs)  # noqa, E501
-                                self.tech_kpis[technology] = microstrainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                                self.tech_kpis[technology] = microstrainer.get_kpi_dict()  # noqa, E501
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
 
                     case 'screening':
                         if 'strainer' in technology.lower():
                             strainer = Strainer(**tech_kwargs)
-                            self.tech_kpis[technology] = strainer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = strainer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
 
                     case 'coagulation':
@@ -478,7 +478,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
                         elif ('cascade' in technology.lower()) and ('coagulant dosing' in technology.lower()):
                             cascade_mixer = CascadeMixerCoagulationDosing(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = cascade_mixer.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = cascade_mixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = cascade_mixer.parameters  # noqa, E501
 
                     case 'flocculation':
@@ -490,33 +490,33 @@ class TechnologyPerformanceCalculator:
                     case 'nom removal':
                         if ('anion exchange') in technology.lower():
                             anion_iex = AnionicIEX(**tech_kwargs)
-                            self.tech_kpis[technology] = anion_iex.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = anion_iex.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = anion_iex.parameters  # noqa, E501
                         if ('ultrafiltration') in technology.lower():
                             ultrafiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = ultrafiltration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = ultrafiltration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ultrafiltration.parameters  # noqa, E501
 
                     case 'floc removal':
                         if 'sludge blanket' in technology.lower():
                             sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = sludgeblanket_cl.parameters  # noqa, E501
                         elif 'chain scraped sedimentation' in technology.lower():  # noqa, E501
                             chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = chain_scraped_sed.parameters  # noqa, E501
                         elif 'flotation with saturated air' in technology.lower():
                             daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = daf.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = daf.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = daf.parameters  # noqa, E501
                         elif ('lamella' in technology.lower()) and ('sloped plates' in technology.lower()):
                             lamella_slope = LamellaClarifierSlope(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = lamella_slope.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_slope.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = lamella_slope.parameters  # noqa, E501
                         elif ('lamella' in technology.lower()) and ('horizontal' in technology.lower()):
                             lamella_horizontal = LamellaClarifierHorizontal(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = lamella_horizontal.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = lamella_horizontal.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = lamella_horizontal.parameters  # noqa, E501
 
                     case 'submerged rapid sand filtration':
@@ -524,75 +524,75 @@ class TechnologyPerformanceCalculator:
                             'submerged' in technology.lower() and
                             'single' in technology.lower()):
                             rsf = RapidSandSingleMediumFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = rsf.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = rsf.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsf.parameters  # noqa, E501
                         elif ('rapid sand filtration' in technology.lower() and
                               'submerged' in technology.lower() and
                               'double' in technology.lower()):  # noqa, E501
                             rsfd = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = rsfd.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = rsfd.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfd.parameters  # noqa, E501
                         elif ('rapid sand filtration' in technology.lower() and
                               'submerged' in technology.lower() and
                               'pressurized' in technology.lower()):  # noqa, E501
                             rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = rsfp.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfp.parameters  # noqa, E501
 
                     case 'omp removal':
                         if ('nanofiltration') in technology.lower():  # noqa, E501
                             membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = membr_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = membr_filtration.parameters  # noqa, E501
                         elif ('granular activated carbon') in technology.lower():  # noqa, E501
                             gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = gac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = gac_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = gac_filtration.parameters  # noqa, E501
                         elif ('powdered activated carbon') in technology.lower():  # noqa, E501
                             pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = pac_filtration.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
                         elif ('UV' and 'H2O2') in technology.lower():  # noqa, E501
                             uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = uv_aop.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = uv_aop.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_aop.parameters  # noqa, E501
                         elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
 
                     case 'softening':
                         if ('pellet softening') in technology.lower():
                             pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = pellet_softening.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pellet_softening.parameters  # noqa, E501
                         elif ('cation exchange') in technology.lower():
                             ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = ciex.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = ciex.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ciex.parameters  # noqa, E501
 
                     case 'disinfection':
                         if ('chlorination') in technology.lower():  # noqa, E501
                             cl_dis = ChlorineDisinfection(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = cl_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = cl_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = cl_dis.parameters  # noqa, E501
                         elif ('chloramination') in technology.lower():  # noqa, E501
                             clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = clm_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = clm_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = clm_dis.parameters  # noqa, E501
                         elif ('UV' and 'disinfection') in technology.lower():  # noqa, E501
                             uv_dis = UVdisinfection(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = uv_dis.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = uv_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_dis.parameters  # noqa, E501
                         elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
   
                     case 'clean water storage':
                         if ('clean water storage tank' in technology.lower()):
                             storage_tank = CleanWaterStorageTank(**tech_kwargs)  # noqa, E501
-                            self.tech_kpis[technology] = storage_tank.get_kpi_dict(**tech_kpilist)  # noqa, E501
+                            self.tech_kpis[technology] = storage_tank.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = storage_tank.parameters  # noqa, E501
 
         print("-- Calculated technology KPIs:")
@@ -688,14 +688,14 @@ class NominalFlowKPI(PlantKPI):
         population_persons: int,
         avg_consumption_lppd: float,
         leakage_factor: float,
-        peak_demand_factor: float,
+        peak_daily_demand_factor: float,
         largescaleconsumption_m3pd: float = 0.,
     ) -> float:
         flow_population = calculate_water_demand_m3hr_for_population(
             population_persons=population_persons,
             avg_consumption_lppd=avg_consumption_lppd)
         expected_flow = flow_population + largescaleconsumption_m3pd/24
-        self.value = expected_flow * (1 + leakage_factor) * peak_demand_factor
+        self.value = expected_flow * (1 + leakage_factor) * peak_daily_demand_factor
         return self.value
 
 
@@ -1021,7 +1021,7 @@ class TreatmentPlantPerformanceCalculator:
 
         This method retrieves required parameters from `design_parameters`, e.g.
         including population size, average consumption per person per day,
-        large-scale consumption, leakage factor, and peak demand factor.
+        large-scale consumption, leakage factor, and peak daily demand factor.
         It validates the presence of essential parameters and raises a
         ValueError if any are missing. The nominal flow rate is then calculated
         using these parameters and stored in `nominal_flow_m3perhr`.
@@ -1033,7 +1033,7 @@ class TreatmentPlantPerformanceCalculator:
             ValueError: If any of the required parameters (e.g.
                 'population persons', 'average consumption (lppd)',
                 'large-scale consumption (m3/day)', 'leakage factor',
-                or 'peak demand factor') are missing from
+                or 'peak daily demand factor') are missing from
                 `design_parameters`.
         """        
         nominal_flow_m3perhr = self.nominal_flow_m3perhr
@@ -1044,18 +1044,18 @@ class TreatmentPlantPerformanceCalculator:
         largescaleconsumption_m3pd = parameters.get(
             'large-scale consumption (m3/day)', 0.)
         leakage_factor = parameters.get('leakage factor', None)
-        peak_demand_factor = parameters.get('peak demand factor', None)
+        peak_daily_demand_factor = parameters.get('peak daily demand factor', None)
         if (
             population_persons is None or avg_consumption_lppd is None
-        ) or leakage_factor is None or peak_demand_factor is None:
+        ) or leakage_factor is None or peak_daily_demand_factor is None:
             raise ValueError(
-                "Population persons, peak demand factor, average consumption "
+                "Population persons, peak daily demand factor, average consumption "
                 " and leakage factor must be provided.")
         new_value = nominal_flow_m3perhr.calculate_value(
             population_persons=int(population_persons),
             avg_consumption_lppd=avg_consumption_lppd,
             leakage_factor=leakage_factor,
-            peak_demand_factor=peak_demand_factor,
+            peak_daily_demand_factor=peak_daily_demand_factor,
             largescaleconsumption_m3pd=largescaleconsumption_m3pd,
         )
         return new_value

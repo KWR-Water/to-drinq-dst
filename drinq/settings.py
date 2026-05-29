@@ -153,6 +153,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # PUBCHEM REST API REQUEST SETTING
 TIME_BETWEEN_PUBCHEM_REQUESTS = 0.3
 
+# Max visible characters for treatment option names in comparison selectors.
+TREATMENT_PLANT_OPTION_NAME_DISPLAY_MAX_CHARS = 30
+
 LOGGING = {
     "version": 1,  # the dictConfig format version
     "disable_existing_loggers": False,  # retain the default loggers

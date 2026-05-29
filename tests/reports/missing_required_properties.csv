@@ -1,24 +1,9 @@
 technology_id,technology_name,technology_class,missing_property,source_table
-33,Inline dosing of ferric chloride,CoagulationInlineMixing,chemical dosing solution concentration (w/w%),technology_property
-33,Inline dosing of ferric chloride,CoagulationInlineMixing,mass density of chemical,technology_property
-33,Inline dosing of ferric chloride,CoagulationInlineMixing,storage time of chemicals (days),technology_property
 33,Inline dosing of ferric chloride,CoagulationInlineMixing,tank height chemical storage,technology_property
-33,Inline dosing of ferric chloride,CoagulationInlineMixing,target concentration of dosing chemical,technology_property
-52,Flocculation with dynamic mixing,FlocculationDynamicMixing,power efficiency of mixer(s),technology_property
 26,Side stream nanofiltration,MembraneFiltration,membranes per vessel,technology_property
 26,Side stream nanofiltration,MembraneFiltration,operating pressure (bar),technology_property
 26,Side stream nanofiltration,MembraneFiltration,power efficiency of pump(s),technology_property
 26,Side stream nanofiltration,MembraneFiltration,pressure vessel orientation,technology_property
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,mass density of TSS,technology_property
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,plate angle,technology_property
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,sludge tank height,technology_property
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,surface overflow rate,technology_property
-5,"Lamella clarifier, horizontal floors",LamellaClarifierHorizontal,mass density of TSS,technology_property
-5,"Lamella clarifier, horizontal floors",LamellaClarifierHorizontal,surface overflow rate,technology_property
-19,"Rapid sand filtration, submerged, dual media, sand",RapidSandDoubleMediumFiltration,power efficiency of pump(s),technology_property
-27,Chlorine dosing equipment,ChlorineDisinfection,power,technology_property
-27,Chlorine dosing equipment,ChlorineDisinfection,tank height chemical storage,technology_property
-27,Chlorine dosing equipment,ChlorineDisinfection,target concentration of dosing chemical,technology_property
-39,Chloramine dosing equipment,ChloramineDisinfection,tank height chemical storage,technology_property
-32,Low pressure uV for disinfection process,UVdisinfection,UV power intensity,technology_property
-32,Low pressure uV for disinfection process,UVdisinfection,tank height,technology_property
+8,Flotation with saturated air,AirFlotationDAF,surface overflow rate,technology_property
+21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,backwash filtration rate,technology_property
+17,Cation exchange (CIEX) filtration unit,CationIonExchange,mass density of chemical,technology_property

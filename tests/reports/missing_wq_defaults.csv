@@ -10,9 +10,6 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 29,Main stream nanofiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 36,Polymeric ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 37,Ceramic ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-7,Chain-scraped sedimentation tank,ChainScrapedSedimentation,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-6,"Lamella clarifier, sloped plates",LamellaClarifierSlope,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-5,"Lamella clarifier, horizontal floors",LamellaClarifierHorizontal,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 18,"Rapid sand filtration, submerged, single medium",RapidSandSingleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 19,"Rapid sand filtration, submerged, dual media, sand",RapidSandDoubleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
@@ -20,7 +17,7 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 15,Powdered activated carbon (PAC) filtration,PowderedActivatedCarbonFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 38,UV/H2O2 Advanced Oxidation Process,UVAOP,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 31,Baffled ozone contact reactor,BaffledOzonationContactor,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-27,Chlorine dosing equipment,ChlorineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-39,Chloramine dosing equipment,ChloramineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-32,Low pressure uV for disinfection process,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
+27,Chlorination,ChlorineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
+39,Chloramination,ChloramineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
+32,Low pressure UV for disinfection,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 43,Clean water storage tank,CleanWaterStorageTank,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
