@@ -3593,7 +3593,7 @@ class CationIonExchange(TreatmentKPI):
     cycle_h: float
     nacl_density: float
     storage_days: int
-    power_efficiency_pumps:float
+    power_efficiency_pumps: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3607,7 +3607,8 @@ class CationIonExchange(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = parameters[TPN['units_per_lane']]
-        self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
+        self.chemical_emission_factor = parameters[
+            TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
         self.cycle_h = parameters[TPN['regeneration_duration']]
@@ -3623,7 +3624,8 @@ class CationIonExchange(TreatmentKPI):
             self.lanes * (self.units_per_lane - 1))
         self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
         self.resin_capacity_eqperliter = 1.8  # eq/L of resin
-        self.nacl_density = parameters[TPN['mass_density_of_chemical']] # kg/m3
+        self.nacl_density = parameters[
+            TPN['mass_density_of_chemical']] # kg/m3
         self.daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
 
     def __repr__(self):
@@ -3683,9 +3685,9 @@ class CationIonExchange(TreatmentKPI):
         total_plant_regens_per_day = regens_per_vessel_day * total_vessels
         regens_in_8_hours = total_plant_regens_per_day * (8.0 / 24.0)
         waste_storage_vol = single_unit_waste_vol_m3 * regens_in_8_hours
-        area_waste_tank = waste_storage_vol / 3.0 
-        total_calculated_area = area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank
-        return np.ceil((area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25)
+        area_waste_tank = waste_storage_vol / 3.0
+        net_calculated_area = area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank
+        return np.ceil(net_calculated_area * 1.25)
 
     @property
     def hydraulic_headloss__bar(self) -> float:
@@ -3748,7 +3750,7 @@ class AnionicIEX(TreatmentKPI):
     ebct_min: float
     chemical_emission_factor: float
     emission_factor_electricity: float
-    power_efficiency_pumps:float
+    power_efficiency_pumps: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -3810,7 +3812,7 @@ class AnionicIEX(TreatmentKPI):
     @property
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Total salt (NaCl) consumed per day based on resin volume regenerated."""
-        resin_doc_capacity_gl = 15 # Assuming operating capacity of 15g/l
+        resin_doc_capacity_gl = 15  # Assuming operating capacity of 15g/l
         daily_doc_load_g = self.delta_doc_gm3 * self.nominal_flow_m3perh * 24.0        
         resin_exhausted_l_day = daily_doc_load_g / resin_doc_capacity_gl
 
@@ -3865,8 +3867,8 @@ class AnionicIEX(TreatmentKPI):
         bead_diameter = 0.0007 # 0.7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
-        pressure_drop_pa = (term_laminar + term_turbulent) * self.bed_height_m
-        headloss_bar = pressure_drop_pa / 100000
+        pressure_drop_pa = term_laminar + term_turbulent
+        headloss_bar = pressure_drop_pa / 1e5
         tank_height_m = self.bed_height_m + 1.5
         return headloss_bar + meters_of_water_to_bar(tank_height_m ) 
 
