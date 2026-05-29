@@ -3609,18 +3609,20 @@ class CationIonExchange(TreatmentKPI):
         self.chemical_emission_factor = parameters[TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
             EMISSION_FACTOR_ELEC_NAME, None) 
-        self.cycle_h = parameters.get(TPN['regeneration_duration'], 10.0)
-        self.tank_height_m = parameters.get(TPN['tank_height'], 4.0)
-        self.storage_days = parameters.get(TPN['storage_time_of_chemicals_days'], 30)
-
-        self.hardness_in = wq_parameters['total hardness']['input_parameter']
-        self.target_hardness = wq_parameters['total hardness']['target_parameter']
+        self.cycle_h = parameters[TPN['regeneration_duration']]
+        self.tank_height_m = parameters[TPN['tank_height']]
+        self.storage_days = parameters[TPN['storage_time_of_chemicals_days']]
+        self.total_hardness_in_mgliter = wq_parameters['total hardness'][
+            INPUT_WQPARAMETER_KEY]
+        self.target_hardness_mgliter = wq_parameters['total hardness'][
+            TARGET_WQPARAMETER_KEY]
         
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
-        self.delta_c_eq_m3 = (self.hardness_in - self.target_hardness) / 50.0 # equivalent weight of Calcium Carbonate/m3
+        self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
         self.resin_capacity_eqperliter = 1.8  # eq/L of resin
-        self.nacl_density = 1200  # kg/m3
+        self.nacl_density = parameters[TPN['mass_density_of_chemical']] # kg/m3
+        self.daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
 
     def __repr__(self):
         return f"Ion Exchange bed height (m)={self.tank_height_m }, " \
@@ -3646,17 +3648,14 @@ class CationIonExchange(TreatmentKPI):
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates chemicals in """
         """Total salt consumed by the whole plant per day."""
-        daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
         salt_ratio = 0.20  # kg NaCl per eq removed (avg range 0.16-0.24)
-        return self._single_chemical_value(daily_removal_eq * salt_ratio)
+        return self._single_chemical_value(self.daily_removal_eq * salt_ratio)
 
     @property
     def footprint_area_for_chemicals__m2(self) -> float:
         """Required area for salt storage."""
-        salt_vol = (
-            self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
-            * self.storage_days
-        ) / self.nacl_density 
+        daily_mass_kg = self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
+        salt_vol = daily_mass_kg * self.storage_days / self.nacl_density 
         area_salt = salt_vol / 2.5 # 2.5m stacking height
         return area_salt
 
@@ -3672,26 +3671,29 @@ class CationIonExchange(TreatmentKPI):
     def footprint_area__m2(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.tank_height_m
+        a_unit = resin_volume_unit__m3 / self.tank_height_m
         area_tanks_m2 = a_unit * self.lanes * self.units_per_lane
         
-        v_resin_total = resin_volume_unit__m3 * self.lanes * (self.units_per_lane-1)
-        regens_per_day = 24 / self.cycle_h
-        bv_waste_factor = 4.5 # 4.5 times the resin volume is turned into waste
-        waste_storage_vol = v_resin_total * regens_per_day * bv_waste_factor * (8/24) # Storage for 8 hours of waste production to even out flow
-        area_waste_tank = waste_storage_vol / 3.0 # 3m deep tank
-        
+        bv_waste_factor = 4.5  # 4.5 bed volumes of waste produced per regeneration cycle 
+        single_unit_waste_vol_m3 = resin_volume_unit__m3 * bv_waste_factor
+        regens_per_vessel_day = 24.0 / self.cycle_h
+        total_vessels = self.lanes * self.units_per_lane
+        total_plant_regens_per_day = regens_per_vessel_day * total_vessels
+        regens_in_8_hours = total_plant_regens_per_day * (8.0 / 24.0)
+        waste_storage_vol = single_unit_waste_vol_m3 * regens_in_8_hours
+        area_waste_tank = waste_storage_vol / 3.0 
+        total_calculated_area = area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank
         return np.ceil((area_tanks_m2 + self.footprint_area_for_chemicals__m2 + area_waste_tank) * 1.25)
 
     @property
     def hydraulic_headloss__bar(self) -> float:
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.bed_depth
+        a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_surface_rate=self.flow_per_unit_m3hr/ a_unit
         unit_surface_rate_mps = unit_surface_rate / 3600
         resin_porocity = 0.4
-        bead_diameter = 0.0007 # 7mm bead diameter
+        bead_diameter = 0.007 # 7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porocity)**2) / (bead_diameter**2 * resin_porocity**3) * unit_surface_rate_mps     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porocity)) / (bead_diameter * resin_porocity**3) * unit_surface_rate_mps**2   
         pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
@@ -3701,12 +3703,12 @@ class CationIonExchange(TreatmentKPI):
     @property
     def power__kw(self) -> float:
         eff = 0.75
-        headloss_m=self.hydraulic_headloss__bar () * METER_PER_BAR
+        headloss_m=self.hydraulic_headloss__bar * METER_PER_BAR
         power_service_kW=(self.nominal_flow_m3perh / 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * headloss_m) / (eff * 1000)
 
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.bed_depth
+        a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_backflow_rate= 1.2* self.flow_per_unit_m3hr/ a_unit # 1.2 times the normal flow
         h_backwash_m = 1.5 * headloss_m
         power_backwash_kW = 0.25 * (24 / self.cycle_h) * (unit_backflow_rate/ 3600 * DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * h_backwash_m) / (eff * 1000) # 15 minutes backwashing for every regenetation
