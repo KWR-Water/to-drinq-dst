@@ -2699,17 +2699,15 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
         self.backwash_tank_height_m = parameters[
             TPN['backwash_tank_height']] 
         self.backwash_flow_rate__m3_per_m2_per_h = parameters[
-            TPN['backwash_flow_rate_m3_per_m2_per_h']]
+            TPN['backwash_filtration_rate']]
         self.efficiency_pump = parameters[
-            TPN['efficiency_pump']]
-        self.efficiency_backwash_pump = parameters[
-            TPN['efficiency_backwash_pump']]
+            TPN['power_efficiency_of_pumps']]/100
         self.unit_volume_m3 = self.unit_area_m2 * self.unit_depth_m
         self.power_lane_kw = (
             DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * self.flow_per_lane_m3perh * 
             self.unit_depth_m) / (self.efficiency_pump * 3600 * 1000)  # pumping power required per lane
         self.backwash_pump_flow_m3_per_h = (
-            np.ceil(self.unit_area_m2 * self.backwash_flow_rate_m3_per_m2_per_h)  # noqa: E501
+            np.ceil(self.unit_area_m2 * self.backwash_flow_rate__m3_per_m2_per_h)  # noqa: E501
             )
         self.backwash_pump_head_m = 1.5 * self.unit_depth_m         
         self.backwash_water_area_m2 = (
@@ -2719,7 +2717,6 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
             2 * (3 * self.backwash_pump_flow_m3_per_h/3600))    # rule of thumb of Apump=3*Qpump (in m/s)
         self.backwash_area_m2 = (
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
-        self.power_lane_kw = parameters[[TPN['power_lane_kw']]]
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
@@ -2763,15 +2760,22 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
 
     @property
     def power__kw(self) -> float:
+        self.power_lane_kw
         backwash_power_watts = (
             DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 *
             self.backwash_pump_head_m * self.backwash_pump_flow_m3_per_h/3600
         )
-        total_efficiency = self.efficiency_backwash_pump
+        total_efficiency = self.efficiency_pump
         backwash_power_kw = backwash_power_watts / (total_efficiency * 1000)
-        power_kw = (self.lanes * self.power_lane_kw) + backwash_power_kw/7 # projected over hours and days. 
+        power_kw = (self.lanes * self.power_lane_kw) + backwash_power_kw # projected over hours and days. 
         return power_kw
 
+    @property
+    def daily_energy_consumption__kwh(self) -> float:
+        norm_oper = self.lanes * self.power_lane_kw *24 
+        backwash_kW=self.power__kw-(self.lanes * self.power_lane_kw)
+        backwash_oper=backwash_kW * (self.backwash_duration_min / 60) * self.units_per_lane * self.lanes
+        return norm_oper +  backwash_oper # Assuming one full backwash (all units one time) per day
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
@@ -3619,7 +3623,7 @@ class CationIonExchange(TreatmentKPI):
         self.target_hardness_mgliter = wq_parameters['total hardness'][
             TARGET_WQPARAMETER_KEY]
         self.power_efficiency_pumps = parameters[
-            TPN['power_efficiency_of_pumps']]
+            TPN['power_efficiency_of_pumps']]/100
         self.flow_per_unit_m3hr = self.nominal_flow_m3perh / (
             self.lanes * (self.units_per_lane - 1))
         self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
@@ -3780,7 +3784,7 @@ class AnionicIEX(TreatmentKPI):
         self.resin_doc_capacity_gl = self.parameters[
             TPN['resin_volume_exchange']]  # 18 eq/l
         self.power_efficiency_pumps = parameters[
-            TPN['power_efficiency_of_pumps']]
+            TPN['power_efficiency_of_pumps']]/100
         self.nacl_density = 1200  # kg/m3
         self.nacl_dose_per_m3_resin = 150.0  # kg per m3 of water
         self.bed_height_m = self.parameters[TPN['bed_height']]
