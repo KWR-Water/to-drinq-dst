@@ -97,6 +97,7 @@ class CompoundSynonym(models.Model):
 class ChemicalAgent(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(unique=True, null=False)
+    description = models.TextField(blank=True, null=True)
     slug = models.TextField(unique=True, null=False)
 
     class Meta:
@@ -138,7 +139,7 @@ class TreatmentPlantChemicalagentPriceJunction(models.Model):
 
     class Meta:
         # managed = False
-        db_table = 'treatmentplant_chemicalagent_price'
+        db_table = 'treatmentplant_chemicalprice'
         verbose_name_plural = "treatment plant chemical agent prices"
 
     def __str__(self) -> str:

@@ -17,7 +17,7 @@ from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
 from django.db.models import Avg, Count
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, transaction, connection
 from django.db.utils import OperationalError
 
 from drinq.models import (
@@ -1478,6 +1478,39 @@ class TechnologyParameterOverviewView(generic.DetailView):
     template_name = 'drinq/technology_parameter_overview.html'
     pk_url_kwarg = 'plant_id'
 
+    def _get_chemicalagent_emission_factors(
+        self,
+        chemical_agent_ids: list[int],
+    ) -> dict[int, dict[str, float | str | None]]:
+        if not chemical_agent_ids:
+            return {}
+
+        table_names = connection.introspection.table_names()
+        if 'chemicalagent_emissionfactor' not in table_names:
+            return {}
+
+        placeholders = ','.join(['%s'] * len(chemical_agent_ids))
+        sql = (
+            'SELECT chemicalagent, co2_emissionfactor, emissionfactor_unit '
+            'FROM chemicalagent_emissionfactor '
+            f'WHERE chemicalagent IN ({placeholders})'
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(sql, chemical_agent_ids)
+            rows = cursor.fetchall()
+
+        return {
+            int(chemicalagent_id): {
+                'value': co2_emissionfactor,
+                'unit': emissionfactor_unit,
+            }
+            for (
+                chemicalagent_id,
+                co2_emissionfactor,
+                emissionfactor_unit,
+            ) in rows
+        }
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         treatment_plant = self.object
@@ -1513,6 +1546,7 @@ class TechnologyParameterOverviewView(generic.DetailView):
             .order_by('technology_id', 'property__name')
         )
         properties_by_technology = defaultdict(list)
+        technology_chemical_emission_factors = {}
         for junction in junctions:
             stored_value = value_map.get(
                 (junction.technology_id, junction.property_id)
@@ -1545,6 +1579,16 @@ class TechnologyParameterOverviewView(generic.DetailView):
                 and not junction.is_digested
             )
 
+            if junction.property.name == TPN['chemical_emission_factor']:
+                technology_chemical_emission_factors[
+                    junction.technology_id
+                ] = {
+                    'value': resolved_value,
+                    'source': value_source,
+                    'unit': junction.property.unit,
+                }
+                continue
+
             properties_by_technology[junction.technology_id].append({
                 'name': junction.property.name,
                 'description': junction.property.description,
@@ -1556,6 +1600,98 @@ class TechnologyParameterOverviewView(generic.DetailView):
                 'parameter_type': parameter_type,
                 'parameter_type_short': parameter_type_short,
                 'is_fixed_parameter': is_fixed_parameter,
+            })
+
+        technology_chemicalagent_junctions = list(
+            TechnologyChemicalagentJunction.objects
+            .filter(technology_id__in=technology_ids)
+            .select_related('chemical_agent')
+            .order_by('technology_id', 'chemical_agent__name')
+        )
+        chemical_agent_ids = sorted({
+            row.chemical_agent_id
+            for row in technology_chemicalagent_junctions
+            if row.chemical_agent_id is not None
+        })
+
+        default_price_rows = ChemicalagentPrice.objects.filter(
+            chemical_agent_id__in=chemical_agent_ids,
+        )
+        default_price_map = {
+            row.chemical_agent_id: {
+                'value': row.default_value,
+                'unit': row.units,
+            }
+            for row in default_price_rows
+        }
+
+        plant_price_rows = (
+            TreatmentPlantChemicalagentPriceJunction.objects
+            .filter(
+                treatmentplant=treatment_plant,
+                chemicalagent_id__in=chemical_agent_ids,
+            )
+        )
+        plant_price_map = {
+            row.chemicalagent_id: row.price
+            for row in plant_price_rows
+        }
+
+        chemicalagent_emission_factor_map = (
+            self._get_chemicalagent_emission_factors(chemical_agent_ids)
+        )
+
+        chemical_agents_by_technology = defaultdict(list)
+        for junction in technology_chemicalagent_junctions:
+            if junction.chemical_agent is None:
+                continue
+
+            default_price = default_price_map.get(junction.chemical_agent_id)
+            stored_price = plant_price_map.get(junction.chemical_agent_id)
+            if stored_price is not None:
+                price_value = stored_price
+                price_source = 'Stored value'
+            elif default_price is not None:
+                price_value = default_price.get('value')
+                price_source = 'Default value'
+            else:
+                price_value = None
+                price_source = None
+
+            emission_factor = chemicalagent_emission_factor_map.get(
+                junction.chemical_agent_id,
+                {},
+            )
+            technology_emission_factor = (
+                technology_chemical_emission_factors.get(
+                    junction.technology_id,
+                )
+            )
+            if technology_emission_factor is not None:
+                emission_factor_value = technology_emission_factor.get('value')
+                emission_factor_unit = technology_emission_factor.get('unit')
+                emission_factor_source = 'Technology-specific'
+            else:
+                emission_factor_value = emission_factor.get('value')
+                emission_factor_unit = emission_factor.get('unit')
+                if emission_factor_value is not None:
+                    emission_factor_source = 'Plant-wide fallback'
+                else:
+                    emission_factor_source = None
+
+            chemical_agents_by_technology[junction.technology_id].append({
+                'name': junction.chemical_agent.name,
+                'description': junction.chemical_agent.description,
+                'price_value': price_value,
+                'price_source': price_source,
+                'price_unit': (
+                    default_price.get('unit')
+                    if default_price is not None
+                    else None
+                ),
+                'emission_factor': emission_factor_value,
+                'emission_factor_source': emission_factor_source,
+                'emission_factor_unit': emission_factor_unit,
             })
 
         wq_junctions = list(
@@ -1629,6 +1765,10 @@ class TechnologyParameterOverviewView(generic.DetailView):
                         {},
                     ).values(),
                     key=lambda row: row['name'].lower(),
+                ),
+                'chemical_agent_rows': chemical_agents_by_technology.get(
+                    layout.technology_id,
+                    [],
                 ),
             })
 
