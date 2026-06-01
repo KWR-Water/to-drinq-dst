@@ -203,6 +203,89 @@
                 {% else %}
                     <p><em>No water quality values available for this technology.</em></p>
                 {% endif %}
+
+                <h3 class="h5 mt-4">Chemical agents used</h3>
+                {% if section.chemical_agent_rows %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="js-name-column">Chemical agent</th>
+                                    <th>Item</th>
+                                    <th>Value</th>
+                                    <th>Source</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in section.chemical_agent_rows %}
+                                    <tr>
+                                        <th class="js-name-column" scope="row">{{ row.name }}</th>
+                                        <td colspan="4" class="text-muted">
+                                            {% if row.description %}
+                                                {{ row.description }}
+                                            {% else %}
+                                                No description available.
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>Price</td>
+                                        <td>
+                                            {% if row.price_value is not None %}
+                                                {{ row.price_value|format_parameter_value }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.price_source %}
+                                                {{ row.price_source }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {% if row.price_unit %}
+                                                {{ row.price_unit|superscript_exponents|safe }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>CO2 emission factor</td>
+                                        <td>
+                                            {% if row.emission_factor is not None %}
+                                                {{ row.emission_factor|format_parameter_value }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.emission_factor_source %}
+                                                {{ row.emission_factor_source }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {% if row.emission_factor_unit %}
+                                                {{ row.emission_factor_unit|superscript_exponents|safe }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p><em>No chemical agents are configured for this technology.</em></p>
+                {% endif %}
             </div>
         {% endfor %}
     {% else %}
