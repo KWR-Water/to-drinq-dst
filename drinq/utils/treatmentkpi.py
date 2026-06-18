@@ -3164,7 +3164,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
 
     @property
     def power__kw(self) -> float:
-        """Total power for UV lamps in AOP mode."""
+        """Total power for PAC."""
         seconds_per_day = 86400
         dosing_head_m = self.silo_height_m + 2.0
         total_mass_kg = self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
@@ -3536,8 +3536,8 @@ class PelletSoftening(TreatmentKPI):
         self.rho_water = DENS_WATER_KG_PER_M3  # assumption, kg/m3
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']]
-        self.lime_purity_factor = parameters[
-            TPN['lime_dosage_mass_fraction']]  # kg lime/kg CaCO3
+        self.chemical_purity_factor = parameters[
+            TPN['lime_dosage_mass_fraction']]  # kg lime or caustic soda/kg CaCO3
         self.storage_days_chemicals = parameters[TPN['storage_time_of_chemicals_days']]
         
         (
@@ -4295,6 +4295,7 @@ class UVdisinfection(TreatmentKPI):
         
         self.lanes = design_parameters.get('number of lanes', None)
         self.units_per_lane = parameters[TPN['units_per_lane']]
+        self.units_per_lane = self.units_per_lane + 1
         self.emission_factor_electricity = design_parameters.get(EMISSION_FACTOR_ELEC_NAME, None)
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -4309,8 +4310,7 @@ class UVdisinfection(TreatmentKPI):
         self.exposure_time_sec = (
             self.uv_dose_mjpercm2 /
             self.average_intensity_mWpercm2)
-        self.storage_time_days = 30  # FIX: should not be hardcoded!
-        self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec
+        self.unit_volume_m3 = (self.flow_per_unit_m3perh / 3600) *  self.exposure_time_sec / 0.8 # hydraulic efficiency
 
     def __repr__(self):
         return f"UV tank height (m)={self.tank_height_m}, " \
@@ -4348,11 +4348,13 @@ class UVdisinfection(TreatmentKPI):
     def footprint_area__m2(self) -> float:
         unit_area_m2 = self.unit_volume_m3 / self.tank_height_m
         uv_area_m2 = unit_area_m2 * self.units_per_lane * self.lanes 
-        return np.ceil(1.1 * uv_area_m2)
+        maintenance_factor = 1.3
+        return np.ceil(maintenance_factor * uv_area_m2)
 
     @property
     def power__kw(self) -> float:
-        power_kW = self.power_per_m3_kW * self.nominal_flow_m3perh
+        uv_transmittance_percent = 90 # assuming UV transmittance of 90% 
+        power_kW = self.power_per_m3_kW * self.nominal_flow_m3perh /(uv_transmittance_percent/100)
         return np.ceil(power_kW)
 
     @property

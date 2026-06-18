@@ -562,7 +562,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
 
                     case 'softening':
-                        if ('pellet softening') in technology.lower():
+                        if ('pellet softening') in technology.lower(): and ('pellet dosing' in technology.lower()):
                             pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pellet_softening.parameters  # noqa, E501
