@@ -2312,7 +2312,7 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
-        # wq_parameters = self.wq_parameters
+        wq_parameters = self.wq_parameters
 
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
@@ -3678,7 +3678,7 @@ class CationIonExchange(TreatmentKPI):
         self.lanes = design_parameters.get('number of lanes', None)
         self.flow_per_lane_m3perh = self.nominal_flow_m3perh / self.lanes
         self.units_per_lane = parameters[TPN['units_per_lane']]
-         self.units_per_lane = self.units_per_lane + 1
+        self.units_per_lane = self.units_per_lane + 1
         self.chemical_emission_factor = parameters[
             TPN['chemical_emission_factor']]
         self.emission_factor_electricity = design_parameters.get(
