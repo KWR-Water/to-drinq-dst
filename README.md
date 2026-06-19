@@ -11,6 +11,9 @@ and activate the (conda) python environment with:
 - Finally, run the Django server with
 `python manage.py runserver`
 
+## Optional: integration with pyStimela and optimisation per process
+Get the code from pyStimelaOptim and build the package (see the project's readme file). Then copy the WHL package file and install it:
+`pip install pystimela-optim-<version>-py3-none-any.whl`
 
 ### 
 

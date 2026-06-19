@@ -652,6 +652,9 @@ class TechnologyPropertyJunction(models.Model):
     is_digested = models.BooleanField(
         default=0, null=False,
         db_column='is_digested')
+    sent_to_optimizer = models.BooleanField(
+        default=0, null=False,
+        db_column='sent_to_optimizer')
 
     class Meta:
         # managed = False
@@ -877,6 +880,9 @@ class WaterqualityParameterTechnologyJunction(models.Model):
     is_targetparameter = models.BooleanField(
         default=0, null=False,
         db_column='is_targetparameter')
+    sent_to_optimizer = models.BooleanField(
+        default=0, null=False,
+        db_column='sent_to_optimizer')
     default_value = models.FloatField(blank=True, null=True)
 
     class Meta:
