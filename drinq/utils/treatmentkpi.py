@@ -654,12 +654,12 @@ def reactor_dimensions(
 def daily_mass_balance__kg(
     nominal_flow_m3perh: float,
     delta_c: float,
-    lime_mass_fraction: float,
+    chemical_mass_fraction: float,
 ) -> tuple[float, float, float, float]:
     """Calculates chemicals in and pellets out per day."""
 
     hardness_removed_kg = (delta_c * nominal_flow_m3perh * 24) / 1000.0
-    lime_req_kgperday = hardness_removed_kg * lime_mass_fraction
+    lime_req_kgperday = hardness_removed_kg * chemical_mass_fraction
     seed_req_kg = hardness_removed_kg * 0.10  # 10% seed ratio
     pellets_out_kg = hardness_removed_kg + seed_req_kg    
     return hardness_removed_kg, lime_req_kgperday, seed_req_kg, pellets_out_kg
@@ -3559,7 +3559,7 @@ class PelletSoftening(TreatmentKPI):
             ) = daily_mass_balance__kg(
                 nominal_flow_m3perh=self.nominal_flow_m3perh,
                 delta_c=self.delta_c,
-                lime_mass_fraction=self.lime_purity_factor)
+                chemical_mass_fraction=self.chemical_purity_factor)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'area':
                 self.area_m2 = self.footprint_area__m2
