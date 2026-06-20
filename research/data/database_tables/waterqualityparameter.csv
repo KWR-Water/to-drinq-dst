@@ -8,8 +8,9 @@ id,name,description,unit
 7,total hardness,total hardness (mg/liter bicarbonate eq.),mg/liter bicarbonate eq.
 8,E-Coli,number of E-Coli bacteria colonies per liter ,CFU/L
 9,UV 254,uv measured in the source water,1/m
-10,bromate,bromate concentration in the raw water,μg/liter
-11,assimilable organic carbon,assimilable organic carbon in the raw water	,μg/liter
+10,bromate,bromate concentration in the raw water, ug/liter
+11,assimilable organic carbon,"assimilable organic carbon in the raw water	", ug/liter
 12,bromide,bromide concentration in the raw water,mg/liter
-13,trihalomethanes,trihalomethanes (TTHMs) concentration in the raw water,μg/liter
-14,haloacetic acids,haloacetic acids (HAAs)concentration in the raw water,μg/liter
+13,trihalomethanes,trihalomethanes (TTHMs) concentration in the raw water, ug/liter
+14,haloacetic acids,haloacetic acids (HAAs)concentration in the raw water, ug/liter
+15,electrical conductivity,electrical conductivity of water,ms/m
