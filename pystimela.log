@@ -106,3 +106,6 @@ FileNotFoundError: [Errno 2] No such file or directory: 'configs/django_outputs.
 2026-06-25 17:08:25,659 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
 2026-06-25 17:20:15,861 - django.request - WARNING - Not Found: /treatmentplant/17/technology-overview/
 2026-06-25 17:20:51,428 - django.request - WARNING - Not Found: /treatmentplant/1/
+2026-06-25 17:22:41,450 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-06-25 17:23:16,625 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-06-25 17:23:29,645 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
