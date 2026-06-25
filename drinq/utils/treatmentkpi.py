@@ -2952,6 +2952,9 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
     emission_factor_electricity: float
     volume_m3: float
     gac_density_kg_per_m3: float
+    gac_regeneration_energy_kWhperm3: float 
+    regeneration_interval_days: float
+    chemical_emission_factor: float
     
     def __post_init__(self):
         super().__post_init__()
@@ -2977,7 +2980,9 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         self.particle_diameter = parameters[
             TPN['grain_diameter']]
         self.gac_density_kg_per_m3 = parameters[
-            TPN['gac_density']] * 1000
+            TPN['mass_density_of_chemical']] * 1000
+        self.chemical_emission_factor = parameters[
+            TPN['chemical_emission_factor']]
         self.anthracite_bed_depth_m = 0
         self.flow_per_unit_m3hr = (
             self.flow_per_lane_m3perh / self.units_per_lane)
@@ -2989,13 +2994,15 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             np.ceil(self.unit_volume_m3 / self.unit_area_m2 + 1))
         self.doc_in_mgl = wq_parameters[
             'dissolved organic carbon'][INPUT_WQPARAMETER_KEY]  # mgl/l
+        self.regeneration_interval_days = parameters[
+            TPN['gac_regeneration_interval']] 
+        self.gac_regeneration_energy_kWhperm3 = parameters[
+            TPN['regeneration_energy_per_kg_of_gac']]
         self.water_viscosity = design_parameters.get(
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
         self.superficial_velocity = (
-            self.flow_per_unit_m3hr/self.unit_area_m2)
-        
             self.flow_per_unit_m3hr/self.unit_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
@@ -3008,6 +3015,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
                 self.bed_height_m = (
                     np.ceil(self.unit_volume_m3 / self.unit_area_m2))
             self.parameters[tech_property] = self.bed_height_m  # overwrite area
+        self.gac_inventory_kg = self.bed_volume_m3 * self.gac_density_kg_per_m3
 
     def __repr__(self):
         return f"GAC bed area (m2)={self.unit_area_m2}, " \
@@ -3037,7 +3045,9 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
 
     @property
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
-        return {}  
+        gac_loss_fraction = 0.05 # assuming 5% loss per regeneration
+        gac_perday = self.gac_inventory_kg * gac_loss_fraction / self.regeneration_interval_days 
+        return gac_perday  
     
     @property
     def chemical_solution_concentration__mg_per_l(self) -> float:
@@ -3061,14 +3071,29 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         return power_kw  
 
     @property
+    def daily_energy_consumption__kwh(self) -> float:
+        """Apply a reduced duty-cycle factor to daily energy use."""
+        gac_energy_kwh = self.gac_inventory_kg * self.gac_regeneration_energy_kWhperm3 / self.regeneration_interval_days 
+        return gac_energy_kwh
+
+    @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
         if self.emission_factor_electricity is None:
             raise ValueError("Emission factor for electricity is not set.")
         co2_emissions = (
             self.daily_energy_consumption__kwh *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
-        return specific_co2_emissions
+        masses = self.gac_inventory_kg / self.regeneration_interval_days 
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
+        return (co2_emissions + chemical_co2_emissions
+                ) / self.nominal_flow_m3perh / 24
 
 
 class PowderedActivatedCarbonFiltration(TreatmentKPI):
@@ -3119,7 +3144,7 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
             TPN['pac_dosage_concentration']]
         self.slurry_tank_height_m = parameters[TPN['slurry_tank_height']]
         self.pac_bulk_density_g_cm3 = parameters[
-            TPN['mass_density_of_chemical']]
+            TPN['mass_density_of_chemical']] * 1000
         # Convert from w/w% to w/w fraction
         self.slurry_concentration_w_w = parameters[
             TPN['pac_slurry_concentration']] / 100 # 5% w/w
@@ -3216,8 +3241,17 @@ class PowderedActivatedCarbonFiltration(TreatmentKPI):
         co2_emissions = (
             self.daily_energy_consumption__kwh *
             self.emission_factor_electricity)
-        specific_co2_emissions = co2_emissions / self.nominal_flow_m3perh / 24  # kg CO2 eq per m3
-        return specific_co2_emissions
+        masses = self.daily_mass_of_chemicals__kg 
+        emission_factors = self._resolve_per_chemical_factors(
+            factor=self.chemical_emission_factor,
+            default_value=float(self.chemical_emission_factor),
+        )
+        chemical_co2_emissions = sum(
+            masses.get(chem_name, 0.0) * emission_factors.get(chem_name, 0.0)
+            for chem_name in masses
+        )
+        return (co2_emissions + chemical_co2_emissions
+                ) / self.nominal_flow_m3perh / 24
 
 
 class UVAOP(TreatmentKPI):
