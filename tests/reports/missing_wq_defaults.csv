@@ -5,19 +5,12 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 50,Inline dosing of aluminium chloride,CoagulationInlineMixing,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 4,Cascade with coagulant dosing with ferric chloride,CascadeMixerCoagulationDosing,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 51,Cascade coagulation with aluminium chloride,CascadeMixerCoagulationDosing,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-52,Flocculation with dynamic mixing,FlocculationDynamicMixing,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 26,Side stream nanofiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 29,Main stream nanofiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 36,Polymeric ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 37,Ceramic ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-18,"Rapid sand filtration, submerged, single medium",RapidSandSingleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-19,"Rapid sand filtration, submerged, dual media, sand",RapidSandDoubleMediumFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-14,Granular activated carbon (GAC) filtration,GranularActivatedCarbonFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 15,Powdered activated carbon (PAC) filtration,PowderedActivatedCarbonFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 38,UV/H2O2 Advanced Oxidation Process,UVAOP,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-31,Baffled ozone contact reactor,BaffledOzonationContactor,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-27,Chlorination,ChlorineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-39,Chloramination,ChloramineDisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 32,Low pressure UV for disinfection,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 43,Clean water storage tank,CleanWaterStorageTank,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology

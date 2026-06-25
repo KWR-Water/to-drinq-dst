@@ -41,3 +41,6 @@ id,waterqualityparameter,technology,is_inputparameter,is_targetparameter,sent_to
 40,8,27,1,0,1,500
 41,13,27,1,0,1,0
 42,14,27,1,0,1,0
+43,8,39,1,0,1,500
+44,13,39,1,0,1,0
+45,14,39,1,0,1,0

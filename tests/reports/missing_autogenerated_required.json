@@ -7,13 +7,6 @@
     "source_table": "technology_property"
   },
   {
-    "technology_id": 17,
-    "technology_name": "Cation exchange (CIEX) filtration unit",
-    "technology_class": "CationIonExchange",
-    "missing_property": "mass density of chemical",
-    "source_table": "technology_property"
-  },
-  {
     "technology_id": 21,
     "technology_name": "Rapid sand filtration, pressurized",
     "technology_class": "RapidSandPressurizedVesselFiltration",

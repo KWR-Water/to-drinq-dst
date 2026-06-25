@@ -12,10 +12,32 @@ and activate the (conda) python environment with:
 `python manage.py runserver`
 
 ## Optional: integration with pyStimela and optimisation per process
-Get the code from pyStimelaOptim and build the package (see the project's readme file). Then copy the WHL package file and install it:
-`pip install pystimela-optim-<version>-py3-none-any.whl`
+Use the dedicated optimizer environment file:
+`conda env create -f environment_optim.yml`
+`conda activate todrinq_dst_optim`
 
-### 
+### Required optimizer wheels in this repository
+The optimizer runtime requires both wheels:
+- `pystimela_optim-0.1.0-py3-none-any.whl`
+- `pystimela-0.0.1-py3-none-any.whl`
+
+These wheels are installed automatically by `environment_optim.yml`
+in a Python 3.13 environment.
+
+Verify installation with:
+`python -c "import pystimela; from pystimela_optim.scripts import run_all_optimizations; print('ok')"`
+
+Run optimizer unit tests with:
+`python -m unittest tests.test_pystimela_optim_scripts`
+
+### Optimizer files in this repository
+The local optimization workspace is stored in `research/pystimela_optim`:
+- `research/pystimela_optim/inputs`: CSV inputs for process configuration.
+- `research/pystimela_optim/configs`: generated JSON configuration files.
+- `research/pystimela_optim/outputs`: enabled-process files and run results.
+
+Run only the optimizer unit tests with:
+`python -m unittest tests.test_pystimela_optim_scripts`
 
 ## For users
 ### Create a conda environment before first use

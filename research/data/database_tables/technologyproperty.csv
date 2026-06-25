@@ -168,6 +168,6 @@ id,name,unit,description,category,parent_property
 167,sludge tank height,m,height of the sludge thickener,1,
 168,air pressure difference,kPa,air pressure difference for DAF,1,
 169,bed height,m,bed height,1,
-170,buffling factor,,efficiency factor of the disinfection basin,2,
-171,minimum buffling factor,,lower value of buffling factor,2,
-172,maximum buffling factor,,upper value of buffling factor,2,170
+170,baffling factor,,efficiency factor of the disinfection basin,2,
+171,minimum baffling factor,,lower value of baffling factor,2,
+172,maximum baffling factor,,upper value of baffling factor,2,170

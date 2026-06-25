@@ -699,6 +699,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
+        wq_parameters = self.wq_parameters
 
         self.tank_height = parameters[TPN['tank_height']]
         self.chem_tank_height = parameters[TPN['tank_height_chemical_storage']]
@@ -722,7 +723,7 @@ class CoagulationDynamicMixing(TreatmentKPI):
         self.efficiency_mixer = parameters[TPN['power_efficiency_of_mixers']]/1000   # noqa: E501
         self.mixer_velocity_grad = parameters[TPN['mixer_velocity_gradient']]
         self.tss_in_mgl = wq_parameters[
-            'total suspended solids'][INPUT_WQPARAMETER_KEY]  
+            'total suspended solids'][INPUT_WQPARAMETER_KEY]
         self.doc_in_mgl = wq_parameters[
             'dissolved organic carbon'][INPUT_WQPARAMETER_KEY]  # mgl/l
         self.pH_in = wq_parameters[
@@ -1536,8 +1537,8 @@ class ChainScrapedSedimentation(TreatmentKPI):
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.scraper_power_coeff_kw_m2 = parameters[
             TPN['scraper_power_coefficient']]
-        self.total_suspended_solids = wq_parameters[INPUT_WQPARAMETER_KEY].get(
-            'total suspended solids (mg/l)', 0)
+        self.total_suspended_solids = wq_parameters[INPUT_WQPARAMETER_KEY][
+            'total suspended solids (mg/l)']
         self.overflow_rate_m3_per_m2_per_h = parameters[
             TPN['surface_overflow_rate']]
         self.unit_area_m2 = (self.flow_per_lane_m3perh /
@@ -1632,7 +1633,11 @@ class ChlorineDisinfection(TreatmentKPI):
     chlorine_solution_w_w: float
     chlorine_concentration_mgL: float
     emission_factor_electricity: float
-    chemical_emission_factor : float
+    chemical_emission_factor: float
+    baffling_factor: float
+    ecoli_initial: float
+    tthms_initial: float
+    haas_initial: float
     volume_m3: float
 
     def __post_init__(self):
@@ -1640,7 +1645,7 @@ class ChlorineDisinfection(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
-        _ = self.wq_parameters  # Unused variable, but may be needed for future calculations
+        wq_parameters = self.wq_parameters
 
         self.units_per_lane = parameters[TPN['units_per_lane']]
         self.lanes = design_parameters.get(NR_OF_LANES_NAME, None)
@@ -1665,14 +1670,14 @@ class ChlorineDisinfection(TreatmentKPI):
             TPN['target_concentration_of_dosing_chemical']]  # noqa: E501
         self.chlorine_solution_w_w = parameters[
             TPN['chemical_dosing_solution_concentration_w_per_wpercent']]  # noqa: E501
-        self.ecoli_initial = wq_parameters['E-Coli'][
+        self.ecoli_initial = wq_parameters['E. coli'][
             INPUT_WQPARAMETER_KEY]
         self.tthms_initial = wq_parameters['trihalomethanes'][
             INPUT_WQPARAMETER_KEY]
         self.haas_initial = wq_parameters['haloacetic acids'][
             INPUT_WQPARAMETER_KEY]
-        self.self.buffling_factor  = parameters[
-            TPN['buffling_factor']]  # noqa: E501
+        self.baffling_factor = parameters[
+            TPN['baffling_factor']]  # noqa: E501
         self.chlorine_concentration_mgL = calculate_chlorine_concentration_mgL(  # noqa: E501
             residual_chlorine_mgL=self.target_residual_chlorine_mgL,
             dosing_solution_concentration_w_w=self.chlorine_solution_w_w
@@ -2958,7 +2963,7 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
         parameters = self.parameters
         design_parameters = self.design_parameters
         plant_kpis = self.plant_kpis
-        # wq_parameters = self.wq_parameters
+        wq_parameters = self.wq_parameters
 
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)  # noqa: E501
@@ -2985,6 +2990,8 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.empty_bed_contact_time * self.flow_per_unit_m3hr / 60)
         self.unit_area_m2 = (
             self.flow_per_unit_m3hr / self.hydraulic_loading_rate_m3m2h)
+        self.bed_height_m = self.unit_height_m = (
+            np.ceil(self.unit_volume_m3 / self.unit_area_m2))
         self.unit_height_m = (
             np.ceil(self.unit_volume_m3 / self.unit_area_m2 + 1))
         self.doc_in_mgl = wq_parameters[
@@ -2993,17 +3000,15 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             'dynamic viscosity', WATER_VISCOSITY_N_S_PER_M2)
         self.tanks_area_m2 = (
             self.unit_area_m2 * self.units_per_lane * self.lanes)
-        self.superficial_velocity = (
-            self.flow_per_unit_m3hr/self.unit_area_m2)
-        
+        self.superficial_velocity = (        
             self.flow_per_unit_m3hr/self.unit_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
                 self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
-            self.parameters[tech_property] = self.volume_m3  # overwrite area
+                self.parameters[tech_property] = self.volume_m3  # overwrite area
             elif tech_property == 'filter area':
                 self.unit_area = self.unit_area_m2
-            self.parameters[tech_property] = self.unit_area  # overwrite area
+                self.parameters[tech_property] = self.unit_area  # overwrite area
             elif tech_property == 'bed height':
                 self.bed_height_m = (
                     np.ceil(self.unit_volume_m3 / self.unit_area_m2))
@@ -3396,7 +3401,7 @@ class BaffledOzonationContactor(TreatmentKPI):
         parameters = self.parameters
         plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
-        # wq_parameters = self.wq_parameters
+        wq_parameters = self.wq_parameters
 
         self.lanes = design_parameters.get('number of lanes', None)
         self.nominal_flow_m3perh = plant_kpis.get(NOMINAL_FLOW_RATE_NAME, None)
@@ -3654,7 +3659,7 @@ class PelletSoftening(TreatmentKPI):
             (self.rho_pellet - DENS_WATER_KG_PER_M3) / DENS_WATER_KG_PER_M3)
         total_lift = hl_m + self.unit_depth_m + 2.0 
         return meters_of_water_to_bar(total_lift)
- 
+
     @property
     def power__kw(self) -> float:
         """Power based on overcoming bed headloss + lift height."""
@@ -3737,9 +3742,8 @@ class CationIonExchange(TreatmentKPI):
             self.lanes * (self.units_per_lane - 1))
         self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
         self.resin_capacity_eqperliter = 1.4  # eq/L of resin
-        self.salt_ratio = 0.12 # kg NaCl per eq removed (avg range 0.16-0.24)
-        self.nacl_density = parameters[
-            TPN['mass_density_of_chemical']]*1000 # kg/m3
+        self.salt_ratio = 0.12  # kg NaCl per eq removed (avg range 0.16-0.24)
+        self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000 # kg/m3
         self.daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
 
     def __repr__(self):
@@ -3809,13 +3813,14 @@ class CationIonExchange(TreatmentKPI):
         a_unit = resin_volume_unit__m3/ self.tank_height_m
         unit_surface_rate=self.flow_per_unit_m3hr/ a_unit
         unit_surface_rate_mps = unit_surface_rate / 3600
+        # TODO: resin_porosity and bead_diameter should be fetched from the database
         resin_porosity = 0.4
-        bead_diameter = 0.0007 # 0.7mm bead diameter
+        bead_diameter = 0.0007  # 0.7mm bead diameter
         term_laminar = 150 * (WATER_VISCOSITY_N_S_PER_M2 * (1 - resin_porosity)**2) / (bead_diameter**2 * resin_porosity**3) * unit_surface_rate_mps     
         term_turbulent = 1.75 * (DENS_WATER_KG_PER_M3 * (1 - resin_porosity)) / (bead_diameter * resin_porosity**3) * unit_surface_rate_mps**2   
         pressure_drop_pa = (term_laminar + term_turbulent) * self.tank_height_m
         headloss_bar = pressure_drop_pa / 100000
-        tank_height_bar = (self.bed_height_m + 1.5) /10.197
+        tank_height_bar = (self.tank_height_m + 1.5) / 10.197
         headloss_bar += tank_height_bar
         return headloss_bar 
 

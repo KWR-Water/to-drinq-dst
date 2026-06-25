@@ -14,3 +14,12 @@ to_drinq_dst.sqlite
 *.db
 *.whl
 .DS_Store
+optimizer_runs/
+pystimela_optim.egg-info/
+research/pystimela_optim/configs/*.json
+research/pystimela_optim/configs/*.csv
+research/pystimela_optim/inputs/*.csv
+research/pystimela_optim/inputs/timestamps/*.csv
+research/pystimela_optim/outputs/202*
+research/pystimela_optim/outputs/*.json
+

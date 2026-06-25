@@ -4,11 +4,61 @@ from django.shortcuts import render, redirect, get_object_or_404
 from collections import OrderedDict, defaultdict
 import json
 import csv
+import subprocess
+import shutil
+import os
+import threading
+import uuid
+from pathlib import Path
+from datetime import datetime
 
 import logging
 import numpy as np
+import pystimela
+from pystimela_optim.scripts import run_all_optimizations
+from pystimela_optim.api import optimize_process
+from pystimela_optim.scripts.coag_floc_prepare_config import (
+    generate_config_from_csv as prepare_coag_floc_config,
+)
+from pystimela_optim.scripts.filtration_prepare_config import (
+    generate_config_from_csv as prepare_filtration_config,
+)
+from pystimela_optim.scripts.dual_filtration_prepare_config import (
+    generate_config_from_csv as prepare_dual_filtration_config,
+)
+from pystimela_optim.scripts.gac_prepare_config import (
+    generate_config_from_csv as prepare_gac_config,
+)
+from pystimela_optim.scripts.chlorination_prepare_config import (
+    generate_config_from_csv as prepare_chlorination_config,
+)
+from pystimela_optim.scripts.ozonation_prepare_config import (
+    generate_config_from_csv as prepare_ozonation_config,
+)
+from pystimela_optim.scripts.coag_floc_optim_update import (
+    update_wq_from_results as update_coag_floc_wq,
+)
+from pystimela_optim.scripts.filtration_optim_update import (
+    update_wq_from_results as update_filtration_wq,
+)
+from pystimela_optim.scripts.dual_filtration_optim_update import (
+    update_wq_from_results as update_dual_filtration_wq,
+)
+from pystimela_optim.scripts.gac_optim_update import (
+    update_wq_from_results as update_gac_wq,
+)
+from pystimela_optim.scripts.chlorination_optim_update import (
+    update_wq_from_results as update_chlorination_wq,
+)
+from pystimela_optim.scripts.ozonation_optim_update import (
+    update_wq_from_results as update_ozonation_wq,
+)
 from warnings import warn
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.conf import settings
+from django.utils import timezone
+from django.core.cache import cache
 
 from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse,
@@ -17,7 +67,12 @@ from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
 from django.db.models import Avg, Count
-from django.db import IntegrityError, transaction, connection
+from django.db import (
+    IntegrityError,
+    transaction,
+    connection,
+    close_old_connections,
+)
 from django.db.utils import OperationalError
 
 from drinq.models import (
@@ -123,6 +178,21 @@ DB_PLANTKPI_MAPPING = {
 # }
 
 logger = logging.getLogger(__name__)
+
+
+def _optimizer_status_cache_key(plant_id, user_id):
+    return f'optimizer_status:plant:{plant_id}:user:{user_id}'
+
+
+def optimizer_status(request, plant_id):
+    user_id = getattr(request.user, 'id', 0)
+    cache_key = _optimizer_status_cache_key(plant_id, user_id)
+    status = cache.get(cache_key) or {
+        'state': 'idle',
+        'message': '',
+        'updated_rows': [],
+    }
+    return JsonResponse(status)
 
 
 def get_adaptability_scores_for_technologies(technologies):
@@ -1900,6 +1970,1097 @@ class TechnologyPropertiesView(generic.FormView):
     template_name = 'drinq/form_technology-properties.html'
     form_class = TreatmentPlantTechPropertyValueFormSet
 
+    def _get_treatment_plant_technology_ids(self, treatment_plant):
+        return list(
+            TreatmentPlantLayout.objects.filter(
+                treatmentplant=treatment_plant
+            ).values_list('technology', flat=True)
+        )
+
+    def _has_optimizer_targets(self, treatment_plant):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        if not tech_ids:
+            return False
+        return (
+            TechnologyPropertyJunction.objects.filter(
+                technology__in=tech_ids,
+                sent_to_optimizer=True,
+            ).exists()
+            or WaterqualityParameterTechnologyJunction.objects.filter(
+                technology__in=tech_ids,
+                sent_to_optimizer=True,
+            ).exists()
+        )
+
+    def _build_optimizer_payload(self, treatment_plant):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        flagged_tech_props = list(
+            TechnologyPropertyJunction.objects
+            .filter(technology__in=tech_ids, sent_to_optimizer=True)
+            .select_related('technology', 'property')
+            .order_by('technology_id', 'property__name')
+        )
+        flagged_wq_junctions = list(
+            WaterqualityParameterTechnologyJunction.objects
+            .filter(technology__in=tech_ids, sent_to_optimizer=True)
+            .select_related('technology', 'waterqualityparameter')
+            .order_by('technology_id', 'waterqualityparameter__name')
+        )
+
+        tech_prop_values = {
+            (row.technology_id, row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=treatment_plant,
+                technology_id__in=tech_ids,
+            )
+        }
+        wq_values = {
+            row.wq_tech_parameter_id: row.value
+            for row in TreatmentPlantWaterQualityParameterValue.objects.filter(
+                treatmentplant=treatment_plant,
+                wq_tech_parameter_id__in=[j.id for j in flagged_wq_junctions],
+            )
+        }
+
+        payload = {
+            'treatment_plant': {
+                'id': treatment_plant.id,
+                'name': treatment_plant.name,
+                'slug': treatment_plant.slug,
+            },
+            'generated_at': timezone.now().isoformat(),
+            'technology_properties': [],
+            'waterquality_parameters': [],
+        }
+
+        for junction in flagged_tech_props:
+            payload['technology_properties'].append({
+                'technology_id': junction.technology_id,
+                'technology_name': junction.technology.name,
+                'technologyproperty_id': junction.property_id,
+                'technologyproperty_name': junction.property.name,
+                'unit': junction.property.unit,
+                'value': tech_prop_values.get(
+                    (junction.technology_id, junction.property_id),
+                    junction.default_value,
+                ),
+                'source_table': 'technology_property',
+            })
+
+        for junction in flagged_wq_junctions:
+            wq_parameter = junction.waterqualityparameter
+            payload['waterquality_parameters'].append({
+                'junction_id': junction.id,
+                'technology_id': junction.technology_id,
+                'technology_name': junction.technology.name,
+                'waterqualityparameter_id': wq_parameter.id,
+                'waterqualityparameter_name': wq_parameter.name,
+                'unit': wq_parameter.unit,
+                'is_inputparameter': junction.is_inputparameter,
+                'is_targetparameter': junction.is_targetparameter,
+                'value': wq_values.get(junction.id, junction.default_value),
+                'source_table': 'waterqualityparameter_technology',
+            })
+
+        return payload
+
+    def _write_optimizer_payload(self, treatment_plant, payload=None):
+        output_dir = (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'data'
+            / 'processed'
+            / 'optimizer_inputs'
+        )
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = (
+            output_dir
+            / f'treatmentplant_{treatment_plant.id}_optimization_input.json'
+        )
+
+        if payload is None:
+            payload = self._build_optimizer_payload(treatment_plant)
+        with output_path.open('w', encoding='utf-8') as fp:
+            json.dump(payload, fp, indent=2)
+
+        return output_path
+
+    def _optimizer_workspace_root(self):
+        return (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'pystimela_optim'
+        )
+
+    def _optimizer_required_script_stems(self):
+        return [
+            'coag_floc_prepare_config',
+            'coag_floc_optim',
+            'coag_floc_optim_update',
+            'filtration_prepare_config',
+            'filtration_optim',
+            'filtration_optim_update',
+            'dual_filtration_prepare_config',
+            'dual_filtration_optim',
+            'dual_filtration_optim_update',
+            'gac_prepare_config',
+            'gac_optim',
+            'gac_optim_update',
+            'chlorination_prepare_config',
+            'chlorination_optim',
+            'chlorination_optim_update',
+            'ozonation_prepare_config',
+            'ozonation_optim',
+            'ozonation_optim_update',
+            'run_all_optimizations',
+        ]
+
+    def _ensure_optimizer_script_wrappers(self, workspace_root):
+        scripts_dir = workspace_root / 'scripts'
+        scripts_dir.mkdir(parents=True, exist_ok=True)
+        init_path = scripts_dir / '__init__.py'
+        if not init_path.exists():
+            init_path.write_text('', encoding='utf-8')
+
+        for stem in self._optimizer_required_script_stems():
+            target = scripts_dir / f'{stem}.py'
+            wrapper_code = (
+                'import runpy\n\n'
+                'if __name__ == "__main__":\n'
+                '    runpy.run_module('
+                f'"pystimela_optim.scripts.{stem}", run_name="__main__")\n'
+            )
+            if target.exists():
+                existing = target.read_text(encoding='utf-8')
+                if existing == wrapper_code:
+                    continue
+            target.write_text(wrapper_code, encoding='utf-8')
+
+    def _optimizer_status_key(self, treatment_plant_id):
+        user_id = getattr(self.request.user, 'id', 0)
+        return _optimizer_status_cache_key(treatment_plant_id, user_id)
+
+    def _set_optimizer_status(self, treatment_plant_id, payload):
+        cache.set(
+            self._optimizer_status_key(treatment_plant_id),
+            payload,
+            timeout=60 * 60 * 6,
+        )
+
+    def _get_optimizer_status(self, treatment_plant_id):
+        status = cache.get(self._optimizer_status_key(treatment_plant_id))
+        if status is None:
+            return {
+                'state': 'idle',
+                'message': '',
+                'updated_rows': [],
+            }
+        return status
+
+    def _mark_optimizer_status_seen(self, treatment_plant_id):
+        status = self._get_optimizer_status(treatment_plant_id)
+        if status.get('state') == 'done' and not status.get('seen', False):
+            status['seen'] = True
+            self._set_optimizer_status(treatment_plant_id, status)
+
+    def _sanitize_optimizer_key(self, value):
+        if value is None:
+            return ''
+        return ''.join(
+            c.lower() if c.isalnum() else '_'
+            for c in str(value)
+        ).strip('_')
+
+    def _infer_enabled_optimizer_processes(self, payload):
+        tech_names = {
+            row.get('technology_name', '')
+            for row in payload.get('technology_properties', [])
+        }
+        tech_names.update(
+            row.get('technology_name', '')
+            for row in payload.get('waterquality_parameters', [])
+        )
+
+        process_order = [
+            'coagulation-flocculation',
+            'filtration_single',
+            'filtration_dual',
+            'gac',
+            'chlorination',
+            'ozonation',
+        ]
+        enabled = set()
+        for technology_name in tech_names:
+            process_key = dac.get_optimizer_process_key_for_technology(
+                technology_name
+            )
+            if process_key:
+                enabled.add(process_key)
+
+        return [proc for proc in process_order if proc in enabled]
+
+    def _write_optimizer_csv_inputs(self, treatment_plant, payload):
+        workspace_root = self._optimizer_workspace_root()
+        inputs_dir = workspace_root / 'inputs'
+        outputs_dir = workspace_root / 'outputs'
+        configs_dir = workspace_root / 'configs'
+        inputs_dir.mkdir(parents=True, exist_ok=True)
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        configs_dir.mkdir(parents=True, exist_ok=True)
+
+        enabled_processes = self._infer_enabled_optimizer_processes(payload)
+        enabled_path = outputs_dir / 'enabled_processes.json'
+        with enabled_path.open('w', encoding='utf-8') as fp:
+            json.dump({'enabled': enabled_processes}, fp, indent=2)
+
+        canonical_wq_keys = {
+            'flow': ('flow', 'm3/h', 100.0),
+            'temperature': ('temperature', 'degC', 12.0),
+            'doc': ('DOC', 'mg/L', 3.0),
+            'ammonia': ('ammonia', 'mg/L', 0.05),
+            'ph': ('pH', '-', 7.0),
+            'uv254': ('uv254', '1/m', 0.1),
+            'bromide': ('bromide', 'mg/L', 0.02),
+            'suspended_solids': ('suspended_solids', 'mg/L', 5.0),
+            'conductivity': ('conductivity', 'mS/m', 300.0),
+            'm_number': ('m-number', 'mmol/L', 0.0),
+            'bromate': ('bromate', 'ug/L', 1.0),
+            'ecoli': ('ecoli', 'cfu/100mL', 0.0),
+            'aoc': ('AOC', 'ug/L', 30.0),
+        }
+        input_wq = {
+            canonical: {'value': default_value, 'unit': default_unit}
+            for _, (canonical, default_unit, default_value) in (
+                canonical_wq_keys.items()
+            )
+        }
+
+        wq_aliases = {
+            'doc': 'doc',
+            'dissolved organic carbon': 'doc',
+            'ph': 'ph',
+            'p_h': 'ph',
+            'tss': 'suspended_solids',
+            'total suspended solids': 'suspended_solids',
+            'm number': 'm_number',
+            'm-number': 'm_number',
+            'mnumber': 'm_number',
+            'suspended solids': 'suspended_solids',
+            'suspended_solids': 'suspended_solids',
+        }
+
+        def _normalize_wq_name(name):
+            normalized = ''.join(
+                c.lower() if c.isalnum() else ' '
+                for c in str(name)
+            )
+            normalized = ' '.join(normalized.split())
+            if normalized in wq_aliases:
+                normalized = wq_aliases[normalized]
+            return normalized
+
+        process_input_wq = {
+            process_key: {}
+            for process_key in enabled_processes
+        }
+        fallback_input_wq = {}
+
+        for row in payload.get('waterquality_parameters', []):
+            if not row.get('is_inputparameter', False):
+                continue
+            name = row.get('waterqualityparameter_name')
+            if not name:
+                continue
+            normalized_name = _normalize_wq_name(name)
+            canonical_tuple = canonical_wq_keys.get(normalized_name)
+            if canonical_tuple is None:
+                continue
+            canonical_name, default_unit, _ = canonical_tuple
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            input_payload = {
+                'value': row.get('value'),
+                'unit': row.get('unit') or default_unit,
+            }
+            if process_key in process_input_wq:
+                process_input_wq[process_key][canonical_name] = input_payload
+            fallback_input_wq.setdefault(canonical_name, input_payload)
+
+        selected_input_keys = set()
+        if enabled_processes:
+            first_process = enabled_processes[0]
+            for canonical_name, input_payload in process_input_wq.get(
+                first_process, {}
+            ).items():
+                input_wq[canonical_name] = input_payload
+                selected_input_keys.add(canonical_name)
+
+        for canonical_name, input_payload in fallback_input_wq.items():
+            if canonical_name in selected_input_keys:
+                continue
+            input_wq[canonical_name] = input_payload
+
+        nominal_flow = (
+            TreatmentPlantPropertyValue.objects
+            .filter(
+                treatmentplant=treatment_plant,
+                property__name__iexact=KPI_NOMINAL_FLOW_M3PERH,
+            )
+            .values_list('value', flat=True)
+            .first()
+        )
+        if nominal_flow is not None:
+            input_wq['flow'] = {
+                'value': float(nominal_flow),
+                'unit': canonical_wq_keys['flow'][1],
+            }
+
+        in_wq_path = configs_dir / 'in_wq_params.json'
+        in_wq_payload = {
+            'treatment_plant_id': treatment_plant.id,
+            'timestamps': [0.0, 60.0, 120.0],
+            'WQ_parameters': input_wq,
+            'wq_parameters': input_wq,
+        }
+        with in_wq_path.open('w', encoding='utf-8') as fp:
+            json.dump(in_wq_payload, fp, indent=2)
+
+        process_csv_map = {
+            'coagulation-flocculation': (
+                inputs_dir / 'config_coagulation_flocculation.csv'
+            ),
+            'filtration_single': inputs_dir / 'config_filtration_single.csv',
+            'filtration_dual': inputs_dir / 'config_filtration_dual.csv',
+            'gac': inputs_dir / 'config_gac.csv',
+            'chlorination': inputs_dir / 'config_chlorination.csv',
+            'ozonation': inputs_dir / 'config_ozonation.csv',
+        }
+
+        process_rows = {proc: [] for proc in enabled_processes}
+        for process_key in enabled_processes:
+            for section, parameter, value in dac.get_optimizer_csv_defaults(
+                process_key
+            ):
+                process_rows[process_key].append(
+                    {
+                        'section': section,
+                        'parameter': parameter,
+                        'value': value,
+                    }
+                )
+
+        for row in payload.get('technology_properties', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            if process_key not in process_rows:
+                continue
+            prop_name = row.get('technologyproperty_name', '')
+            mapping = dac.resolve_optimizer_csv_mapping(
+                process_key=process_key,
+                source_kind='technology_properties',
+                source_name=prop_name,
+            )
+            if mapping is None:
+                logger.info(
+                    'No optimizer CSV mapping for process=%s property=%s; '
+                    'falling back to model_parameters.',
+                    process_key,
+                    prop_name,
+                )
+                mapping = (
+                    'model_parameters',
+                    self._sanitize_optimizer_key(prop_name),
+                )
+            if not mapping[1]:
+                continue
+            process_rows[process_key].append(
+                {
+                    'section': mapping[0],
+                    'parameter': mapping[1],
+                    'value': row.get('value'),
+                }
+            )
+
+        for row in payload.get('waterquality_parameters', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            if process_key not in process_rows:
+                continue
+            wq_name = row.get('waterqualityparameter_name', '')
+            mapping = dac.resolve_optimizer_csv_mapping(
+                process_key=process_key,
+                source_kind='waterquality_parameters',
+                source_name=wq_name,
+            )
+            if mapping is None:
+                logger.info(
+                    'No optimizer CSV mapping for process=%s wq=%s; '
+                    'falling back to constraints.',
+                    process_key,
+                    wq_name,
+                )
+                mapping = (
+                    'constraints',
+                    self._sanitize_optimizer_key(wq_name),
+                )
+            if not mapping[1]:
+                continue
+            process_rows[process_key].append(
+                {
+                    'section': mapping[0],
+                    'parameter': mapping[1],
+                    'value': row.get('value'),
+                }
+            )
+
+        for process_key, csv_path in process_csv_map.items():
+            if process_key not in enabled_processes:
+                continue
+            rows = process_rows.get(process_key, [])
+            if not rows:
+                rows = [
+                    {
+                        'section': 'metadata',
+                        'parameter': 'treatment_plant_id',
+                        'value': treatment_plant.id,
+                    }
+                ]
+            with csv_path.open('w', encoding='utf-8', newline='') as fp:
+                writer = csv.writer(fp)
+                writer.writerow(['section', 'parameter', 'value'])
+                for csv_row in rows:
+                    writer.writerow(
+                        [
+                            csv_row['section'],
+                            csv_row['parameter'],
+                            csv_row['value'],
+                        ]
+                    )
+
+        # Prepare shared baseline/support files expected by prepare scripts.
+        timestamps_dir = inputs_dir / 'timestamps'
+        timestamps_dir.mkdir(parents=True, exist_ok=True)
+        timestamp_files = [
+            'coagulation_flocculation.csv',
+            'filtration_single.csv',
+            'filtration_dual.csv',
+            'gac.csv',
+            'chlorination.csv',
+            'ozonation.csv',
+        ]
+        for filename in timestamp_files:
+            t_path = timestamps_dir / filename
+            if not t_path.exists():
+                with t_path.open('w', encoding='utf-8', newline='') as fp:
+                    writer = csv.writer(fp)
+                    writer.writerow(['time_s'])
+                    writer.writerow([0])
+                    writer.writerow([60])
+                    writer.writerow([120])
+
+        plant_design_path = inputs_dir / 'django_plant_design.csv'
+        with plant_design_path.open('w', encoding='utf-8', newline='') as fp:
+            writer = csv.writer(fp, delimiter=';')
+            writer.writerow(['parameters', 'value'])
+            writer.writerow(['n_years', 40])
+            writer.writerow(['r_nom', 0.05])
+            writer.writerow(['infl', 0.031])
+
+        baseline_defaults = {
+            'chlorination_volume': 10.0,
+            'chlorination_chemical_dose': 1.5,
+            'single_filtration_surface': 10.0,
+            'single_filtration_depth': 1.2,
+            'single_filtration_grain_size_a': 0.7,
+            'dual_filtration_surface': 12.0,
+            'dual_filtration_depth': 1.0,
+            'dual_filtration_depth_b': 0.8,
+            'dual_filtration_grain_size_a': 0.9,
+            'dual_filtration_grain_size_b': 1.2,
+            'gac_surface': 8.0,
+            'gac_depth': 1.5,
+            'coagulation_volume': 10.0,
+            'coagulation_chemical_dose': 0.08,
+            'flocculation_surface': 20.0,
+            'flocculation_length': 4.0,
+            'ozonation_area': 8.0,
+            'ozonation_height': 3.0,
+            'ozonation_chemical_dose': 1.0,
+        }
+
+        for row in payload.get('technology_properties', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            value = row.get('value')
+            if not isinstance(value, (int, float)):
+                continue
+            prop_name = self._sanitize_optimizer_key(
+                row.get('technologyproperty_name', '')
+            )
+            if process_key == 'chlorination':
+                if 'volume' in prop_name:
+                    baseline_defaults['chlorination_volume'] = float(value)
+                if 'dose' in prop_name:
+                    baseline_defaults['chlorination_chemical_dose'] = (
+                        float(value)
+                    )
+            if process_key == 'filtration_single':
+                if 'surface' in prop_name:
+                    baseline_defaults['single_filtration_surface'] = float(
+                        value
+                    )
+                if 'depth' in prop_name:
+                    baseline_defaults['single_filtration_depth'] = float(value)
+                if 'grain' in prop_name:
+                    baseline_defaults['single_filtration_grain_size_a'] = (
+                        float(value)
+                    )
+                if 'diam' in prop_name:
+                    baseline_defaults['single_filtration_grain_size_a'] = (
+                        float(value)
+                    )
+            if process_key == 'filtration_dual':
+                if 'surface' in prop_name:
+                    baseline_defaults['dual_filtration_surface'] = float(value)
+                if 'depth' in prop_name:
+                    if 'depth_b' in prop_name or prop_name.endswith('_b'):
+                        baseline_defaults['dual_filtration_depth_b'] = float(
+                            value
+                        )
+                    else:
+                        baseline_defaults['dual_filtration_depth'] = float(
+                            value
+                        )
+                if 'grain' in prop_name or 'diam' in prop_name:
+                    if (
+                        'grain_size_b' in prop_name
+                        or 'diam_b' in prop_name
+                        or prop_name.endswith('_b')
+                    ):
+                        baseline_defaults['dual_filtration_grain_size_b'] = (
+                            float(value)
+                        )
+                    else:
+                        baseline_defaults['dual_filtration_grain_size_a'] = (
+                            float(value)
+                        )
+            if process_key == 'gac':
+                if 'surface' in prop_name:
+                    baseline_defaults['gac_surface'] = float(value)
+                if 'depth' in prop_name or 'bed_height' in prop_name:
+                    baseline_defaults['gac_depth'] = float(value)
+            if process_key == 'coagulation-flocculation':
+                if 'coag' in prop_name and 'volume' in prop_name:
+                    baseline_defaults['coagulation_volume'] = float(value)
+                if (
+                    ('coag' in prop_name or 'coagulant' in prop_name)
+                    and 'dose' in prop_name
+                ):
+                    baseline_defaults['coagulation_chemical_dose'] = float(
+                        value
+                    )
+                if 'floc' in prop_name and 'surface' in prop_name:
+                    baseline_defaults['flocculation_surface'] = float(value)
+                if 'floc' in prop_name and 'length' in prop_name:
+                    baseline_defaults['flocculation_length'] = float(value)
+            if process_key == 'ozonation':
+                if 'area' in prop_name:
+                    baseline_defaults['ozonation_area'] = float(value)
+                if 'height' in prop_name:
+                    baseline_defaults['ozonation_height'] = float(value)
+                if 'dose' in prop_name:
+                    baseline_defaults['ozonation_chemical_dose'] = float(
+                        value
+                    )
+
+        django_outputs_path = configs_dir / 'django_outputs.json'
+        process_outputs = {
+            key: {'value': val}
+            for key, val in baseline_defaults.items()
+        }
+        with django_outputs_path.open('w', encoding='utf-8') as fp:
+            json.dump({'Process_outputs': process_outputs}, fp, indent=2)
+
+        return {
+            'workspace_root': workspace_root,
+            'enabled_processes': enabled_processes,
+            'enabled_path': enabled_path,
+            'in_wq_path': in_wq_path,
+        }
+
+    def _run_optimizer_pipeline(self, workspace_root):
+        _ = run_all_optimizations.__name__
+        _ = pystimela.__name__
+
+        enabled_path = workspace_root / 'outputs' / 'enabled_processes.json'
+        in_wq_path = workspace_root / 'configs' / 'in_wq_params.json'
+        if not enabled_path.exists():
+            raise FileNotFoundError(
+                f'Missing {enabled_path}. Enable processes first.'
+            )
+        if not in_wq_path.exists():
+            raise FileNotFoundError(
+                f'Missing {in_wq_path}. Provide optimizer inlet WQ config.'
+            )
+
+        with enabled_path.open('r', encoding='utf-8') as fp:
+            enabled_processes = json.load(fp).get('enabled', [])
+
+        outputs_dir = workspace_root / 'outputs'
+        run_dir = outputs_dir / datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        process_config = {
+            'coagulation-flocculation': {
+                'csv': workspace_root / 'inputs' / 'config_coagulation_flocculation.csv',
+                'config_json': workspace_root / 'configs' / 'coagulation-flocculation_config.json',
+                'result_name': 'coag_floc_results.json',
+                'prepare': prepare_coag_floc_config,
+                'update': update_coag_floc_wq,
+            },
+            'filtration_single': {
+                'csv': workspace_root / 'inputs' / 'config_filtration_single.csv',
+                'config_json': workspace_root / 'configs' / 'filtration_config.json',
+                'result_name': 'filtration_results.json',
+                'prepare': prepare_filtration_config,
+                'update': update_filtration_wq,
+            },
+            'filtration_dual': {
+                'csv': workspace_root / 'inputs' / 'config_filtration_dual.csv',
+                'config_json': workspace_root / 'configs' / 'dual_filtration_config.json',
+                'result_name': 'dual_filtration_results.json',
+                'prepare': prepare_dual_filtration_config,
+                'update': update_dual_filtration_wq,
+            },
+            'gac': {
+                'csv': workspace_root / 'inputs' / 'config_gac.csv',
+                'config_json': workspace_root / 'configs' / 'gac_config.json',
+                'result_name': 'gac_results.json',
+                'prepare': prepare_gac_config,
+                'update': update_gac_wq,
+            },
+            'chlorination': {
+                'csv': workspace_root / 'inputs' / 'config_chlorination.csv',
+                'config_json': workspace_root / 'configs' / 'chlorination_config.json',
+                'result_name': 'chlorination_results.json',
+                'prepare': prepare_chlorination_config,
+                'update': update_chlorination_wq,
+            },
+            'ozonation': {
+                'csv': workspace_root / 'inputs' / 'config_ozonation.csv',
+                'config_json': workspace_root / 'configs' / 'ozonation_config.json',
+                'result_name': 'ozonation_results.json',
+                'prepare': prepare_ozonation_config,
+                'update': update_ozonation_wq,
+            },
+        }
+
+        current_wq_path = in_wq_path
+        previous_cwd = Path.cwd()
+        try:
+            os.chdir(workspace_root)
+            for process_key in enabled_processes:
+                proc = process_config.get(process_key)
+                if proc is None:
+                    logger.warning(
+                        "Unknown optimizer process '%s' - skipping",
+                        process_key,
+                    )
+                    continue
+                if not proc['csv'].exists():
+                    logger.warning(
+                        "Optimizer CSV config not found for '%s': %s",
+                        process_key,
+                        proc['csv'],
+                    )
+                    continue
+
+                proc['prepare'](str(proc['csv']), str(current_wq_path))
+                result_payload = optimize_process(
+                    process_key,
+                    str(proc['config_json']),
+                )
+
+                result_path = run_dir / proc['result_name']
+                with result_path.open('w', encoding='utf-8') as fp:
+                    json.dump(result_payload, fp, indent=2)
+
+                proc['update'](
+                    str(current_wq_path),
+                    str(result_path),
+                    str(current_wq_path),
+                )
+        finally:
+            os.chdir(previous_cwd)
+
+        shutil.copy(
+            current_wq_path,
+            run_dir / 'final_wq_params.json',
+        )
+
+        return run_dir
+
+    def _format_optimizer_exception(self, exc):
+        if isinstance(exc, subprocess.CalledProcessError):
+            stderr = (exc.stderr or '').strip()
+            stdout = (exc.stdout or '').strip()
+            if stderr:
+                last_line = stderr.splitlines()[-1]
+                return (
+                    'Optimizer subprocess failed. '
+                    f'{last_line}'
+                )
+            if stdout:
+                last_line = stdout.splitlines()[-1]
+                return (
+                    'Optimizer subprocess failed. '
+                    f'{last_line}'
+                )
+        return str(exc)
+
+    def _flatten_json(self, data, prefix=''):
+        rows = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                next_prefix = f'{prefix}.{key}' if prefix else str(key)
+                rows.extend(self._flatten_json(value, prefix=next_prefix))
+            return rows
+        if isinstance(data, list):
+            for index, value in enumerate(data):
+                next_prefix = f'{prefix}[{index}]'
+                rows.extend(self._flatten_json(value, prefix=next_prefix))
+            return rows
+        rows.append((prefix, data))
+        return rows
+
+    def _write_json_as_csv(self, input_json_path, output_csv_path):
+        with input_json_path.open('r', encoding='utf-8') as fp:
+            payload = json.load(fp)
+        flattened_rows = self._flatten_json(payload)
+        with output_csv_path.open('w', encoding='utf-8', newline='') as fp:
+            writer = csv.writer(fp)
+            writer.writerow(['key', 'value'])
+            for key, value in flattened_rows:
+                writer.writerow([key, value])
+
+    def _export_optimizer_results_to_processed(
+        self,
+        treatment_plant,
+        payload_path,
+        workspace_root,
+        run_output_dir,
+    ):
+        processed_root = (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'data'
+            / 'processed'
+            / 'optimizer_runs'
+        )
+        run_id = timezone.now().strftime('%Y%m%d_%H%M%S')
+        processed_dir = (
+            processed_root / f'plant_{treatment_plant.id}_{run_id}'
+        )
+        processed_dir.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy(payload_path, processed_dir / payload_path.name)
+
+        inputs_dir = workspace_root / 'inputs'
+        configs_dir = workspace_root / 'configs'
+        outputs_dir = workspace_root / 'outputs'
+        if (outputs_dir / 'enabled_processes.json').exists():
+            shutil.copy(
+                outputs_dir / 'enabled_processes.json',
+                processed_dir / 'enabled_processes.json',
+            )
+        if (configs_dir / 'in_wq_params.json').exists():
+            shutil.copy(
+                configs_dir / 'in_wq_params.json',
+                processed_dir / 'in_wq_params.json',
+            )
+        for csv_input in inputs_dir.glob('config_*.csv'):
+            shutil.copy(csv_input, processed_dir / csv_input.name)
+
+        for result_json in run_output_dir.glob('*.json'):
+            csv_path = processed_dir / f'{result_json.stem}.csv'
+            self._write_json_as_csv(result_json, csv_path)
+            shutil.copy(result_json, processed_dir / result_json.name)
+
+        return processed_dir
+
+    def _get_process_from_result_filename(self, filename):
+        process_map = {
+            'chlorination_results.json': 'chlorination',
+            'coag_floc_results.json': 'coagulation-flocculation',
+            'filtration_results.json': 'filtration_single',
+            'dual_filtration_results.json': 'filtration_dual',
+            'gac_results.json': 'gac',
+            'ozonation_results.json': 'ozonation',
+        }
+        return process_map.get(filename)
+
+    def _get_technology_for_process(self, treatment_plant, process_key):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        if not tech_ids:
+            return None
+        technologies = list(Technology.objects.filter(id__in=tech_ids))
+        for tech in technologies:
+            mapped = dac.get_optimizer_process_key_for_technology(tech.name)
+            if mapped == process_key:
+                return tech
+        return None
+
+    def _iter_numeric_result_values(self, report):
+        sections = [
+            'optimal variables',
+            'outputs',
+            'costs',
+            'costs_breakdown',
+            'economics',
+            'derived',
+        ]
+        numeric_values = {}
+        for section in sections:
+            data = report.get(section, {})
+            if not isinstance(data, dict):
+                continue
+            for key, value in data.items():
+                if isinstance(value, (int, float)):
+                    numeric_values[key] = float(value)
+        return numeric_values
+
+    def _build_update_row(
+        self,
+        technology,
+        row_type,
+        name,
+        value,
+        unit=''
+    ):
+        return {
+            'technology_id': technology.id,
+            'technology_name': technology.name,
+            'row_type': row_type,
+            'name': name,
+            'value': value,
+            'unit': unit or '',
+        }
+
+    def _persist_optimizer_results_to_db(
+        self,
+        treatment_plant,
+        run_output_dir,
+    ):
+        persisted_properties = 0
+        persisted_kpis = 0
+        persisted_wq = 0
+        updated_rows = []
+
+        for result_path in run_output_dir.glob('*_results.json'):
+            process_key = self._get_process_from_result_filename(
+                result_path.name
+            )
+            if process_key is None:
+                continue
+
+            technology = self._get_technology_for_process(
+                treatment_plant,
+                process_key,
+            )
+            if technology is None:
+                logger.warning(
+                    'No technology found for optimizer process %s in plant %s',
+                    process_key,
+                    treatment_plant.id,
+                )
+                continue
+
+            with result_path.open('r', encoding='utf-8') as fp:
+                report = json.load(fp)
+
+            numeric_values = self._iter_numeric_result_values(report)
+
+            for optimizer_key, numeric_value in numeric_values.items():
+                property_candidates = (
+                    dac.get_optimizer_output_db_candidates(
+                        process_key,
+                        'properties',
+                        optimizer_key,
+                    )
+                )
+                if optimizer_key not in property_candidates:
+                    property_candidates.append(optimizer_key.replace('_', ' '))
+
+                for property_name in property_candidates:
+                    prop_obj = TechnologyProperty.objects.filter(
+                        name__iexact=property_name
+                    ).first()
+                    if prop_obj is None:
+                        continue
+                    (
+                        TreatmentPlantTechnologyPropertyValue.objects
+                        .update_or_create(
+                            treatmentplant=treatment_plant,
+                            technology=technology,
+                            technologyproperty=prop_obj,
+                            defaults={'value': numeric_value},
+                        )
+                    )
+                    persisted_properties += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='property',
+                            name=prop_obj.name,
+                            value=numeric_value,
+                            unit=prop_obj.unit,
+                        )
+                    )
+                    break
+
+                wq_candidates = []
+                if hasattr(dac, 'get_optimizer_output_wq_candidates'):
+                    wq_candidates = dac.get_optimizer_output_wq_candidates(
+                        process_key,
+                        optimizer_key,
+                    )
+                if optimizer_key not in wq_candidates:
+                    wq_candidates.append(optimizer_key.replace('_', ' '))
+
+                for wq_name in wq_candidates:
+                    junction = (
+                        WaterqualityParameterTechnologyJunction.objects
+                        .filter(
+                            technology=technology,
+                            waterqualityparameter__name__iexact=wq_name,
+                        )
+                        .select_related('waterqualityparameter')
+                        .first()
+                    )
+                    if junction is None:
+                        continue
+                    (
+                        TreatmentPlantWaterQualityParameterValue.objects
+                        .update_or_create(
+                            treatmentplant=treatment_plant,
+                            wq_tech_parameter=junction,
+                            defaults={'value': numeric_value},
+                        )
+                    )
+                    persisted_wq += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='waterquality',
+                            name=junction.waterqualityparameter.name,
+                            value=numeric_value,
+                            unit=junction.waterqualityparameter.unit,
+                        )
+                    )
+                    break
+
+                kpi_candidates = dac.get_optimizer_output_db_candidates(
+                    process_key,
+                    'kpis',
+                    optimizer_key,
+                )
+                if optimizer_key not in kpi_candidates:
+                    kpi_candidates.append(optimizer_key.replace('_', ' '))
+
+                for kpi_name in kpi_candidates:
+                    kpi_obj = TechnologyKPI.objects.filter(
+                        name__iexact=kpi_name
+                    ).first()
+                    if kpi_obj is None:
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(
+                        treatmentplant=treatment_plant,
+                        technology=technology,
+                        kpi=kpi_obj,
+                        defaults={'value': numeric_value},
+                    )
+                    persisted_kpis += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='kpi',
+                            name=kpi_obj.name,
+                            value=numeric_value,
+                            unit=kpi_obj.unit,
+                        )
+                    )
+                    break
+
+        return {
+            'properties': persisted_properties,
+            'waterquality': persisted_wq,
+            'kpis': persisted_kpis,
+            'updated_rows': updated_rows,
+        }
+
+    def _run_optimizer_job(
+        self,
+        treatment_plant,
+        payload_path,
+        workspace_root,
+    ):
+        close_old_connections()
+        status = self._get_optimizer_status(treatment_plant.id)
+        status.update(
+            {
+                'state': 'running',
+                'message': 'Optimization is running in the background.',
+            }
+        )
+        self._set_optimizer_status(treatment_plant.id, status)
+
+        try:
+            run_output_dir = self._run_optimizer_pipeline(workspace_root)
+            persisted = self._persist_optimizer_results_to_db(
+                treatment_plant=treatment_plant,
+                run_output_dir=run_output_dir,
+            )
+            processed_dir = self._export_optimizer_results_to_processed(
+                treatment_plant=treatment_plant,
+                payload_path=payload_path,
+                workspace_root=workspace_root,
+                run_output_dir=run_output_dir,
+            )
+            done_payload = {
+                'state': 'done',
+                'seen': False,
+                'message': (
+                    'Optimization finished. '
+                    f"Updated {persisted['properties']} properties, "
+                    f"{persisted['waterquality']} water quality values, and "
+                    f"{persisted['kpis']} KPI values."
+                ),
+                'updated_rows': persisted.get('updated_rows', []),
+                'processed_dir': str(processed_dir),
+            }
+            self._set_optimizer_status(treatment_plant.id, done_payload)
+        except Exception as exc:
+            logger.exception('Background optimizer execution failed: %s', exc)
+            error_message = self._format_optimizer_exception(exc)
+            self._set_optimizer_status(
+                treatment_plant.id,
+                {
+                    'state': 'failed',
+                    'seen': False,
+                    'message': (
+                        'Optimizer failed. '
+                        f'{error_message}'
+                    ),
+                    'updated_rows': [],
+                },
+            )
+        finally:
+            close_old_connections()
+
     def get_treatment_plant(self):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
@@ -1999,6 +3160,7 @@ class TechnologyPropertiesView(generic.FormView):
 
     def form_valid(self, formset):
         treatment_plant = self.get_treatment_plant()
+        action = self.request.POST.get('action', 'calculate')
         waterquality_formset = self.get_waterquality_formset()
         valid_tech = formset.is_valid()
         valid_wq = waterquality_formset.is_valid()
@@ -2030,6 +3192,82 @@ class TechnologyPropertiesView(generic.FormView):
                 instance.treatmentplant = treatment_plant
             instance.save()
             saved.append(instance)
+
+        if action == 'optimize':
+            payload = self._build_optimizer_payload(treatment_plant)
+            output_path = self._write_optimizer_payload(
+                treatment_plant,
+                payload=payload,
+            )
+            csv_info = self._write_optimizer_csv_inputs(
+                treatment_plant,
+                payload,
+            )
+            run_async = getattr(settings, 'OPTIMIZER_ASYNC', True)
+            if run_async:
+                task_id = str(uuid.uuid4())
+                self._set_optimizer_status(
+                    treatment_plant.id,
+                    {
+                        'state': 'running',
+                        'seen': False,
+                        'task_id': task_id,
+                        'message': (
+                            'Optimization started. '
+                            'Showing updated results can take a while.'
+                        ),
+                        'updated_rows': [],
+                    },
+                )
+                worker = threading.Thread(
+                    target=self._run_optimizer_job,
+                    kwargs={
+                        'treatment_plant': treatment_plant,
+                        'payload_path': output_path,
+                        'workspace_root': csv_info['workspace_root'],
+                    },
+                    daemon=True,
+                )
+                worker.start()
+                messages.info(
+                    self.request,
+                    'Optimization started in the background. '
+                    'Updated values will appear after completion.'
+                )
+            else:
+                try:
+                    run_output_dir = self._run_optimizer_pipeline(
+                        csv_info['workspace_root']
+                    )
+                    persisted = self._persist_optimizer_results_to_db(
+                        treatment_plant=treatment_plant,
+                        run_output_dir=run_output_dir,
+                    )
+                    processed_dir = self._export_optimizer_results_to_processed(
+                        treatment_plant=treatment_plant,
+                        payload_path=output_path,
+                        workspace_root=csv_info['workspace_root'],
+                        run_output_dir=run_output_dir,
+                    )
+                    messages.success(
+                        self.request,
+                        'Optimization completed. Persisted '
+                        f"{persisted['properties']} properties, "
+                        f"{persisted['waterquality']} water quality values, "
+                        f"and {persisted['kpis']} KPI values. "
+                        f'Results exported to {processed_dir}'
+                    )
+                except Exception as exc:
+                    logger.exception('Optimizer execution failed: %s', exc)
+                    messages.error(
+                        self.request,
+                        'Optimizer inputs were written, but running '
+                        f'pystimela_optim failed: {exc}'
+                    )
+            return redirect(
+                'technology_properties',
+                plant_id=treatment_plant.id,
+            )
 
         # Step 2: Calculate technology-specific and plant-wide KPIs
         # - gather technologies and stages
@@ -2116,7 +3354,7 @@ class TechnologyPropertiesView(generic.FormView):
                     name=wq_input.waterqualityparameter.name,
                     input_label=INPUT_WQPARAMETER_KEY,
                     input_value=wq_input.default_value)
-                wq_parameters[technology.name] = wq_p.to_dict()
+                wq_parameters[technology.name].update(wq_p.to_dict())
             for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=False,
@@ -2597,6 +3835,38 @@ class TechnologyPropertiesView(generic.FormView):
             waterquality_params_by_tech[tech] = wq_params_by_techid.get(
                 tech.id, [])
         context['waterquality_params_by_tech'] = waterquality_params_by_tech
+
+        optimizer_status = self._get_optimizer_status(treatment_plant.id)
+        updated_rows = optimizer_status.get('updated_rows', [])
+
+        updated_properties_by_tech = defaultdict(set)
+        updated_wq_by_tech = defaultdict(set)
+        for row in updated_rows:
+            tech_id = row.get('technology_id')
+            row_type = row.get('row_type')
+            name = row.get('name')
+            if not tech_id or not name:
+                continue
+            if row_type == 'property':
+                updated_properties_by_tech[tech_id].add(name)
+            if row_type == 'waterquality':
+                updated_wq_by_tech[tech_id].add(name)
+
+        context['optimizer_status'] = optimizer_status
+        context['optimizer_updated_rows'] = updated_rows
+        context['optimizer_updated_properties_by_tech'] = {
+            key: sorted(list(value))
+            for key, value in updated_properties_by_tech.items()
+        }
+        context['optimizer_updated_wq_by_tech'] = {
+            key: sorted(list(value))
+            for key, value in updated_wq_by_tech.items()
+        }
+
+        self._mark_optimizer_status_seen(treatment_plant.id)
+
+        context['show_optimize_button'] = self._has_optimizer_targets(
+            treatment_plant)
         # --- End new context variable ---
         return context
 

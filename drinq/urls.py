@@ -99,6 +99,11 @@ urlpatterns = [
         name='technology_properties',
     ),
     path(
+        'treatmentplant/<int:plant_id>/technology/optimizer-status/',
+        views.optimizer_status,
+        name='optimizer_status',
+    ),
+    path(
         'treatmentplant/technology-overview/',
         views.TechnologyParameterOverviewSelectionView.as_view(),
         name='technology_parameter_overview_select',

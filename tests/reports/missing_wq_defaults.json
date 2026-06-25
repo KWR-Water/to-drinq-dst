@@ -42,13 +42,6 @@
     "source_table": "waterqualityparameter_technology"
   },
   {
-    "technology_id": 52,
-    "technology_name": "Flocculation with dynamic mixing",
-    "technology_class": "FlocculationDynamicMixing",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
     "technology_id": 26,
     "technology_name": "Side stream nanofiltration",
     "technology_class": "MembraneFiltration",
@@ -77,30 +70,9 @@
     "source_table": "waterqualityparameter_technology"
   },
   {
-    "technology_id": 18,
-    "technology_name": "Rapid sand filtration, submerged, single medium",
-    "technology_class": "RapidSandSingleMediumFiltration",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 19,
-    "technology_name": "Rapid sand filtration, submerged, dual media, sand",
-    "technology_class": "RapidSandDoubleMediumFiltration",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
     "technology_id": 21,
     "technology_name": "Rapid sand filtration, pressurized",
     "technology_class": "RapidSandPressurizedVesselFiltration",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 14,
-    "technology_name": "Granular activated carbon (GAC) filtration",
-    "technology_class": "GranularActivatedCarbonFiltration",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"
   },
@@ -115,27 +87,6 @@
     "technology_id": 38,
     "technology_name": "UV/H2O2 Advanced Oxidation Process",
     "technology_class": "UVAOP",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 31,
-    "technology_name": "Baffled ozone contact reactor",
-    "technology_class": "BaffledOzonationContactor",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 27,
-    "technology_name": "Chlorination",
-    "technology_class": "ChlorineDisinfection",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 39,
-    "technology_name": "Chloramination",
-    "technology_class": "ChloramineDisinfection",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"
   },

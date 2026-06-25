@@ -90,6 +90,300 @@ KPI_ADAPTABILITY_INDEX = 'resilience index'
 
 logger = logging.getLogger(__name__)
 
+
+def normalize_optimizer_parameter_name(name: str) -> str:
+    """Normalize free-text parameter names for mapping lookups."""
+    return re.sub(r'[^a-z0-9]+', ' ', name.strip().lower()).strip()
+
+
+OPTIMIZER_CSV_PROCESS_MAPPING: dict[
+    str,
+    dict[str, object],
+] = {
+    'chlorination': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'chlorine dose': ('decision_variables', 'chlorine_dose_max'),
+            'chemical dose': ('decision_variables', 'chlorine_dose_max'),
+            'chlorine dosage': ('decision_variables', 'chlorine_dose_max'),
+            'contact volume': ('decision_variables', 'volume_max'),
+            'contact tank volume': ('decision_variables', 'volume_max'),
+            'residence time': ('constraints', 'theta_max'),
+            'residence time hours': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'doc': ('constraints', 'tthms_max'),
+        },
+    },
+    'coagulation-flocculation': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+            ('process_specific', 'coagulant', 'fecl3'),
+        ],
+        'technology_properties': {
+            'coagulation volume': ('decision_variables', 'v_coag_max'),
+            'coagulant dose': ('decision_variables', 'dose_max_mmol'),
+            'flocculation length': ('decision_variables', 'length_floc_max_m'),
+            'flocculation surface': ('decision_variables', 'surf_max_m2'),
+        },
+        'waterquality_parameters': {
+            'ph': ('constraints', 'pH_max'),
+            'doc': ('constraints', 'doc_max'),
+            'suspended solids': ('constraints', 'tss_max'),
+            'suspended_solids': ('constraints', 'tss_max'),
+            'tss': ('constraints', 'tss_max'),
+            'total suspended solids': ('constraints', 'tss_max'),
+        },
+    },
+    'filtration_single': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'filtration surface': ('decision_variables', 'surf_max_m2'),
+            'filtration depth': ('decision_variables', 'lbed_max_m'),
+            'grain size': ('decision_variables', 'dpm_max_m'),
+        },
+        'waterquality_parameters': {
+            'suspended solids': ('constraints', 'tss_out_max'),
+            'suspended_solids': ('constraints', 'tss_out_max'),
+            'tss': ('constraints', 'tss_out_max'),
+            'total suspended solids': ('constraints', 'tss_out_max'),
+        },
+    },
+    'filtration_dual': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'filtration surface': ('decision_variables', 'surf_max_m2'),
+            'filtration depth': ('decision_variables', 'lbed1_max_m'),
+            'filtration depth b': ('decision_variables', 'lbed2_max_m'),
+            'grain size a': ('decision_variables', 'dpm1_max_m'),
+            'grain size b': ('decision_variables', 'dpm2_max_m'),
+        },
+        'waterquality_parameters': {
+            'suspended solids': ('constraints', 'tss_out_max'),
+            'suspended_solids': ('constraints', 'tss_out_max'),
+            'tss': ('constraints', 'tss_out_max'),
+            'total suspended solids': ('constraints', 'tss_out_max'),
+        },
+    },
+    'gac': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'gac surface': ('decision_variables', 'surf_max_m2'),
+            'gac depth': ('decision_variables', 'lbed_max_m'),
+            'bed height': ('decision_variables', 'lbed_max_m'),
+            'residence time': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'doc': ('constraints', 'doc_max'),
+        },
+    },
+    'ozonation': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+            ('model_parameters', 'meetee', True),
+        ],
+        'technology_properties': {
+            'ozonation area': ('decision_variables', 'areact_max'),
+            'ozonation height': ('decision_variables', 'hreact_max'),
+            'ozonation chemical dose': ('decision_variables', 'ozone_dosed_max'),
+            'residence time': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'bromate': ('constraints', 'bromate_max'),
+            'aoc': ('constraints', 'aoc_max'),
+        },
+    },
+}
+
+
+OPTIMIZER_OUTPUT_DB_MAPPING: dict[
+    str,
+    dict[str, dict[str, list[str]]],
+] = {
+    'chlorination': {
+        'properties': {
+            'chlorine_dose_mgL': [
+                'chlorination chemical dose',
+                'chlorine dose',
+            ],
+            'volume_m3': [
+                'chlorination volume',
+                'contact volume',
+            ],
+        },
+        'kpis': {},
+    },
+    'coagulation-flocculation': {
+        'properties': {
+            'chem_dose_mmol': [
+                'coagulation chemical dose',
+                'coagulant dose',
+            ],
+            'V_coag_m3': ['coagulation volume'],
+            'length_m': ['flocculation length'],
+            'surf_m2': ['flocculation surface'],
+        },
+        'kpis': {},
+    },
+    'filtration_single': {
+        'properties': {
+            'surf_m2': ['single filtration surface', 'filtration surface'],
+            'lbed_m': ['single filtration depth', 'filtration depth'],
+            'diam_mm': ['single filtration grain size a', 'grain size'],
+        },
+        'kpis': {},
+    },
+    'filtration_dual': {
+        'properties': {
+            'surf_m2': ['dual filtration surface', 'filtration surface'],
+            'lbed1_m': ['dual filtration depth'],
+            'lbed2_m': ['dual filtration depth b'],
+            'diam1_mm': ['dual filtration grain size a'],
+            'diam2_mm': ['dual filtration grain size b'],
+        },
+        'kpis': {},
+    },
+    'gac': {
+        'properties': {
+            'surf_m2': ['gac surface'],
+            'lbed_m': ['gac depth'],
+        },
+        'kpis': {},
+    },
+    'ozonation': {
+        'properties': {
+            'ozone_dosed_mgL': ['ozonation chemical dose'],
+            'hreact_m': ['ozonation height'],
+            'areact_m2': ['ozonation area'],
+        },
+        'kpis': {},
+    },
+}
+
+
+OPTIMIZER_OUTPUT_WQ_MAPPING: dict[str, dict[str, list[str]]] = {
+    'chlorination': {
+        'residual_out_mgL': ['residual chlorine'],
+        'tthms_out_ugL': ['tthms'],
+        'haas_out_ugL': ['haas'],
+    },
+    'coagulation-flocculation': {
+        'pH_out': ['ph', 'pH'],
+        'DOC_out_mgL': ['doc'],
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'filtration_single': {
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'filtration_dual': {
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'gac': {
+        'DOC_out_mgL': ['doc'],
+    },
+    'ozonation': {
+        'bromate_out_ugL': ['bromate'],
+        'AOC_out_ugL': ['aoc'],
+        'Ecoli_out': ['ecoli'],
+    },
+}
+
+
+def get_optimizer_csv_defaults(
+    process_key: str,
+) -> list[tuple[str, str, object]]:
+    """Return default sectioned CSV rows for an optimizer process."""
+    process_map = OPTIMIZER_CSV_PROCESS_MAPPING.get(process_key, {})
+    defaults = process_map.get('defaults', [])
+    return list(defaults)
+
+
+def resolve_optimizer_csv_mapping(
+    process_key: str,
+    source_kind: str,
+    source_name: str,
+) -> tuple[str, str] | None:
+    """Resolve DRINQ payload names to optimizer CSV section/parameter keys."""
+    process_map = OPTIMIZER_CSV_PROCESS_MAPPING.get(process_key, {})
+    source_map = process_map.get(source_kind, {})
+    if not isinstance(source_map, dict):
+        return None
+
+    normalized = normalize_optimizer_parameter_name(source_name)
+    if normalized in source_map:
+        return source_map[normalized]
+    return None
+
+
+def get_optimizer_output_db_candidates(
+    process_key: str,
+    target: str,
+    optimizer_output_key: str,
+) -> list[str]:
+    """Return DB candidate names for an optimizer output key.
+
+    Args:
+        process_key: Optimizer process identifier.
+        target: Either 'properties' or 'kpis'.
+        optimizer_output_key: Raw optimizer key from output JSON.
+
+    Returns:
+        A list of preferred DB field names to try in order.
+    """
+    process_map = OPTIMIZER_OUTPUT_DB_MAPPING.get(process_key, {})
+    target_map = process_map.get(target, {})
+    if not isinstance(target_map, dict):
+        return []
+    return list(target_map.get(optimizer_output_key, []))
+
+
+def get_optimizer_output_wq_candidates(
+    process_key: str,
+    optimizer_output_key: str,
+) -> list[str]:
+    """Return candidate water quality parameter names for an output key."""
+    process_map = OPTIMIZER_OUTPUT_WQ_MAPPING.get(process_key, {})
+    return list(process_map.get(optimizer_output_key, []))
+
+
+def get_optimizer_process_key_for_technology(
+    technology_name: str,
+) -> str | None:
+    """Map a DRINQ technology name to a pystimela optimizer process key.
+
+    Args:
+        technology_name: Technology display name from the database.
+
+    Returns:
+        The optimizer process key if recognized, otherwise None.
+    """
+    normalized = technology_name.strip().lower()
+    if not normalized:
+        return None
+
+    if 'chlorination' in normalized:
+        return 'chlorination'
+    if 'ozon' in normalized:
+        return 'ozonation'
+    if 'granular activated carbon' in normalized or 'gac' in normalized:
+        return 'gac'
+    if 'rapid sand filtration' in normalized:
+        if 'double' in normalized:
+            return 'filtration_dual'
+        return 'filtration_single'
+    if 'coagulation' in normalized or 'flocculation' in normalized:
+        return 'coagulation-flocculation'
+
+    return None
+
 # ***Calculate daily nominal flow in m3/day***
 # See for variance and standard deviation calculation:
 # https://nicoco007.github.io/Propagation-of-Uncertainty-Calculator/

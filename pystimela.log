@@ -1,0 +1,108 @@
+2026-06-25 16:39:38,624 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
+2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
+2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
+2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
+2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
+2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
+2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
+2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
+2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
+2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=total suspended solids; falling back to constraints.
+2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
+2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
+2026-06-25 16:39:38,629 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
+2026-06-25 16:39:38,647 - drinq.views - ERROR - Background optimizer execution failed: [Errno 2] No such file or directory: 'configs/django_outputs.json'
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2921, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(workspace_root)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2583, in _run_optimizer_pipeline
+    proc['prepare'](str(proc['csv']), str(current_wq_path))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 331, in generate_config_from_csv
+    auto_limits = build_limits_from_django(DJANGO_JSON_PATH, BOUNDS_SCALE,
+                                           csv_config['constraints'].get('tss_out_max', 1.0),
+    ...<2 lines>...
+                                           csv_config['constraints'].get('theta_min', 5.0),
+                                           csv_config['constraints'].get('theta_max', 60.0))
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 180, in build_limits_from_django
+    data = load_json(django_json_path)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 129, in load_json
+    with open(path, "r", encoding="utf-8") as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'configs/django_outputs.json'
+2026-06-25 16:42:08,690 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-06-25 16:43:04,472 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-06-25 16:43:09,320 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
+2026-06-25 16:43:09,321 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
+2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
+2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
+2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
+2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
+2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
+2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
+2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=total suspended solids; falling back to constraints.
+2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
+2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
+2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
+2026-06-25 16:56:30,491 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-06-25 16:57:39,337 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=TSS; falling back to constraints.
+2026-06-25 16:58:03,898 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=TSS; falling back to constraints.
+2026-06-25 16:58:16,581 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-06-25 16:59:18,220 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-06-25 16:59:35,915 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
+2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
+2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
+2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
+2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
+2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
+2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
+2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
+2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
+2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
+2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
+2026-06-25 17:07:02,669 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-06-25 17:08:00,873 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-06-25 17:08:25,656 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
+2026-06-25 17:08:25,656 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
+2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
+2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
+2026-06-25 17:08:25,659 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
+2026-06-25 17:08:25,659 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
+2026-06-25 17:20:15,861 - django.request - WARNING - Not Found: /treatmentplant/17/technology-overview/
+2026-06-25 17:20:51,428 - django.request - WARNING - Not Found: /treatmentplant/1/

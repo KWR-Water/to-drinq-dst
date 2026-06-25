@@ -47,12 +47,5 @@
     "technology_class": "RapidSandPressurizedVesselFiltration",
     "missing_property": "backwash filtration rate",
     "source_table": "technology_property"
-  },
-  {
-    "technology_id": 17,
-    "technology_name": "Cation exchange (CIEX) filtration unit",
-    "technology_class": "CationIonExchange",
-    "missing_property": "mass density of chemical",
-    "source_table": "technology_property"
   }
 ]
