@@ -19,6 +19,20 @@
       padding: 0.1rem 0.35rem;
       font-weight: 600;
     }
+    .optimizer-locked-input {
+      background-color: #eef6ff;
+      border-color: #8ab6e6;
+      cursor: not-allowed;
+    }
+    .optimizer-locked-badge {
+      font-size: 0.72rem;
+      margin-left: 0.4rem;
+      background: #1976d2;
+      color: #ffffff;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.35rem;
+      font-weight: 600;
+    }
   </style>
   <div class="card shadow-sm p-3 bg-white">
     <h1 class="mb-3">Technology properties</h1>
@@ -115,7 +129,6 @@
                     {% if item.form.id.value %}
                       {{ item.form.id }}
                     {% endif %}
-                  {% if not item.is_digested %}
                   {% with updated_props=optimizer_updated_properties_by_tech|dict_get:tech.id %}
                   <tr class="{% if updated_props and item.prop_name in updated_props %}optimizer-updated-row{% endif %}">
                     <td class="align-top">{{ item.prop_name }}</td>
@@ -123,6 +136,9 @@
                       {{ item.form.value }}
                       {% if updated_props and item.prop_name in updated_props %}
                         <span class="optimizer-updated-badge">updated by optimizer</span>
+                      {% endif %}
+                      {% if item.is_optimizer_managed %}
+                        <span class="optimizer-locked-badge">managed by optimizer</span>
                       {% endif %}
                       {% if item.form.value.errors %}
                         <div class="text-danger small">{{ item.form.value.errors }}</div>
@@ -141,11 +157,53 @@
                   </td>
                 </tr>
                 {% endwith %}
-                {% endif %}
               {% endfor %}
             </tbody>
           </table>
         </div>
+
+        {% with digested_items=digested_properties_by_tech|dict_get:tech.id %}
+          {% if digested_items and digested_items|length > 0 %}
+            <div class="mb-4">
+              <h5 class="mb-2">Digested properties</h5>
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                  <thead class="thead-light">
+                    <tr>
+                      <th style="width:25%">Property</th>
+                      <th style="width:10%">Optimized value</th>
+                      <th style="width:10%">Unit</th>
+                      <th style="width:55%">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for digested in digested_items %}
+                      {% with updated_props=optimizer_updated_properties_by_tech|dict_get:tech.id %}
+                      <tr class="{% if updated_props and digested.name in updated_props %}optimizer-updated-row{% endif %}">
+                        <td class="align-top">
+                          {{ digested.name }}
+                          {% if updated_props and digested.name in updated_props %}
+                            <span class="optimizer-updated-badge">updated by optimizer</span>
+                          {% endif %}
+                        </td>
+                        <td class="align-top">
+                          <strong>{{ digested.value }}</strong>
+                        </td>
+                        <td class="align-top">
+                          {% if digested.unit %}{{ digested.unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
+                        </td>
+                        <td class="align-top text-muted small mt-1">
+                          {% if digested.description %}{{ digested.description }}{% endif %}
+                        </td>
+                      </tr>
+                      {% endwith %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
 
         {# Per-technology water quality parameter table using grouped forms #}
         {% with wq_forms=waterquality_forms_by_tech|dict_get:tech %}

@@ -3064,6 +3064,49 @@ class TechnologyPropertiesView(generic.FormView):
     def get_treatment_plant(self):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
+    def _apply_optimizer_field_locking(self, formset, treatment_plant):
+        """Disable manual edits for optimizer-managed non-digested fields."""
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant
+        ).values_list('technology', flat=True)
+        locked_pairs = {
+            (junction.technology_id, junction.property_id)
+            for junction in TechnologyPropertyJunction.objects.filter(
+                technology__in=tech_ids,
+                is_digested=False,
+                sent_to_optimizer=True,
+            )
+        }
+
+        if not locked_pairs:
+            return formset
+
+        for form in formset.forms:
+            tech_id = None
+            prop_id = None
+            if getattr(form.instance, 'technology_id', None):
+                tech_id = form.instance.technology_id
+            else:
+                tech_id = form.initial.get('technology')
+            if getattr(form.instance, 'technologyproperty_id', None):
+                prop_id = form.instance.technologyproperty_id
+            else:
+                prop_id = form.initial.get('technologyproperty')
+
+            if (tech_id, prop_id) not in locked_pairs:
+                continue
+
+            if 'value' in form.fields:
+                form.fields['value'].disabled = True
+                css_class = form.fields['value'].widget.attrs.get('class', '')
+                css_class = (css_class + ' optimizer-locked-input').strip()
+                form.fields['value'].widget.attrs['class'] = css_class
+                form.fields['value'].widget.attrs['title'] = (
+                    'This value is managed by the optimizer.'
+                )
+
+        return formset
+
     def get_form(self, form_class=None):
         treatment_plant = self.get_treatment_plant()
         tech_ids = TreatmentPlantLayout.objects.filter(
@@ -3109,7 +3152,10 @@ class TechnologyPropertiesView(generic.FormView):
                 queryset=queryset,
                 initial=initial,
                 prefix=prefix)
-            return formset
+            return self._apply_optimizer_field_locking(
+                formset,
+                treatment_plant,
+            )
         # For GET: if queryset is empty and initial is non-empty, set extra
         if not queryset.exists() and initial:
             DynamicFormSet = modelformset_factory(
@@ -3117,10 +3163,18 @@ class TechnologyPropertiesView(generic.FormView):
                 form=TreatmentTechPropertyValueForm,
                 extra=len(initial),
             )
-            return DynamicFormSet(
+            formset = DynamicFormSet(
                 queryset=queryset, initial=initial, prefix=prefix)
-        return TreatmentPlantTechPropertyValueFormSet(
+            return self._apply_optimizer_field_locking(
+                formset,
+                treatment_plant,
+            )
+        formset = TreatmentPlantTechPropertyValueFormSet(
             queryset=queryset, initial=initial, prefix=prefix)
+        return self._apply_optimizer_field_locking(
+            formset,
+            treatment_plant,
+        )
 
     def get_waterquality_formset(self):
         """Return a formset for water quality parameter values for this plant."""
@@ -3726,10 +3780,45 @@ class TechnologyPropertiesView(generic.FormView):
         # Map tech id to Technology instance
         tech_map = {tech.id: tech for tech in tech_order}
 
+        value_map = {
+            (row.technology_id, row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=treatment_plant,
+                technology_id__in=[tech.id for tech in tech_order],
+            )
+        }
+        junction_map = {
+            (junction.technology_id, junction.property_id): junction
+            for junction in TechnologyPropertyJunction.objects.filter(
+                technology__in=[tech.id for tech in tech_order],
+            ).select_related('property')
+        }
+
         # Group forms by technology id preserving order
         forms_by_tech = OrderedDict()
         for tech in tech_order:
             forms_by_tech[tech] = []
+
+        digested_properties_by_tech = OrderedDict((tech.id, []) for tech in tech_order)
+        for tech in tech_order:
+            for junction in (
+                j for (tech_id, _), j in junction_map.items()
+                if tech_id == tech.id and j.is_digested
+            ):
+                value = value_map.get(
+                    (junction.technology_id, junction.property_id),
+                    junction.default_value,
+                )
+                digested_properties_by_tech[tech.id].append({
+                    'name': junction.property.name,
+                    'value': value,
+                    'unit': junction.property.unit,
+                    'description': junction.property.description,
+                    'sent_to_optimizer': junction.sent_to_optimizer,
+                })
+            digested_properties_by_tech[tech.id].sort(
+                key=lambda row: row['name'] or ''
+            )
 
         # For each form in the formset, determine its technology and attach
         # the form along with the human-readable property name
@@ -3756,12 +3845,18 @@ class TechnologyPropertiesView(generic.FormView):
                     prop_help = prop.description
                 except TechnologyProperty.DoesNotExist:
                     prop_name = str(prop_id)
+            junction = junction_map.get((tech_id, prop_id))
             if tech is not None:
                 forms_by_tech[tech].append({
                     'form': form,
                     'prop_name': prop_name,
                     'prop_unit': prop_unit,
                     'prop_help': prop_help,
+                    'is_optimizer_managed': bool(
+                        junction
+                        and junction.sent_to_optimizer
+                        and not junction.is_digested
+                    ),
                 })
 
         # Group water quality parameter forms by technology
@@ -3787,6 +3882,7 @@ class TechnologyPropertiesView(generic.FormView):
         context['formset'] = formset
         context['waterquality_formset'] = waterquality_formset
         context['waterquality_forms_by_tech'] = waterquality_forms_by_tech
+        context['digested_properties_by_tech'] = digested_properties_by_tech
 
         # --- Build waterquality_params_by_tech for new table rendering ---
         # Use technology id as key for grouping, then map back to tech 

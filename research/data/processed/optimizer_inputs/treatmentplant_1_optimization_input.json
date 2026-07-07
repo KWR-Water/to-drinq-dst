@@ -4,7 +4,7 @@
     "name": "str - FeCl3 dm - SBC - AIEX - pellet SR - smRSF - GAC - chlorination",
     "slug": "str-fecl3-dm-sbc-aiex-pellet-sr-smrsf-gac-chlorination"
   },
-  "generated_at": "2026-06-25T15:08:25.651338+00:00",
+  "generated_at": "2026-06-26T07:24:18.041754+00:00",
   "technology_properties": [
     {
       "technology_id": 14,
@@ -75,7 +75,7 @@
       "technologyproperty_id": 135,
       "technologyproperty_name": "sand filter bed height",
       "unit": "m",
-      "value": 0.6,
+      "value": 1.2,
       "source_table": "technology_property"
     },
     {
