@@ -1,4 +1,4 @@
-id,technologyproperty_id,pystim_name
+id,technology_property_id,pystim_name
 1,88,theta__tocheck
 2,89,chlorination_chemical_dose
 3,90,solution

@@ -5,7 +5,7 @@ DB_TABLES_DIR = Path(".").joinpath("research", "data", "database_tables")
 
 # Input files
 tech_wq_opt_file = DB_TABLES_DIR / "technology_wqpar_pystimelaopt.csv"
-wqtech_file = DB_TABLES_DIR / "wqparameter_technology.csv"
+wqtech_file = DB_TABLES_DIR / "waterqualityparameter_technology.csv"
 
 techprop_opt_file = DB_TABLES_DIR / "technologyproperty_pystimelaopt.csv"
 techprop_junction_file = DB_TABLES_DIR / "technology_property.csv"
@@ -92,22 +92,32 @@ wqtech = normalize_columns(pd.read_csv(wqtech_file))
 
 # Expected source columns:
 # technology_wqpar_pystimelaopt.csv: id, technology_id, wqpar_id, pystim_name
-# wqparameter_technology.csv: id, waterquality, technology
+# waterqualityparameter_technology.csv: id, waterqualityparameter, technology
 required_tech_wq = {"id", "technology_id", "wqpar_id", "pystim_name"}
-required_wqtech = {"id", "waterquality", "technology"}
+required_wqtech_base = {"id", "technology"}
 
 missing = required_tech_wq - set(tech_wq_opt.columns)
 if missing:
     raise ValueError(f"{tech_wq_opt_file.name} missing columns: {missing}")
 
-missing = required_wqtech - set(wqtech.columns)
+missing = required_wqtech_base - set(wqtech.columns)
 if missing:
     raise ValueError(f"{wqtech_file.name} missing columns: {missing}")
+
+if "waterqualityparameter" in wqtech.columns:
+    wq_col = "waterqualityparameter"
+elif "waterquality" in wqtech.columns:
+    wq_col = "waterquality"
+else:
+    raise ValueError(
+        f"{wqtech_file.name} must contain "
+        "'waterqualityparameter' or 'waterquality'"
+    )
 
 wq_mapping, wq_duplicate_keys = build_mapping(
     junction_df=wqtech,
     left_col="technology",
-    right_col="waterquality",
+    right_col=wq_col,
     id_col="id",
 )
 
@@ -203,7 +213,7 @@ for _, row in techprop_opt.iterrows():
     if len(matches) == 1:
         prop_norm_rows.append({
             "id": row["id"],
-            "technologyproperty_id": matches[0],
+            "technology_property_id": matches[0],
             "pystim_name": row["pystim_name"],
         })
     elif len(matches) == 0:
