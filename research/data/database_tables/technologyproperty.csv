@@ -87,13 +87,13 @@ id,name,unit,description,category,parent_property
 86,upper bound NF flow recovery rate,126,upper bound NF flow recovery rate,1,116
 87,lower bound RO flow recovery rate,,lower bound RO flow recovery rate,1,116
 88,upper bound RO flow recovery rate,,upper bound RO flow recovery rate,1,116
-89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,89
+89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,
 90,another dummy parameter,,another dummy parameter,1,
 91,membrane resistance coefficient,1/m,total membrane resistance coefficient (1/m),1,
 92,lower bound of membranes per vessel,,lower bound of membranes per vessel,1,113
 93,upper bound of membranes per vessel,,upper bound of membranes per vessel,1,113
 94,operating pressure (bar),bar,pressure head required for membrane filtration,1,114
-95,membrane dummy parameter,,dummy parameter,1,
+95,operating membrane area,m^2,dummy parameter,1,
 96,retention time (hr),hr,"retention time of water, in hours",1,
 97,area,m^2,area of the asset,1,
 98,energy emission factor,ton/kWh,emission factor for carbon dioxide emissions when energy is consumed,5,
@@ -117,7 +117,7 @@ id,name,unit,description,category,parent_property
 116,membrane recovery rate,,membrane recovery rate,1,
 117,irradiated area (projected),m^2,irradiated area (projected),1,
 118,bar width,m,width of bar screen or grid screen,1,
-119,pressure vessel orientation,,"orientation of pressure vessels (0: vertical, 1: horizontal)",1,
+119,vessel footprint,m^2,required area per membrane vessel,1,
 120,number of cascade stages,,number of cascade stages,1,
 121,weir height,m,weir height (m),1,
 122,weir coefficient,,weir coefficient,1,
@@ -171,6 +171,6 @@ id,name,unit,description,category,parent_property
 170,baffling factor,,efficiency factor of the disinfection basin,2,
 171,minimum baffling factor,,lower value of baffling factor,2,170
 172,maximum baffling factor,,upper value of baffling factor,2,170
-173,unit length,m,length of unit tank,,
+173,unit length ,m,length of unit tank,1,
 174,gac regeneration interval,days,days between regeneration of GAC,3,
-176,regeneration energy per kg of gac,kWh/kg,energy consumption per kg of regenerated GAC,3,
+175,regeneration energy per kg of gac,kWh/kg,energy consumption per kg of regenerated GAC  ,3,
