@@ -23,4 +23,4 @@ dependencies:
       - djangorestframework==3.14.0
       - pubchempy==1.0.4
       - ./whl/pystimela-0.0.1-py3-none-any.whl
-      - ./whl/pystimela_optim-0.1.1-py3-none-any.whl
+      - ./whl/pystimela_optim-0.1.2-py3-none-any.whl
