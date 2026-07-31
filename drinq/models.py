@@ -838,6 +838,22 @@ class TechnologyChemicalagentJunction(models.Model):
         return f"Technology: {tech_name}, chemical agent: {chemical_agent}"
 
 
+class TechnologyPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE,
+        db_column='technology')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_pystimelaopt'
+        verbose_name_plural = "technology pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.technology}: {self.pystim_name}"
+
+
 class Watercompany(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(unique=True, null=True, blank=True)

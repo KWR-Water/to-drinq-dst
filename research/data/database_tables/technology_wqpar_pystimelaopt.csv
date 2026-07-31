@@ -1,12 +1,12 @@
 id, technology_id, wqpar_id, pystim_name
-1,52,5,viscosity__tocheck
-2,44,5,viscosity__tocheck
+1,52,5,mu
+2,44,5,mu
 3,44,6,pH
 4,44,4,ss_initial
 5,44,2,doc_initial
 6,44,1,temperature
 7,44,15,conductivity
-8,40,5,viscosity__tocheck
+8,40,5,mu
 9,40,6,pH
 10,40,4,ss_initial
 11,40,2,doc_initial
@@ -15,7 +15,7 @@ id, technology_id, wqpar_id, pystim_name
 14,31,8,ecoli_initial
 15,31,9,uv254_initial
 16,31,10,bromate_initial
-17,31,11,aoc__tocheck
+17,31,11,aoc
 18,31,12,bromide__tocheck
 19,27,8,ecoli_initial
 20,27,13,tthms_initial

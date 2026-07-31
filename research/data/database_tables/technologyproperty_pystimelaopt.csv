@@ -1,10 +1,10 @@
 id, technology_id, property_id, pystim_name
-1,27,18,theta__tocheck
+1,27,18,theta
 2,27,27,chlorination_chemical_dose
 3,27,26,solution
 4,27,1,chlorination_volume__tocheck
 5,27,15,chlorination_chemical_dose
-6,27,170,buffling_factor 
+6,27,170,baffling_factor
 7,44,15,coagulation_chemical_dose
 8,44,21, coagulation_G
 9,44,25,mix_eff__tocheck
@@ -13,31 +13,31 @@ id, technology_id, property_id, pystim_name
 12,40,21,coagulation_G
 13,40,25,mix_eff__tocheck
 14,40,1,coagulation_volume__tocheck
-15,14,71,ebct__tocheck
+15,14,71,theta
 16,14,105,diam
 17,14,10,gac_surface
 18,14,169,gac_depth
 19,14,22,rho_k
 20,14,166,filporo
 21,18,127,filporo
-22,18,133,single_filtration_grain_size_a
-23,18,135,single_filtration_depth
-24,18,10,single_filtration_surface__tocheck
-25,19,135,dual_filtration_depth
-26,19,136,dual_filtration_depth_b
+22,18,133,diam_mm
+23,18,135,lbed_m
+24,18,10,surf_m2
+25,19,135,lbed1_m
+26,19,136,lbed2_m
 27,19,128,filporo2
 28,19,127,filporo1
-29,19,133,dual_filtration_grain_size_a
-30,19,134,dual_filtration_grain_size_b
-31,19,10,dual_filtration_surface__tocheck
+29,19,133,diam1_mm
+30,19,134,diam2_mm
+31,19,10,surf_m2
 32,52,21,flocculation_G
-33,52,18,theta__tocheck
+33,52,18,theta
 34,52,173,flocculation_length
 35,52,10,flocculation_surface__tocheck
 36,52,25,mix_eff__tocheck
-37,31,18,theta__tocheck
-38,31,19,ozonation_height
+37,31,18,theta
+38,31,19,hreact
 39,31,1,ozonation_volume__tocheck
 40,31,15,ozonation_chemical_dose
-41,31,10,ozonation_area__tocheck
+41,31,97,areact
 
