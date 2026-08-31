@@ -3836,7 +3836,7 @@ class CationIonExchange(TreatmentKPI):
         self.delta_c_eq_m3 = (self.total_hardness_in_mgliter - self.target_hardness_mgliter) / 50.0 # equivalent weight of Calcium Carbonate/m3
         self.resin_capacity_eqperliter = 1.4  # eq/L of resin
         self.salt_ratio = 0.12  # kg NaCl per eq removed (avg range 0.16-0.24)
-        self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000 # kg/m3
+        self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000  # kg/m3
         self.daily_removal_eq = self.delta_c_eq_m3 * self.nominal_flow_m3perh * 24
 
     def __repr__(self):
@@ -3925,8 +3925,8 @@ class CationIonExchange(TreatmentKPI):
 
         eq_per_cycle = self.delta_c_eq_m3 * self.flow_per_unit_m3hr * self.cycle_h
         resin_volume_unit__m3 = (eq_per_cycle / self.resin_capacity_eqperliter) / 1000.0 * 1.1 
-        a_unit = resin_volume_unit__m3/ self.tank_height_m
-        unit_backflow_rate= 2* self.flow_per_unit_m3hr # 2 times the normal flow
+        a_unit = resin_volume_unit__m3 / self.tank_height_m
+        unit_backflow_rate= 2 * self.flow_per_unit_m3hr # 2 times the normal flow
         h_backwash_m = 1.5 * headloss_m
         total_vessels = self.lanes * self.units_per_lane
         backwash_hydraulic_power_kW = (

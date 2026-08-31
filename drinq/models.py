@@ -854,6 +854,22 @@ class TechnologyPystimelaoptJunction(models.Model):
         return f"{self.technology}: {self.pystim_name}"
 
 
+class TechnologyPropertyPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology_property = models.ForeignKey(
+        TechnologyPropertyJunction, on_delete=models.CASCADE,
+        db_column='technology_property')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_property_pystimelaopt'
+        verbose_name_plural = "technology property pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.technology_property}: {self.pystim_name}"
+
+
 class Watercompany(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     name = models.TextField(unique=True, null=True, blank=True)
@@ -934,3 +950,19 @@ class TreatmentPlantWaterQualityParameterValue(models.Model):
         wqp = WaterqualityParameter.objects.get(
             pk=self.wq_tech_parameter.waterqualityparameter.id)
         return f"Treatment plant: {self.treatmentplant}, WQ parameter: {wqp.name}, value: {self.value}"  # noqa: E501
+
+
+class TechnologyWaterqualityParameterPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    wqparameter_technology = models.ForeignKey(
+        WaterqualityParameterTechnologyJunction, on_delete=models.CASCADE,
+        db_column='wqparameter_technology')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_wqpar_pystimelaopt'
+        verbose_name_plural = "technology water quality parameter pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.wqparameter_technology}: {self.pystim_name}"

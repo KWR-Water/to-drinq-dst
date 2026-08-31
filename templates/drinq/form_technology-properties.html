@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load dict_extras %}
 {% load unit_format %}
+{% load kpi_format %}
 
 {% block content %}
 <div class="container mt-4">
@@ -40,11 +41,20 @@
 
     {% if optimizer_status.state == 'running' %}
       <div class="alert alert-info" role="alert" id="optimizer-running-alert">
-        Optimization is in progress. Updated results may take a while.
+        <div id="optimizer-progress-message">{{ optimizer_status.message }}</div>
+        <ul id="optimizer-progress-list" class="mb-0 mt-2 small">
+          {% for name in optimizer_status.completed_processes %}
+            <li>&#10003; {{ name }} optimized</li>
+          {% endfor %}
+          {% if optimizer_status.progress.phase == 'started' %}
+            <li class="text-muted">&hellip; optimizing {{ optimizer_status.progress.process }}&hellip;</li>
+          {% endif %}
+        </ul>
       </div>
     {% elif optimizer_status.state == 'done' and optimizer_updated_rows %}
       <div class="alert alert-success" role="alert">
         {{ optimizer_status.message }}
+        <a href="{% url 'design_parameter_results' treatment_plant.id %}" class="alert-link ms-2">View Treatment plant KPI results &rarr;</a>
       </div>
     {% elif optimizer_status.state == 'failed' %}
       <div class="alert alert-danger" role="alert">
@@ -55,7 +65,7 @@
     {% if optimizer_updated_rows %}
       <div class="card border-warning mb-3">
         <div class="card-header bg-warning text-dark">
-          Optimizer-updated rows
+          {% if optimizer_status.action == 'optimize' %}Optimizer-updated rows{% else %}Calculated values{% endif %}
         </div>
         <div class="card-body p-2">
           <div class="table-responsive">
@@ -75,7 +85,7 @@
                     <td>{{ row.row_type }}</td>
                     <td>{{ row.name }}</td>
                     <td>
-                      <strong>{{ row.value }}</strong>
+                      <strong>{{ row.value|format_decimals }}</strong>
                       {% if row.unit %}{{ row.unit|superscript_exponents|safe }}{% endif %}
                     </td>
                   </tr>
@@ -135,7 +145,7 @@
                     <td>
                       {{ item.form.value }}
                       {% if updated_props and item.prop_name in updated_props %}
-                        <span class="optimizer-updated-badge">updated by optimizer</span>
+                        <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
                       {% endif %}
                       {% if item.is_optimizer_managed %}
                         <span class="optimizer-locked-badge">managed by optimizer</span>
@@ -183,11 +193,11 @@
                         <td class="align-top">
                           {{ digested.name }}
                           {% if updated_props and digested.name in updated_props %}
-                            <span class="optimizer-updated-badge">updated by optimizer</span>
+                            <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
                           {% endif %}
                         </td>
                         <td class="align-top">
-                          <strong>{{ digested.value }}</strong>
+                          <strong>{{ digested.value|format_decimals }}</strong>
                         </td>
                         <td class="align-top">
                           {% if digested.unit %}{{ digested.unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
@@ -233,7 +243,7 @@
                           {{ form.wq_tech_parameter }}
                           {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
                           {% if updated_wq and wq_name in updated_wq %}
-                            <span class="optimizer-updated-badge">updated by optimizer</span>
+                            <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
                           {% endif %}
                           {% if form.wq_tech_parameter.errors %}
                             <div class="text-danger small">{{ form.wq_tech_parameter.errors }}</div>
@@ -309,8 +319,8 @@
         <h5 class="modal-title">Optimization In Progress</h5>
       </div>
       <div class="modal-body">
-        Optimization is running in the background.
-        Showing updated results may take a while.
+        <p id="optimizer-modal-message">Optimization is running in the background. Showing updated results may take a while.</p>
+        <ul id="optimizer-modal-progress-list" class="mb-0 small"></ul>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -332,10 +342,46 @@
       alert('Optimization is in progress. Updated results may take a while.');
     }
 
+    function renderProgressList(listEl, data) {
+      listEl.innerHTML = '';
+      (data.completed_processes || []).forEach(function(name) {
+        var li = document.createElement('li');
+        li.textContent = '\u2713 ' + name + ' optimized';
+        listEl.appendChild(li);
+      });
+      var progress = data.progress || {};
+      if (progress.phase === 'started' && progress.process) {
+        var current = document.createElement('li');
+        current.className = 'text-muted';
+        current.textContent = '\u2026 optimizing ' + progress.process + '\u2026';
+        listEl.appendChild(current);
+      }
+    }
+
+    function updateProgressUI(data) {
+      var modalMessage = document.getElementById('optimizer-modal-message');
+      if (modalMessage && data.message) {
+        modalMessage.textContent = data.message;
+      }
+      var modalList = document.getElementById('optimizer-modal-progress-list');
+      if (modalList) {
+        renderProgressList(modalList, data);
+      }
+      var alertMessage = document.getElementById('optimizer-progress-message');
+      if (alertMessage && data.message) {
+        alertMessage.textContent = data.message;
+      }
+      var alertList = document.getElementById('optimizer-progress-list');
+      if (alertList) {
+        renderProgressList(alertList, data);
+      }
+    }
+
     function poll() {
       fetch(statusUrl, { credentials: 'same-origin' })
         .then(function(resp) { return resp.json(); })
         .then(function(data) {
+          updateProgressUI(data);
           if (data.state === 'running') {
             window.setTimeout(poll, 3000);
             return;

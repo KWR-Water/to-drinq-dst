@@ -29,9 +29,9 @@ def adaptability_symbol_html(score):
     return mark_safe(f'<span class="{css}">{symbol}</span>')
 
 
-def format_kpi_value(value):
+def format_decimals(value):
     """
-    Format a float value for KPI display:
+    Format a numeric value for display with a sensible decimal precision:
     - 3 decimals if abs(value) < 1
     - 1 decimal if abs(value) >= 1
     Handles None and non-numeric gracefully.
@@ -50,7 +50,7 @@ def format_kpi_value(value):
         return f"{val:.1f}"
 
 
-register.filter('format_kpi_value', format_kpi_value)
+register.filter('format_decimals', format_decimals)
 
 
 def format_parameter_value(value):
@@ -105,17 +105,17 @@ def scaled_kpi_display(value, kpi_name):
 
     if is_cost_kpi and abs(numeric_value) >= 1_000_000:
         return {
-            "value": format_kpi_value(numeric_value / 1_000_000),
+            "value": format_decimals(numeric_value / 1_000_000),
             "unit_prefix": "M",
         }
 
     if is_cost_kpi and abs(numeric_value) >= 1_000:
         return {
-            "value": format_kpi_value(numeric_value / 1_000),
+            "value": format_decimals(numeric_value / 1_000),
             "unit_prefix": "k",
         }
 
     return {
-        "value": format_kpi_value(numeric_value),
+        "value": format_decimals(numeric_value),
         "unit_prefix": "",
     }

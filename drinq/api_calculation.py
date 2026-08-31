@@ -3,6 +3,15 @@ import re
 import logging
 from dataclasses import dataclass
 
+from drinq.models import (
+    Technology,
+    TechnologyProperty,
+    TechnologyPropertyJunction,
+    TechnologyPropertyPystimelaoptJunction,
+    TechnologyPystimelaoptJunction,
+    TechnologyWaterqualityParameterPystimelaoptJunction,
+    WaterqualityParameterTechnologyJunction,
+)
 from drinq.utils.treatmentkpi import (
     TECH_KPI_MAPPINGS,
     MicroStrainer,
@@ -306,12 +315,145 @@ def get_optimizer_csv_defaults(
     return list(defaults)
 
 
+# pystim_name values that map to the 'constraints' CSV section even though
+# they originate from a technology property rather than a water-quality
+# parameter (e.g. a residence time bound constrains the process). Every
+# other technology-property pystim_name is a 'decision_variables' bound;
+# water-quality parameters always map to 'constraints'.
+PYSTIM_NAME_CONSTRAINT_OVERRIDES: set[str] = {'theta_max'}
+
+
+def _csv_section_for_pystim_name(source_kind: str, pystim_name: str) -> str:
+    """Return the pystimela_optim CSV section for a pystim parameter name."""
+    if source_kind == 'waterquality_parameters':
+        return 'constraints'
+    if pystim_name in PYSTIM_NAME_CONSTRAINT_OVERRIDES:
+        return 'constraints'
+    return 'decision_variables'
+
+
+def get_technologyproperty_pystim_name(
+    technology: Technology,
+    property_name: str,
+) -> str | None:
+    """Look up the pystimela_optim parameter name for a technology property.
+
+    Scopes the lookup to the given technology via TechnologyPropertyJunction,
+    then resolves the pystim name via TechnologyPropertyPystimelaoptJunction.
+    """
+    return (
+        TechnologyPropertyPystimelaoptJunction.objects
+        .filter(
+            technology_property__technology=technology,
+            technology_property__property__name__iexact=property_name,
+        )
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+
+
+def get_wq_pystim_name(
+    technology: Technology,
+    wq_parameter_name: str,
+) -> str | None:
+    """Look up the pystimela_optim parameter name for a WQ parameter.
+
+    Scopes the lookup to the given technology via
+    WaterqualityParameterTechnologyJunction, then resolves the pystim name
+    via TechnologyWaterqualityParameterPystimelaoptJunction.
+    """
+    return (
+        TechnologyWaterqualityParameterPystimelaoptJunction.objects
+        .filter(
+            wqparameter_technology__technology=technology,
+            wqparameter_technology__waterqualityparameter__name__iexact=(
+                wq_parameter_name
+            ),
+        )
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+
+
+def get_optimizer_output_property_for_technology(
+    technology: Technology,
+    optimizer_output_key: str,
+) -> TechnologyProperty | None:
+    """Resolve a raw optimizer JSON output key to a TechnologyProperty.
+
+    Scopes the match to the given technology via TechnologyPropertyJunction,
+    so the same pystim_name used by different technologies (e.g. 'surf_m2')
+    resolves unambiguously.
+    """
+    junction = (
+        TechnologyPropertyJunction.objects
+        .filter(
+            technology=technology,
+            technologypropertypystimelaoptjunction__pystim_name=(
+                optimizer_output_key
+            ),
+        )
+        .select_related('property')
+        .first()
+    )
+    return junction.property if junction else None
+
+
+def get_optimizer_output_wq_junction_for_technology(
+    technology: Technology,
+    optimizer_output_key: str,
+) -> WaterqualityParameterTechnologyJunction | None:
+    """Resolve a raw optimizer JSON output key to a WQ technology junction."""
+    return (
+        WaterqualityParameterTechnologyJunction.objects
+        .filter(
+            technology=technology,
+            technologywaterqualityparameterpystimelaoptjunction__pystim_name=(  # noqa, E501
+                optimizer_output_key
+            ),
+        )
+        .select_related('waterqualityparameter')
+        .distinct()
+        .first()
+    )
+
+
 def resolve_optimizer_csv_mapping(
+    technology: Technology,
     process_key: str,
     source_kind: str,
     source_name: str,
 ) -> tuple[str, str] | None:
-    """Resolve DRINQ payload names to optimizer CSV section/parameter keys."""
+    """Resolve a DRINQ property/water-quality parameter to an optimizer
+    CSV (section, parameter) pair.
+
+    Prefers the pystim junction tables (TechnologyPropertyPystimelaoptJunction
+    / TechnologyWaterqualityParameterPystimelaoptJunction) scoped to
+    `technology`. Falls back to the static OPTIMIZER_CSV_PROCESS_MAPPING
+    table for technologies/parameters that do not yet have a junction row.
+    """
+    pystim_name = None
+    if source_kind == 'technology_properties':
+        pystim_name = get_technologyproperty_pystim_name(
+            technology, source_name)
+    elif source_kind == 'waterquality_parameters':
+        pystim_name = get_wq_pystim_name(technology, source_name)
+
+    if pystim_name:
+        return (
+            _csv_section_for_pystim_name(source_kind, pystim_name),
+            pystim_name,
+        )
+
+    logger.info(
+        "No pystim junction row for technology=%s process=%s %s=%s; "
+        "falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.",
+        technology.name if technology else None,
+        process_key,
+        source_kind,
+        source_name,
+    )
+
     process_map = OPTIMIZER_CSV_PROCESS_MAPPING.get(process_key, {})
     source_map = process_map.get(source_kind, {})
     if not isinstance(source_map, dict):
@@ -354,6 +496,19 @@ def get_optimizer_output_wq_candidates(
     return list(process_map.get(optimizer_output_key, []))
 
 
+# Raw `pystim_name` values stored in TechnologyPystimelaoptJunction, mapped
+# to the process keys pystimela_optim.api.optimize_process expects.
+PYSTIM_NAME_TO_OPTIMIZER_PROCESS_KEY: dict[str, str] = {
+    'coagulation_flocculation': 'coagulation-flocculation',
+    'coagulation-flocculation': 'coagulation-flocculation',
+    'filtration_single': 'filtration_single',
+    'filtration_dual': 'filtration_dual',
+    'gac': 'gac',
+    'chlorination': 'chlorination',
+    'ozonation': 'ozonation',
+}
+
+
 def get_optimizer_process_key_for_technology(
     technology_name: str,
 ) -> str | None:
@@ -365,24 +520,29 @@ def get_optimizer_process_key_for_technology(
     Returns:
         The optimizer process key if recognized, otherwise None.
     """
-    normalized = technology_name.strip().lower()
-    if not normalized:
+    normalized_name = technology_name.strip()
+    if not normalized_name:
         return None
 
-    if 'chlorination' in normalized:
-        return 'chlorination'
-    if 'ozon' in normalized:
-        return 'ozonation'
-    if 'granular activated carbon' in normalized or 'gac' in normalized:
-        return 'gac'
-    if 'rapid sand filtration' in normalized:
-        if 'double' in normalized:
-            return 'filtration_dual'
-        return 'filtration_single'
-    if 'coagulation' in normalized or 'flocculation' in normalized:
-        return 'coagulation-flocculation'
+    pystim_name = (
+        TechnologyPystimelaoptJunction.objects
+        .filter(technology__name__iexact=normalized_name)
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+    if not pystim_name:
+        return None
 
-    return None
+    process_key = PYSTIM_NAME_TO_OPTIMIZER_PROCESS_KEY.get(
+        pystim_name.strip().lower()
+    )
+    if process_key is None:
+        logger.warning(
+            "Unrecognized pystimela-optim name '%s' for technology '%s'",
+            pystim_name,
+            technology_name,
+        )
+    return process_key
 
 # ***Calculate daily nominal flow in m3/day***
 # See for variance and standard deviation calculation:

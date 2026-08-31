@@ -4,7 +4,7 @@
     "name": "str - FeCl3 dm - sm RSF - chlorination - CWS",
     "slug": "str-fecl3-dm-sm-rsf-chlorination-cws"
   },
-  "generated_at": "2026-07-07T08:48:34.794866+00:00",
+  "generated_at": "2026-08-31T12:26:39.652044+00:00",
   "technology_properties": [
     {
       "technology_id": 18,
@@ -12,7 +12,7 @@
       "technologyproperty_id": 10,
       "technologyproperty_name": "filter area",
       "unit": "m^2",
-      "value": 0,
+      "value": 7.058333333333332,
       "source_table": "technology_property"
     },
     {
@@ -93,7 +93,43 @@
       "technologyproperty_id": 1,
       "technologyproperty_name": "volume",
       "unit": "m^3",
-      "value": 0,
+      "value": 35.291666666666664,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 21,
+      "technologyproperty_name": "mixer velocity gradient",
+      "unit": "s^-1",
+      "value": 1000,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 25,
+      "technologyproperty_name": "power efficiency of mixer(s)",
+      "unit": null,
+      "value": 80,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 20,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 2.940972222222222,
       "source_table": "technology_property"
     }
   ],
@@ -108,6 +144,18 @@
       "is_inputparameter": true,
       "is_targetparameter": false,
       "value": 15,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 50,
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 1,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -131,7 +179,19 @@
       "unit": " ug/liter",
       "is_inputparameter": true,
       "is_targetparameter": false,
-      "value": 0,
+      "value": 50,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 55,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 40,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -143,7 +203,19 @@
       "unit": " ug/liter",
       "is_inputparameter": true,
       "is_targetparameter": false,
-      "value": 0,
+      "value": 90,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 54,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 80,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -156,6 +228,18 @@
       "is_inputparameter": true,
       "is_targetparameter": false,
       "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 49,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 2,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -216,6 +300,18 @@
       "is_inputparameter": true,
       "is_targetparameter": false,
       "value": 20,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 47,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 5,
       "source_table": "waterqualityparameter_technology"
     }
   ]

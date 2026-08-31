@@ -1,11 +1,1 @@
-source_id,technology_id,wqpar_id,pystim_name,issue,matched_junction_ids
-4,44,4,ss_initial,ambiguous junction mapping,25;46
-5,44,2,doc_initial,ambiguous junction mapping,26;48
-10,40,4,ss_initial,ambiguous junction mapping,22;47
-11,40,2,doc_initial,ambiguous junction mapping,23;49
-16,31,10,bromate_initial,ambiguous junction mapping,37;53
-20,27,13,tthms_initial,ambiguous junction mapping,41;54
-21,27,14,haas_initial,ambiguous junction mapping,42;55
-22,19,4,ss_initial,ambiguous junction mapping,33;51
-23,18,4,ss_initial,ambiguous junction mapping,32;50
-24,14,2,doc_initial,ambiguous junction mapping,34;52
+

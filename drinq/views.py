@@ -191,6 +191,9 @@ def optimizer_status(request, plant_id):
         'state': 'idle',
         'message': '',
         'updated_rows': [],
+        'progress': {},
+        'completed_processes': [],
+        'action': '',
     }
     return JsonResponse(status)
 
@@ -2154,6 +2157,9 @@ class TechnologyPropertiesView(generic.FormView):
                 'state': 'idle',
                 'message': '',
                 'updated_rows': [],
+                'progress': {},
+                'completed_processes': [],
+                'action': '',
             }
         return status
 
@@ -2356,8 +2362,12 @@ class TechnologyPropertiesView(generic.FormView):
             )
             if process_key not in process_rows:
                 continue
+            technology = Technology.objects.filter(
+                name__iexact=row.get('technology_name', '')
+            ).first()
             prop_name = row.get('technologyproperty_name', '')
             mapping = dac.resolve_optimizer_csv_mapping(
+                technology=technology,
                 process_key=process_key,
                 source_kind='technology_properties',
                 source_name=prop_name,
@@ -2389,8 +2399,12 @@ class TechnologyPropertiesView(generic.FormView):
             )
             if process_key not in process_rows:
                 continue
+            technology = Technology.objects.filter(
+                name__iexact=row.get('technology_name', '')
+            ).first()
             wq_name = row.get('waterqualityparameter_name', '')
             mapping = dac.resolve_optimizer_csv_mapping(
+                technology=technology,
                 process_key=process_key,
                 source_kind='waterquality_parameters',
                 source_name=wq_name,
@@ -2592,7 +2606,7 @@ class TechnologyPropertiesView(generic.FormView):
             'in_wq_path': in_wq_path,
         }
 
-    def _run_optimizer_pipeline(self, workspace_root):
+    def _run_optimizer_pipeline(self, workspace_root, on_progress=None):
         _ = run_all_optimizations.__name__
         _ = pystimela.__name__
 
@@ -2661,9 +2675,10 @@ class TechnologyPropertiesView(generic.FormView):
 
         current_wq_path = in_wq_path
         previous_cwd = Path.cwd()
+        total_processes = len(enabled_processes)
         try:
             os.chdir(workspace_root)
-            for process_key in enabled_processes:
+            for index, process_key in enumerate(enabled_processes, start=1):
                 proc = process_config.get(process_key)
                 if proc is None:
                     logger.warning(
@@ -2678,6 +2693,9 @@ class TechnologyPropertiesView(generic.FormView):
                         proc['csv'],
                     )
                     continue
+
+                if on_progress is not None:
+                    on_progress(process_key, 'started', index, total_processes)
 
                 proc['prepare'](str(proc['csv']), str(current_wq_path))
                 result_payload = optimize_process(
@@ -2694,6 +2712,9 @@ class TechnologyPropertiesView(generic.FormView):
                     str(result_path),
                     str(current_wq_path),
                 )
+
+                if on_progress is not None:
+                    on_progress(process_key, 'done', index, total_processes)
         finally:
             os.chdir(previous_cwd)
 
@@ -2850,6 +2871,15 @@ class TechnologyPropertiesView(generic.FormView):
             'unit': unit or '',
         }
 
+    def _merge_updated_rows(self, *row_lists):
+        """Merge updated-row lists, later lists overriding earlier ones."""
+        merged = OrderedDict()
+        for rows in row_lists:
+            for row in rows:
+                key = (row['technology_id'], row['row_type'], row['name'])
+                merged[key] = row
+        return list(merged.values())
+
     def _persist_optimizer_results_to_db(
         self,
         treatment_plant,
@@ -2885,22 +2915,28 @@ class TechnologyPropertiesView(generic.FormView):
             numeric_values = self._iter_numeric_result_values(report)
 
             for optimizer_key, numeric_value in numeric_values.items():
-                property_candidates = (
-                    dac.get_optimizer_output_db_candidates(
-                        process_key,
-                        'properties',
-                        optimizer_key,
-                    )
+                prop_obj = dac.get_optimizer_output_property_for_technology(
+                    technology, optimizer_key,
                 )
-                if optimizer_key not in property_candidates:
-                    property_candidates.append(optimizer_key.replace('_', ' '))
+                if prop_obj is None:
+                    property_candidates = (
+                        dac.get_optimizer_output_db_candidates(
+                            process_key,
+                            'properties',
+                            optimizer_key,
+                        )
+                    )
+                    if optimizer_key not in property_candidates:
+                        property_candidates.append(
+                            optimizer_key.replace('_', ' '))
+                    for property_name in property_candidates:
+                        prop_obj = TechnologyProperty.objects.filter(
+                            name__iexact=property_name
+                        ).first()
+                        if prop_obj is not None:
+                            break
 
-                for property_name in property_candidates:
-                    prop_obj = TechnologyProperty.objects.filter(
-                        name__iexact=property_name
-                    ).first()
-                    if prop_obj is None:
-                        continue
+                if prop_obj is not None:
                     (
                         TreatmentPlantTechnologyPropertyValue.objects
                         .update_or_create(
@@ -2920,29 +2956,36 @@ class TechnologyPropertiesView(generic.FormView):
                             unit=prop_obj.unit,
                         )
                     )
-                    break
 
-                wq_candidates = []
-                if hasattr(dac, 'get_optimizer_output_wq_candidates'):
-                    wq_candidates = dac.get_optimizer_output_wq_candidates(
-                        process_key,
-                        optimizer_key,
+                junction = (
+                    dac.get_optimizer_output_wq_junction_for_technology(
+                        technology, optimizer_key,
                     )
-                if optimizer_key not in wq_candidates:
-                    wq_candidates.append(optimizer_key.replace('_', ' '))
-
-                for wq_name in wq_candidates:
-                    junction = (
-                        WaterqualityParameterTechnologyJunction.objects
-                        .filter(
-                            technology=technology,
-                            waterqualityparameter__name__iexact=wq_name,
+                )
+                if junction is None:
+                    wq_candidates = []
+                    if hasattr(dac, 'get_optimizer_output_wq_candidates'):
+                        wq_candidates = dac.get_optimizer_output_wq_candidates(
+                            process_key,
+                            optimizer_key,
                         )
-                        .select_related('waterqualityparameter')
-                        .first()
-                    )
-                    if junction is None:
-                        continue
+                    if optimizer_key not in wq_candidates:
+                        wq_candidates.append(optimizer_key.replace('_', ' '))
+
+                    for wq_name in wq_candidates:
+                        junction = (
+                            WaterqualityParameterTechnologyJunction.objects
+                            .filter(
+                                technology=technology,
+                                waterqualityparameter__name__iexact=wq_name,
+                            )
+                            .select_related('waterqualityparameter')
+                            .first()
+                        )
+                        if junction is not None:
+                            break
+
+                if junction is not None:
                     (
                         TreatmentPlantWaterQualityParameterValue.objects
                         .update_or_create(
@@ -2961,7 +3004,6 @@ class TechnologyPropertiesView(generic.FormView):
                             unit=junction.waterqualityparameter.unit,
                         )
                     )
-                    break
 
                 kpi_candidates = dac.get_optimizer_output_db_candidates(
                     process_key,
@@ -3002,6 +3044,449 @@ class TechnologyPropertiesView(generic.FormView):
             'updated_rows': updated_rows,
         }
 
+    def _optimizer_process_display_name(self, treatment_plant, process_key):
+        technology = self._get_technology_for_process(
+            treatment_plant, process_key,
+        )
+        return technology.name if technology else process_key
+
+    def _report_optimizer_progress(
+        self, treatment_plant, process_key, phase, index, total,
+    ):
+        label = self._optimizer_process_display_name(
+            treatment_plant, process_key,
+        )
+        status = self._get_optimizer_status(treatment_plant.id)
+        status['state'] = 'running'
+        status['progress'] = {
+            'index': index,
+            'total': total,
+            'process': label,
+            'phase': phase,
+        }
+        completed = status.setdefault('completed_processes', [])
+        if phase == 'started':
+            status['message'] = (
+                f'Optimizing {label} ({index} of {total})...'
+            )
+        elif phase == 'done':
+            if label not in completed:
+                completed.append(label)
+            status['message'] = (
+                f'Finished optimizing {label} ({index} of {total}).'
+            )
+        self._set_optimizer_status(treatment_plant.id, status)
+
+    def _run_calculation_pipeline(self, treatment_plant):
+        """Recompute technology digestion, tech KPIs, and plant KPIs.
+
+        Reads all inputs from the database (design parameters, saved
+        technology property values, water quality junctions), runs the
+        performance/digestion calculators, persists the results, and
+        returns the list of updated-row dicts (digested properties and
+        technology KPIs) for display, in the same shape as optimizer
+        updated rows.
+        """
+        # gather technologies and stages
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).values_list(
+                'technology', flat=True)
+        technology_names = [
+            Technology.objects.get(id=t).name for t in tech_ids]
+
+        stage_ids = StageTechnologies.objects.filter(
+            technology__in=tech_ids).values_list('stage', flat=True).distinct()
+        stage_names = [Stage.objects.get(id=s).name for s in stage_ids]
+
+        # build design parameter dict
+        design_parameters = {
+            dp.designparameter.name: dp.value
+            for dp in TreatmentplantDesignParameter.objects.filter(
+                treatmentplant=treatment_plant)
+        }
+        tech_chem_objects = TechnologyChemicalagentJunction.objects
+        chemical_agents = [
+            cap.chemical_agent for cap in tech_chem_objects.filter(
+                technology__in=tech_ids
+            ).select_related('chemical_agent').distinct()
+        ]
+        chemicalagent_parameters = {
+            tech_name: {
+                c_agent.name: {
+                    'price': ChemicalagentPrice.objects.get(
+                        chemical_agent=c_agent).default_value
+                    if ChemicalagentPrice.objects.filter(
+                        chemical_agent=c_agent).exists() else None,
+                    'emission_factor': None,
+                }
+                for c_agent in chemical_agents
+                if TechnologyChemicalagentJunction.objects.filter(
+                    technology__name=tech_name, chemical_agent=c_agent).exists()
+            } for tech_name in technology_names
+        }
+        dwtp = dac.TreatmentPlantPerformanceCalculator(
+            treatmentplant_id=treatment_plant.id,
+            stages=stage_names,
+            technologies=technology_names,
+            design_parameters=design_parameters,
+            waterquality_parameters={},  # to be filled in by tech calculator
+            plant_kpis={},
+            db_kpi_mapping=DB_PLANTKPI_MAPPING,
+            chemicalagent_parameters=chemicalagent_parameters
+        )
+        # Step 2a: set the nominal flow
+        # -----------------------------------------------------
+        if dwtp.nominal_flow_m3perhr.value is None:
+            dwtp.update_nominal_flow_m3perhr()
+            dwtp.update_plant_kpis()  # to set nominal flow KPI
+        wq_parameters = {
+            tech: {} for tech in technology_names}
+
+        # Step 2b: initialize technology-dependent calculations
+        # ----------------------------------------------------
+        # The technology_properties dictionary contains the property values
+        # for each technology in the treatment plant.
+        tech_properties = {}
+        defaultval_tech_props = {}
+        digested_tech_prop_names = {}
+        all_tech_properties = TechnologyProperty.objects.all()
+        for tech_id in tech_ids:
+            technology = Technology.objects.get(id=tech_id)
+            tech_properties[technology.name] = {}
+            wq_parameters[technology.name] = {}
+            digested_tech_prop_names[technology.name] = []
+            defaultval_tech_props[technology.name] = {}
+            for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
+                        technology=technology,
+                        is_inputparameter=True,
+                        is_targetparameter=False):
+                wq_p = WaterqualityParameterData(
+                    name=wq_input.waterqualityparameter.name,
+                    input_label=INPUT_WQPARAMETER_KEY,
+                    input_value=wq_input.default_value)
+                wq_parameters[technology.name].update(wq_p.to_dict())
+            for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
+                        technology=technology,
+                        is_inputparameter=False,
+                        is_targetparameter=True):
+                if wq_target:
+                    wq_name = wq_target.waterqualityparameter.name
+                    wq_inputvalue, wq_inputdict = None, {}
+                    if wq_parameters[technology.name].get(wq_name, None) is not None:  # noqa, E501
+                        wq_inputdict = wq_parameters[technology.name][wq_name]
+                        wq_inputvalue = wq_inputdict.get(
+                            INPUT_WQPARAMETER_KEY, None)
+                    # if there is already an input parameter with the same
+                    # name, we want to keep its value and label, otherwise
+                    # fill the dict with the target parameter's default value
+                    wq_p = WaterqualityParameterData(
+                        name=wq_name,
+                        target_label=TARGET_WQPARAMETER_KEY,
+                        target_value=wq_target.default_value,
+                        input_value=wq_inputvalue,
+                        input_label=INPUT_WQPARAMETER_KEY)
+                    wq_parameters[technology.name].update(wq_p.to_dict())
+
+            # Technology property default value lookup
+            for def_tp in TechnologyPropertyJunction.objects.filter(
+                        technology=technology, is_digested=False):
+                if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
+                    defaultval_tech_props[technology.name].update(
+                        {def_tp.property.name: def_tp.default_value})
+            for isdigested_tp in TechnologyPropertyJunction.objects.filter(
+                        technology=technology, is_digested=True):
+                digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
+            for tp in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                        treatmentplant=treatment_plant,
+                        technology=Technology.objects.get(id=tech_id)
+                    ):
+                tech_properties[tp.technology.name].update(
+                    {tp.technologyproperty.name: tp.value})
+        # Merge the default values with the user-specified properties
+        for tech_name in technology_names:
+            tech_properties[tech_name] = {
+                **defaultval_tech_props[tech_name],
+                **tech_properties[tech_name]
+            }
+        technology_kpis = [
+            tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
+
+        # Instantiate the Technology Performance Calculator
+        kpi_calculator = dac.TechnologyPerformanceCalculator(
+            treatmentplant_id=treatment_plant.id,
+            stages=stage_names,
+            technologies=technology_names,
+            design_parameters=design_parameters,
+            tech_parameters=tech_properties,
+            waterquality_parameters=wq_parameters,
+            chemicalagent_parameters=chemicalagent_parameters,
+            plant_kpis=dwtp.plant_kpis,
+            tech_kpinames=technology_kpis,
+            digested_tech_parameter_list=digested_tech_prop_names,
+        )
+        kpi_calculator.calculate_kpi()
+        kpi_calculator.sum_kpis()
+
+        # Assign the summed technology KPIs to the plant calculator
+        summed_kpis = kpi_calculator.summed_kpis
+        dwtp.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
+            TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
+        dwtp.energyconsumption_kwhrperm3.value = dwtp.get_energyconsumption_per_m3()  # noqa, E501
+        dwtp.power_kw.value = summed_kpis.get(
+            TECHKPI_POWER_KW, None)
+        dwtp.co2_emissions_kgperm3.value = summed_kpis.get(  # noqa, E501
+            TECHKPI_CO2_EMISSIONS_KGPERM3, None)
+        dwtp.footprint_area_m2.value = summed_kpis.get(
+            TECHKPI_FOOTPRINT_AREA_M2, None)
+
+        # Save the digested technology properties back to the database
+        calculation_updated_rows = []
+        for tech_name in technology_names:
+            for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
+                try:
+                    prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
+                    tech = Technology.objects.get(name=tech_name)
+                    prop_obj = TechnologyProperty.objects.get(name=prop_name)
+                    TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech,
+                        technologyproperty=prop_obj,
+                        defaults={'value': str(prop_value)}
+                    )
+                    calculation_updated_rows.append(
+                        self._build_update_row(
+                            technology=tech,
+                            row_type='property',
+                            name=prop_obj.name,
+                            value=prop_value,
+                            unit=prop_obj.unit,
+                        )
+                    )
+                except TechnologyProperty.DoesNotExist:
+                    continue
+            # save KPI values
+            for (kpi_name, kpi_value) in (
+                    kpi_calculator.tech_kpis[tech_name].items()):
+                try:
+                    kpi = TechnologyKPI.objects.get(name=kpi_name)
+                    tech = Technology.objects.get(name=tech_name)
+                    if kpi_value is None:
+                        logger.warning(
+                            f"-- None value found for technology: {tech.name}, KPI: {kpi.name}")
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(  # noqa, E501
+                        treatmentplant=treatment_plant,
+                        technology=tech,
+                        kpi=kpi,
+                        defaults={'value': str(kpi_value)}
+                        )
+                    calculation_updated_rows.append(
+                        self._build_update_row(
+                            technology=tech,
+                            row_type='kpi',
+                            name=kpi.name,
+                            value=kpi_value,
+                            unit=kpi.unit,
+                        )
+                    )
+                except TechnologyKPI.DoesNotExist:
+                    continue
+
+        # Step 2c: compute plant-wide costs
+        # ---------------------------------
+        dwtp.update_plant_kpis()
+        # compute construction costs if possible (replicate existing helper)
+        constrcosts = {}
+        for tech_id in tech_ids:
+            related_tech_id = None
+            try:
+                related_technology = TechnologyRelatedtechnology.objects.get(technology_id=tech_id)
+                related_tech_id = related_technology.id
+            except TechnologyRelatedtechnology.DoesNotExist:
+                related_technology = None
+            try:
+                tccp = TechnologyConstructionCostParameter.objects.filter(
+                    technology_id=tech_id).first()
+                if tccp:
+                    if tccp.technologyproperty:
+                        try:
+                            techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
+                                treatmentplant=treatment_plant,
+                                technology_id=tech_id,
+                                technologyproperty=tccp.technologyproperty
+                            ).value
+                        except TreatmentPlantTechnologyPropertyValue.DoesNotExist:  # noqa, E501
+                            # TODO: raise the error in future versions
+                            logger.warning(
+                                f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
+                                f" for technology_id={tech_id} and "
+                                f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
+                                f"construction cost calculation"
+                            )
+                            techprop_value = None
+                        if techprop_value is None:
+                            continue
+                        constrcosts[Technology.objects.get(id=tech_id).name] = {
+                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                            'technologyproperty': tccp.technologyproperty.name,
+                            'technologyproperty_value': techprop_value,
+                            'plantproperty': None,
+                            'plantproperty_value': None,
+                        }
+                    else:
+                        if tccp.plantproperty:
+                            try:
+                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                    tccp.plantproperty.name, None)
+                            except TreatmentPlantProperty.DoesNotExist:
+                                plantprop_value = None
+                            if plantprop_value is None:
+                                logger.warning(
+                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                    f" for construction cost calculation ")
+                                continue
+                            constrcosts[Technology.objects.get(id=tech_id).name] = {  # noqa, E501
+                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                                'technologyproperty': None,
+                                'technologyproperty_value': None,
+                                'plantproperty': tccp.plantproperty.name,
+                                'plantproperty_value': plantprop_value
+                            }
+            except TechnologyConstructionCostParameter.DoesNotExist:
+                logger.warning(
+                    f"No construction cost parameters found for "
+                    f"technology_id={tech_id}"
+                    )
+                continue
+            # Now try the same for the related technology
+            if related_tech_id is not None:
+                try:
+                    tccp = TechnologyConstructionCostParameter.objects.filter(
+                        technology_id=related_tech_id).first()
+                    if tccp:
+                        if tccp.technologyproperty:
+                            try:
+                                techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
+                                    treatmentplant=treatment_plant,
+                                    technology_id=related_tech_id,
+                                    technologyproperty=tccp.technologyproperty
+                                ).value
+                            except TreatmentPlantTechnologyPropertyValue.DoesNotExist:  # noqa, E501
+                                # TODO: raise the error in future versions
+                                logger.warning(
+                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
+                                    f" for technology_id={related_tech_id} and "
+                                    f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
+                                    f"construction cost calculation"
+                                )
+                                warn(
+                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
+                                    f" for technology_id={related_tech_id} and "
+                                    f"technologyproperty={tccp.technologyproperty}"
+                                    )
+                                techprop_value = None
+                            if techprop_value is None:
+                                continue
+                            constrcosts[Technology.objects.get(id=related_tech_id).name] = {
+                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                                'technologyproperty': tccp.technologyproperty.name,
+                                'technologyproperty_value': techprop_value,
+                                'plantproperty': None,
+                                'plantproperty_value': None,
+                            }
+                        else:
+                            if tccp.plantproperty:
+                                try:
+                                    plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                        tccp.plantproperty.name, None)
+                                except TreatmentPlantProperty.DoesNotExist:
+                                    plantprop_value = None
+                                if plantprop_value is None:
+                                    logger.warning(
+                                        f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                        f" for construction cost calculation ")
+                                    continue
+                                constrcosts[Technology.objects.get(id=related_tech_id).name] = {  # noqa, E501
+                                    'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                                    'technologyproperty': None,
+                                    'technologyproperty_value': None,
+                                    'plantproperty': tccp.plantproperty.name,
+                                    'plantproperty_value': plantprop_value
+                                }
+                except TechnologyConstructionCostParameter.DoesNotExist:
+                    logger.warning(
+                        f"No construction cost parameters found for "
+                        f"technology_id={related_tech_id}"
+                        )
+                    continue
+        try:
+            dwtp.set_constructioncosts(cost_parameters=constrcosts)
+        except KeyError as ke:
+            # TODO: raise the error in future versions
+            # perf_indic.update({TPPN['construction_costs_eurperm3']: None})
+            logger.warning(
+                f"KeyError during construction cost calculation: {ke}. ")  # noqa, E501
+
+        # Calculate investment, maintenance and levelized costs
+        oper_and_maintenance_rate = dwtp.design_parameters.get(
+            DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME, 5) / 100
+        lifespan = dwtp.design_parameters.get(
+            DESIGN_PAR_LIFESPAN_NAME, None)
+        interest_rate = dwtp.design_parameters.get(
+            DESIGN_PAR_INTEREST_PERC_NAME, None
+        ) / 100
+        personnel_costs_year = dwtp.design_parameters.get(
+            DESIGN_PAR_PERSONNEL_COSTS_NAME, None
+        )
+        energy_price = dwtp.design_parameters.get(
+            DESIGN_PAR_ENERGY_PRICE_NAME, None
+        )
+        energy_costs_year = (
+            dwtp.energyconsumption_kwhrperday.value * 365 * energy_price
+        )
+        chemical_costs_per_day = summed_kpis.get(
+            TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
+            0.0,
+        )
+        chemical_costs_per_year = chemical_costs_per_day * 365
+        yearly_production_m3 = dwtp.nominal_flow_m3perhr.value * 24 * 365
+        dwtp.oper_and_maintenancecosts_eurperyear.value = dwtp.oper_and_maintenancecosts_eurperyear.calculate_value(
+            construction_costs=dwtp.constructioncosts_eur.value,
+            oper_maintenance_percentage=oper_and_maintenance_rate,
+        )
+        dwtp.investmentcosts_eur.value = dwtp.investmentcosts_eur.calculate_value(
+            construction_costs_total=dwtp.constructioncosts_eur.value,
+            operation_maintenance_percentage=oper_and_maintenance_rate,
+            energy_cost_per_year=energy_costs_year,
+            personnel_costs_per_year=personnel_costs_year,
+            chemical_costs_per_year=chemical_costs_per_year,
+            interest_rate=interest_rate,
+            lifespan_years=lifespan,
+        )
+        dwtp.levelized_cost_of_water.value = dwtp.levelized_cost_of_water.calculate_value(
+            total_investment_costs_peryear=dwtp.investmentcosts_eur.value,
+            yearly_water_production_m3=yearly_production_m3,
+        )
+        dwtp.levelized_chemical_costs.value = dwtp.levelized_chemical_costs.calculate_value(
+            chemical_costs_per_year=chemical_costs_per_year,
+            yearly_water_production_m3=yearly_production_m3,
+        )
+
+        # Step 2-d: update plant-wide properties (KPIs)
+        # --------------------------------------------
+        dwtp.update_plant_kpis()  # update cost related KPIs
+        for prop_name, val in dwtp.plant_kpis.items():
+            value = np.round(val, 3)
+            if val is None:
+                continue
+            prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(name=prop_name)  # noqa, E501
+            TreatmentPlantPropertyValue.objects.update_or_create(
+                treatmentplant=treatment_plant,
+                property=prop_obj,
+                defaults={'value': str(value)}
+            )
+        return calculation_updated_rows
+
     def _run_optimizer_job(
         self,
         treatment_plant,
@@ -3014,16 +3499,28 @@ class TechnologyPropertiesView(generic.FormView):
             {
                 'state': 'running',
                 'message': 'Optimization is running in the background.',
+                'progress': {},
+                'completed_processes': [],
+                'action': 'optimize',
             }
         )
         self._set_optimizer_status(treatment_plant.id, status)
 
+        def on_progress(process_key, phase, index, total):
+            self._report_optimizer_progress(
+                treatment_plant, process_key, phase, index, total,
+            )
+
         try:
-            run_output_dir = self._run_optimizer_pipeline(workspace_root)
+            run_output_dir = self._run_optimizer_pipeline(
+                workspace_root, on_progress=on_progress,
+            )
             persisted = self._persist_optimizer_results_to_db(
                 treatment_plant=treatment_plant,
                 run_output_dir=run_output_dir,
             )
+            calculation_rows = self._run_calculation_pipeline(
+                treatment_plant)
             processed_dir = self._export_optimizer_results_to_processed(
                 treatment_plant=treatment_plant,
                 payload_path=payload_path,
@@ -3033,29 +3530,44 @@ class TechnologyPropertiesView(generic.FormView):
             done_payload = {
                 'state': 'done',
                 'seen': False,
+                'action': 'optimize',
                 'message': (
                     'Optimization finished. '
                     f"Updated {persisted['properties']} properties, "
                     f"{persisted['waterquality']} water quality values, and "
-                    f"{persisted['kpis']} KPI values."
+                    f"{persisted['kpis']} KPI values. "
+                    f'Recalculated {len(calculation_rows)} digested '
+                    'properties and technology KPI values.'
                 ),
-                'updated_rows': persisted.get('updated_rows', []),
+                'updated_rows': self._merge_updated_rows(
+                    persisted.get('updated_rows', []), calculation_rows,
+                ),
                 'processed_dir': str(processed_dir),
             }
             self._set_optimizer_status(treatment_plant.id, done_payload)
         except Exception as exc:
             logger.exception('Background optimizer execution failed: %s', exc)
             error_message = self._format_optimizer_exception(exc)
+            current_status = self._get_optimizer_status(treatment_plant.id)
+            failed_process = (
+                current_status.get('progress') or {}
+            ).get('process')
+            message = 'Optimizer failed. '
+            if failed_process:
+                message += f'Failed while optimizing {failed_process}. '
+            message += error_message
             self._set_optimizer_status(
                 treatment_plant.id,
                 {
                     'state': 'failed',
                     'seen': False,
-                    'message': (
-                        'Optimizer failed. '
-                        f'{error_message}'
-                    ),
+                    'action': 'optimize',
+                    'message': message,
                     'updated_rows': [],
+                    'progress': current_status.get('progress', {}),
+                    'completed_processes': current_status.get(
+                        'completed_processes', [],
+                    ),
                 },
             )
         finally:
@@ -3265,12 +3777,15 @@ class TechnologyPropertiesView(generic.FormView):
                     {
                         'state': 'running',
                         'seen': False,
+                        'action': 'optimize',
                         'task_id': task_id,
                         'message': (
                             'Optimization started. '
                             'Showing updated results can take a while.'
                         ),
                         'updated_rows': [],
+                        'progress': {},
+                        'completed_processes': [],
                     },
                 )
                 worker = threading.Thread(
@@ -3297,6 +3812,8 @@ class TechnologyPropertiesView(generic.FormView):
                         treatment_plant=treatment_plant,
                         run_output_dir=run_output_dir,
                     )
+                    calculation_rows = self._run_calculation_pipeline(
+                        treatment_plant)
                     processed_dir = self._export_optimizer_results_to_processed(
                         treatment_plant=treatment_plant,
                         payload_path=output_path,
@@ -3308,7 +3825,9 @@ class TechnologyPropertiesView(generic.FormView):
                         'Optimization completed. Persisted '
                         f"{persisted['properties']} properties, "
                         f"{persisted['waterquality']} water quality values, "
-                        f"and {persisted['kpis']} KPI values. "
+                        f"and {persisted['kpis']} KPI values. Recalculated "
+                        f"{len(calculation_rows)} digested properties and "
+                        'technology KPI values. '
                         f'Results exported to {processed_dir}'
                     )
                 except Exception as exc:
@@ -3324,392 +3843,8 @@ class TechnologyPropertiesView(generic.FormView):
             )
 
         # Step 2: Calculate technology-specific and plant-wide KPIs
-        # - gather technologies and stages
-        # - build design parameter dict
-        # - run TreatmentPlantPerformanceCalculator and
-        #   TechnologyPerformanceCalculator
-        # - save calculated values to the DB
-
-        # Run performance calculations after tech properties saved
-        # gather technologies and stages
-        tech_ids = TreatmentPlantLayout.objects.filter(
-            treatmentplant=treatment_plant).values_list(
-                'technology', flat=True)
-        technology_names = [
-            Technology.objects.get(id=t).name for t in tech_ids]
-
-        stage_ids = StageTechnologies.objects.filter(
-            technology__in=tech_ids).values_list('stage', flat=True).distinct()
-        stage_names = [Stage.objects.get(id=s).name for s in stage_ids]
-
-        # build design parameter dict
-        design_parameters = {
-            dp.designparameter.name: dp.value
-            for dp in TreatmentplantDesignParameter.objects.filter(
-                treatmentplant=treatment_plant)
-        }
-        tech_chem_objects = TechnologyChemicalagentJunction.objects
-        chemical_agents = [
-            cap.chemical_agent for cap in tech_chem_objects.filter(
-                technology__in=tech_ids
-            ).select_related('chemical_agent').distinct()
-        ]
-        chemicalagent_parameters = {
-            tech_name: {
-                c_agent.name: {
-                    'price': ChemicalagentPrice.objects.get(
-                        chemical_agent=c_agent).default_value
-                    if ChemicalagentPrice.objects.filter(
-                        chemical_agent=c_agent).exists() else None,
-                    'emission_factor': None,
-                }
-                for c_agent in chemical_agents
-                if TechnologyChemicalagentJunction.objects.filter(
-                    technology__name=tech_name, chemical_agent=c_agent).exists()
-            } for tech_name in technology_names
-        }
-        dwtp = dac.TreatmentPlantPerformanceCalculator(
-            treatmentplant_id=treatment_plant.id,
-            stages=stage_names,
-            technologies=technology_names,
-            design_parameters=design_parameters,
-            waterquality_parameters={},  # to be filled in by tech calculator
-            plant_kpis={},
-            db_kpi_mapping=DB_PLANTKPI_MAPPING,
-            chemicalagent_parameters=chemicalagent_parameters
-        )
-        # Step 2a: set the nominal flow
-        # -----------------------------------------------------     
-        if dwtp.nominal_flow_m3perhr.value is None:
-            dwtp.update_nominal_flow_m3perhr()
-            dwtp.update_plant_kpis()  # to set nominal flow KPI
-        wq_parameters = {
-            tech: {} for tech in technology_names}
-
-        # Step 2b: initialize technology-dependent calculations
-        # ----------------------------------------------------
-        # The technology_properties dictionary contains the property values
-        # for each technology in the treatment plant.
-        tech_properties = {}
-        defaultval_tech_props = {}
-        digested_tech_prop_names = {}
-        all_tech_properties = TechnologyProperty.objects.all()
-        for tech_id in tech_ids:
-            technology = Technology.objects.get(id=tech_id)
-            tech_properties[technology.name] = {}
-            wq_parameters[technology.name] = {}
-            digested_tech_prop_names[technology.name] = []
-            defaultval_tech_props[technology.name] = {}
-            for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
-                        technology=technology,
-                        is_inputparameter=True,
-                        is_targetparameter=False):
-                wq_p = WaterqualityParameterData(
-                    name=wq_input.waterqualityparameter.name,
-                    input_label=INPUT_WQPARAMETER_KEY,
-                    input_value=wq_input.default_value)
-                wq_parameters[technology.name].update(wq_p.to_dict())
-            for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
-                        technology=technology,
-                        is_inputparameter=False,
-                        is_targetparameter=True):
-                if wq_target:
-                    wq_name = wq_target.waterqualityparameter.name
-                    wq_inputvalue, wq_inputdict = None, {}
-                    if wq_parameters[technology.name].get(wq_name, None) is not None:  # noqa, E501
-                        wq_inputdict = wq_parameters[technology.name][wq_name]
-                        wq_inputvalue = wq_inputdict.get(
-                            INPUT_WQPARAMETER_KEY, None)
-                    # if there is already an input parameter with the same
-                    # name, we want to keep its value and label, otherwise
-                    # fill the dict with the target parameter's default value
-                    wq_p = WaterqualityParameterData(
-                        name=wq_name,
-                        target_label=TARGET_WQPARAMETER_KEY,
-                        target_value=wq_target.default_value,
-                        input_value=wq_inputvalue,
-                        input_label=INPUT_WQPARAMETER_KEY)
-                    wq_parameters[technology.name].update(wq_p.to_dict())
-
-            # Technology property default value lookup
-            for def_tp in TechnologyPropertyJunction.objects.filter(
-                        technology=technology, is_digested=False):
-                if all_tech_properties.get(id=def_tp.property.id).parent_property is None:  # noqa, E501
-                    defaultval_tech_props[technology.name].update(
-                        {def_tp.property.name: def_tp.default_value})
-            for isdigested_tp in TechnologyPropertyJunction.objects.filter(
-                        technology=technology, is_digested=True):
-                digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
-            for tp in TreatmentPlantTechnologyPropertyValue.objects.filter(
-                        treatmentplant=treatment_plant,
-                        technology=Technology.objects.get(id=tech_id)
-                    ):
-                tech_properties[tp.technology.name].update(
-                    {tp.technologyproperty.name: tp.value})
-        # Merge the default values with the user-specified properties
-        for tech_name in technology_names:
-            tech_properties[tech_name] = {
-                **defaultval_tech_props[tech_name],
-                **tech_properties[tech_name]
-            }
-        technology_kpis = [
-            tech_kpi.name for tech_kpi in TechnologyKPI.objects.all()]
-
-        # Instantiate the Technology Performance Calculator
-        kpi_calculator = dac.TechnologyPerformanceCalculator(
-            treatmentplant_id=treatment_plant.id,
-            stages=stage_names,
-            technologies=technology_names,
-            design_parameters=design_parameters,
-            tech_parameters=tech_properties,
-            waterquality_parameters=wq_parameters,
-            chemicalagent_parameters=chemicalagent_parameters,
-            plant_kpis=dwtp.plant_kpis,
-            tech_kpinames=technology_kpis,
-            digested_tech_parameter_list=digested_tech_prop_names,
-        )
-        kpi_calculator.calculate_kpi()
-        kpi_calculator.sum_kpis()
-        
-        # Assign the summed technology KPIs to the plant calculator
-        summed_kpis = kpi_calculator.summed_kpis
-        dwtp.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
-            TECHKPI_ENERGYCONSUMPTION_KWHRPERDAY, None)
-        dwtp.energyconsumption_kwhrperm3.value = dwtp.get_energyconsumption_per_m3()  # noqa, E501
-        dwtp.power_kw.value = summed_kpis.get(
-            TECHKPI_POWER_KW, None)
-        dwtp.co2_emissions_kgperm3.value = summed_kpis.get(  # noqa, E501
-            TECHKPI_CO2_EMISSIONS_KGPERM3, None)
-        dwtp.footprint_area_m2.value = summed_kpis.get(
-            TECHKPI_FOOTPRINT_AREA_M2, None)
-
-        # Save the digested technology properties back to the database
-        for tech_name in technology_names:
-            for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
-                try:
-                    prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
-                    tech = Technology.objects.get(name=tech_name)
-                    prop_obj = TechnologyProperty.objects.get(name=prop_name)
-                    TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
-                        treatmentplant=treatment_plant,
-                        technology=tech,
-                        technologyproperty=prop_obj,
-                        defaults={'value': str(prop_value)}
-                    )
-                except TechnologyProperty.DoesNotExist:
-                    continue
-            # save KPI values
-            for (kpi_name, kpi_value) in (
-                    kpi_calculator.tech_kpis[tech_name].items()):
-                try:
-                    kpi = TechnologyKPI.objects.get(name=kpi_name)
-                    tech = Technology.objects.get(name=tech_name)
-                    if kpi_value is None:
-                        logger.warning(
-                            f"-- None value found for technology: {tech.name}, KPI: {kpi.name}")
-                        continue
-                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(  # noqa, E501
-                        treatmentplant=treatment_plant,
-                        technology=tech,
-                        kpi=kpi,
-                        defaults={'value': str(kpi_value)}
-                        )
-                except TechnologyKPI.DoesNotExist:
-                    continue
-
-        # Step 2c: compute plant-wide costs
-        # ---------------------------------
-        dwtp.update_plant_kpis()
-        # compute construction costs if possible (replicate existing helper)
-        constrcosts = {}
-        for tech_id in tech_ids:
-            related_tech_id = None
-            try:
-                related_technology = TechnologyRelatedtechnology.objects.get(technology_id=tech_id)
-                related_tech_id = related_technology.id
-            except TechnologyRelatedtechnology.DoesNotExist:
-                related_technology = None
-            try:
-                tccp = TechnologyConstructionCostParameter.objects.filter(
-                    technology_id=tech_id).first()
-                if tccp:
-                    if tccp.technologyproperty:
-                        try:
-                            techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
-                                treatmentplant=treatment_plant,
-                                technology_id=tech_id,
-                                technologyproperty=tccp.technologyproperty
-                            ).value
-                        except TreatmentPlantTechnologyPropertyValue.DoesNotExist:  # noqa, E501
-                            # TODO: raise the error in future versions
-                            logger.warning(
-                                f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
-                                f" for technology_id={tech_id} and "
-                                f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
-                                f"construction cost calculation"
-                            )
-                            techprop_value = None
-                        if techprop_value is None:
-                            continue
-                        constrcosts[Technology.objects.get(id=tech_id).name] = {
-                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                            'technologyproperty': tccp.technologyproperty.name,
-                            'technologyproperty_value': techprop_value,
-                            'plantproperty': None,
-                            'plantproperty_value': None,
-                        }
-                    else:
-                        if tccp.plantproperty:
-                            try:
-                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                    tccp.plantproperty.name, None)
-                            except TreatmentPlantProperty.DoesNotExist:
-                                plantprop_value = None
-                            if plantprop_value is None:
-                                logger.warning(
-                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                    f" for construction cost calculation ")
-                                continue
-                            constrcosts[Technology.objects.get(id=tech_id).name] = {  # noqa, E501
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': None,
-                                'technologyproperty_value': None,
-                                'plantproperty': tccp.plantproperty.name,
-                                'plantproperty_value': plantprop_value
-                            }
-            except TechnologyConstructionCostParameter.DoesNotExist:
-                logger.warning(
-                    f"No construction cost parameters found for "
-                    f"technology_id={tech_id}"
-                    )
-                continue
-            # Now try the same for the related technology
-            if related_tech_id is not None:
-                try:
-                    tccp = TechnologyConstructionCostParameter.objects.filter(
-                        technology_id=related_tech_id).first()
-                    if tccp:
-                        if tccp.technologyproperty:
-                            try:
-                                techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
-                                    treatmentplant=treatment_plant,
-                                    technology_id=related_tech_id,
-                                    technologyproperty=tccp.technologyproperty
-                                ).value
-                            except TreatmentPlantTechnologyPropertyValue.DoesNotExist:  # noqa, E501
-                                # TODO: raise the error in future versions
-                                logger.warning(
-                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
-                                    f" for technology_id={related_tech_id} and "
-                                    f"technologyproperty={tccp.technologyproperty} in "  # noqa, E501
-                                    f"construction cost calculation"
-                                )
-                                warn(
-                                    f"Missing TreatmentPlantTechnologyPropertyValue"  # noqa, E501
-                                    f" for technology_id={related_tech_id} and "
-                                    f"technologyproperty={tccp.technologyproperty}"
-                                    )
-                                techprop_value = None
-                            if techprop_value is None:
-                                continue
-                            constrcosts[Technology.objects.get(id=related_tech_id).name] = {
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': tccp.technologyproperty.name,
-                                'technologyproperty_value': techprop_value,
-                                'plantproperty': None,
-                                'plantproperty_value': None,
-                            }
-                        else:
-                            if tccp.plantproperty:
-                                try:
-                                    plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                        tccp.plantproperty.name, None)
-                                except TreatmentPlantProperty.DoesNotExist:
-                                    plantprop_value = None
-                                if plantprop_value is None:
-                                    logger.warning(
-                                        f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                        f" for construction cost calculation ")
-                                    continue
-                                constrcosts[Technology.objects.get(id=related_tech_id).name] = {  # noqa, E501
-                                    'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                    'technologyproperty': None,
-                                    'technologyproperty_value': None,
-                                    'plantproperty': tccp.plantproperty.name,
-                                    'plantproperty_value': plantprop_value
-                                }
-                except TechnologyConstructionCostParameter.DoesNotExist:
-                    logger.warning(
-                        f"No construction cost parameters found for "
-                        f"technology_id={related_tech_id}"
-                        )
-                    continue
-        try:
-            dwtp.set_constructioncosts(cost_parameters=constrcosts)
-        except KeyError as ke:
-            # TODO: raise the error in future versions
-            # perf_indic.update({TPPN['construction_costs_eurperm3']: None})
-            logger.warning(
-                f"KeyError during construction cost calculation: {ke}. ")  # noqa, E501
-
-        # Calculate investment, maintenance and levelized costs
-        oper_and_maintenance_rate = dwtp.design_parameters.get(
-            DESIGN_PAR_OPERATION_MAINTENANCE_PERC_NAME, 5) / 100
-        lifespan = dwtp.design_parameters.get(
-            DESIGN_PAR_LIFESPAN_NAME, None)
-        interest_rate = dwtp.design_parameters.get(
-            DESIGN_PAR_INTEREST_PERC_NAME, None
-        ) / 100
-        personnel_costs_year = dwtp.design_parameters.get(
-            DESIGN_PAR_PERSONNEL_COSTS_NAME, None
-        )
-        energy_price = dwtp.design_parameters.get(
-            DESIGN_PAR_ENERGY_PRICE_NAME, None
-        )
-        energy_costs_year = (
-            dwtp.energyconsumption_kwhrperday.value * 365 * energy_price
-        )
-        chemical_costs_per_day = summed_kpis.get(
-            TECHKPI_DAILY_CHEMICAL_COSTS_EUR_PER_DAY,
-            0.0,
-        )
-        chemical_costs_per_year = chemical_costs_per_day * 365
-        yearly_production_m3 = dwtp.nominal_flow_m3perhr.value * 24 * 365
-        dwtp.oper_and_maintenancecosts_eurperyear.value = dwtp.oper_and_maintenancecosts_eurperyear.calculate_value(
-            construction_costs=dwtp.constructioncosts_eur.value,
-            oper_maintenance_percentage=oper_and_maintenance_rate,
-        )
-        dwtp.investmentcosts_eur.value = dwtp.investmentcosts_eur.calculate_value(
-            construction_costs_total=dwtp.constructioncosts_eur.value,
-            operation_maintenance_percentage=oper_and_maintenance_rate,
-            energy_cost_per_year=energy_costs_year,
-            personnel_costs_per_year=personnel_costs_year,
-            chemical_costs_per_year=chemical_costs_per_year,
-            interest_rate=interest_rate,
-            lifespan_years=lifespan,
-        )
-        dwtp.levelized_cost_of_water.value = dwtp.levelized_cost_of_water.calculate_value(
-            total_investment_costs_peryear=dwtp.investmentcosts_eur.value,
-            yearly_water_production_m3=yearly_production_m3,
-        )
-        dwtp.levelized_chemical_costs.value = dwtp.levelized_chemical_costs.calculate_value(
-            chemical_costs_per_year=chemical_costs_per_year,
-            yearly_water_production_m3=yearly_production_m3,
-        )
-
-        # Step 2-d: update plant-wide properties (KPIs)
-        # --------------------------------------------
-        dwtp.update_plant_kpis()  # update cost related KPIs
-        for prop_name, val in dwtp.plant_kpis.items():
-            value = np.round(val, 3)
-            if val is None:
-                continue
-            prop_obj, _ = TreatmentPlantProperty.objects.get_or_create(name=prop_name)  # noqa, E501
-            TreatmentPlantPropertyValue.objects.update_or_create(
-                treatmentplant=treatment_plant,
-                property=prop_obj,
-                defaults={'value': str(value)}
-            )
+        calculation_updated_rows = self._run_calculation_pipeline(
+            treatment_plant)
 
         # Step 3: Prepare and POST to the API
         tech_props = []
@@ -3725,9 +3860,33 @@ class TechnologyPropertiesView(generic.FormView):
                 'value': instance.value,
             })
 
+        digested_count = sum(
+            1 for row in calculation_updated_rows
+            if row['row_type'] == 'property'
+        )
+        kpi_count = sum(
+            1 for row in calculation_updated_rows
+            if row['row_type'] == 'kpi'
+        )
+        self._set_optimizer_status(
+            treatment_plant.id,
+            {
+                'state': 'done',
+                'seen': False,
+                'action': 'calculate',
+                'message': (
+                    'Calculation finished. '
+                    f'Updated {digested_count} digested properties and '
+                    f'{kpi_count} technology KPI values.'
+                ),
+                'updated_rows': calculation_updated_rows,
+                'progress': {},
+                'completed_processes': [],
+            },
+        )
         return redirect(
-            'design_parameter_results', plant_id=treatment_plant.id)
-        
+            'technology_properties', plant_id=treatment_plant.id)
+
         # payload = {
         #     'treatmentplant_id': treatment_plant.id,
         #     'configuration_id': getattr(treatment_plant, 'configuration_id', None),
@@ -3805,13 +3964,14 @@ class TechnologyPropertiesView(generic.FormView):
                 j for (tech_id, _), j in junction_map.items()
                 if tech_id == tech.id and j.is_digested
             ):
-                value = value_map.get(
-                    (junction.technology_id, junction.property_id),
-                    junction.default_value,
-                )
+                # Only show digested properties once a calculation or
+                # optimization has actually produced a persisted value.
+                value_key = (junction.technology_id, junction.property_id)
+                if value_key not in value_map:
+                    continue
                 digested_properties_by_tech[tech.id].append({
                     'name': junction.property.name,
-                    'value': value,
+                    'value': value_map[value_key],
                     'unit': junction.property.unit,
                     'description': junction.property.description,
                     'sent_to_optimizer': junction.sent_to_optimizer,
@@ -3949,7 +4109,10 @@ class TechnologyPropertiesView(generic.FormView):
                 updated_wq_by_tech[tech_id].add(name)
 
         context['optimizer_status'] = optimizer_status
-        context['optimizer_updated_rows'] = updated_rows
+        # KPI values are shown on the KPI results page, not this summary.
+        context['optimizer_updated_rows'] = [
+            row for row in updated_rows if row.get('row_type') != 'kpi'
+        ]
         context['optimizer_updated_properties_by_tech'] = {
             key: sorted(list(value))
             for key, value in updated_properties_by_tech.items()
