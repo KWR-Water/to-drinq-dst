@@ -1,0 +1,165 @@
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3515, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2701, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<7 lines>...
+        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 588, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<9 lines>...
+        disp=True
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 584, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 483, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        chlorine_dose, volume
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 279, in stimela_simulate
+    chl_results = chl_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 139, in simulate
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, wq_params, dosage),
+    ...<5 lines>...
+        atol=1e-6,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 140, in <lambda>
+    lambda t, y: self.model(t, y, wq_params, dosage),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
+    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
+     ~~~~~~~~~~~~~~~~~~~~~^~~~~
+ZeroDivisionError: float division by zero
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3515, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2701, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<7 lines>...
+        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 588, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<9 lines>...
+        disp=True
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 584, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 483, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        chlorine_dose, volume
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 279, in stimela_simulate
+    chl_results = chl_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 139, in simulate
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, wq_params, dosage),
+    ...<5 lines>...
+        atol=1e-6,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 140, in <lambda>
+    lambda t, y: self.model(t, y, wq_params, dosage),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
+    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
+     ~~~~~~~~~~~~~~~~~~~~~^~~~~
+ZeroDivisionError: float division by zero

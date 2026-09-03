@@ -4,7 +4,7 @@
     "name": "str - FeCl3 dm - CIEX - sm RSF",
     "slug": "str-fecl3-dm-ciex-sm-rsf"
   },
-  "generated_at": "2026-08-31T11:40:07.667514+00:00",
+  "generated_at": "2026-09-03T09:21:40.981502+00:00",
   "technology_properties": [
     {
       "technology_id": 18,
@@ -161,7 +161,7 @@
       "unit": "",
       "is_inputparameter": true,
       "is_targetparameter": false,
-      "value": 4.2,
+      "value": 4.06,
       "source_table": "waterqualityparameter_technology"
     },
     {

@@ -19,7 +19,7 @@ Use the dedicated optimizer environment file:
 ### Required optimizer wheels in this repository
 The optimizer runtime requires both wheels:
 - `pystimela_optim-<version>-py3-none-any.whl`
-- `pystimela-0.0.1-py3-none-any.whl`
+- `pystimela-0.0.2-py3-none-any.whl`
 
 These wheels are installed automatically by `environment_optim.yml`
 in a Python 3.13 environment.

@@ -1,358 +1,5 @@
-2026-06-25 16:39:38,624 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-25 16:39:38,626 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-25 16:39:38,627 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=total suspended solids; falling back to constraints.
-2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-25 16:39:38,628 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-25 16:39:38,629 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-25 16:39:38,647 - drinq.views - ERROR - Background optimizer execution failed: [Errno 2] No such file or directory: 'configs/django_outputs.json'
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2921, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2583, in _run_optimizer_pipeline
-    proc['prepare'](str(proc['csv']), str(current_wq_path))
-    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 331, in generate_config_from_csv
-    auto_limits = build_limits_from_django(DJANGO_JSON_PATH, BOUNDS_SCALE,
-                                           csv_config['constraints'].get('tss_out_max', 1.0),
-    ...<2 lines>...
-                                           csv_config['constraints'].get('theta_min', 5.0),
-                                           csv_config['constraints'].get('theta_max', 60.0))
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 180, in build_limits_from_django
-    data = load_json(django_json_path)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\filtration_prepare_config.py", line 129, in load_json
-    with open(path, "r", encoding="utf-8") as f:
-         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'configs/django_outputs.json'
-2026-06-25 16:42:08,690 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-06-25 16:43:04,472 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-06-25 16:43:09,320 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-25 16:43:09,321 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-25 16:43:09,322 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-25 16:43:09,323 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=total suspended solids; falling back to constraints.
-2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-25 16:43:09,324 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-25 16:56:30,491 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-06-25 16:57:39,337 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=TSS; falling back to constraints.
-2026-06-25 16:58:03,898 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single wq=TSS; falling back to constraints.
-2026-06-25 16:58:16,581 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
-2026-06-25 16:59:18,220 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
-2026-06-25 16:59:35,915 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-25 16:59:35,916 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-25 16:59:35,917 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-25 16:59:35,918 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-25 17:07:02,669 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-06-25 17:08:00,873 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-06-25 17:08:25,656 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-25 17:08:25,656 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-25 17:08:25,657 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-25 17:08:25,658 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-25 17:08:25,659 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-25 17:08:25,659 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-25 17:20:15,861 - django.request - WARNING - Not Found: /treatmentplant/17/technology-overview/
-2026-06-25 17:20:51,428 - django.request - WARNING - Not Found: /treatmentplant/1/
-2026-06-25 17:22:41,450 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-06-25 17:23:16,625 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-06-25 17:23:29,645 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-06-25 17:28:37,473 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-25 17:28:37,474 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-25 17:28:37,474 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-25 17:28:37,474 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-25 17:28:37,474 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-25 17:28:37,475 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-25 17:28:37,476 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-26 08:37:32,688 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-26 08:37:32,689 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-26 08:37:32,690 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-26 08:37:32,690 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-26 08:37:32,690 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-26 08:37:32,690 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-26 08:37:32,690 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-26 08:37:50,614 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 557, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 553, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 457, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 266, in stimela_simulate
-    chl_results = chl_process.simulate(
-        t_eval=timestamps,
-    ...<2 lines>...
-        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 131, in simulate
-    solution = solve_ivp(
-        lambda t, y: self.model(t, y, wq_params, dosage),
-    ...<5 lines>...
-        atol=1e-6,
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
-    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
-    f = self.fun(self.t, self.y)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
-    return self.fun_single(t, y)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
-    return np.asarray(fun(t, y), dtype=dtype)
-                      ~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 132, in <lambda>
-    lambda t, y: self.model(t, y, wq_params, dosage),
-                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
-    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
-     ~~~~~~~~~~~~~~~~~~~~~^~~~~
-ZeroDivisionError: float division by zero
-2026-06-26 09:02:54,335 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-26 09:02:54,337 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-26 09:02:54,337 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-26 09:02:54,338 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-26 09:02:54,338 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-26 09:02:54,338 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-26 09:02:54,339 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-26 09:02:54,339 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-26 09:02:54,339 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-26 09:02:54,340 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-26 09:02:54,340 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-26 09:02:54,341 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-26 09:02:54,341 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-26 09:03:35,508 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 557, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 553, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 457, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 266, in stimela_simulate
-    chl_results = chl_process.simulate(
-        t_eval=timestamps,
-    ...<2 lines>...
-        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 131, in simulate
-    solution = solve_ivp(
-        lambda t, y: self.model(t, y, wq_params, dosage),
-    ...<5 lines>...
-        atol=1e-6,
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
-    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
-    f = self.fun(self.t, self.y)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
-    return self.fun_single(t, y)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
-    return np.asarray(fun(t, y), dtype=dtype)
-                      ~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 132, in <lambda>
-    lambda t, y: self.model(t, y, wq_params, dosage),
-                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
-    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
-     ~~~~~~~~~~~~~~~~~~~~~^~~~~
-ZeroDivisionError: float division by zero
-2026-06-26 09:07:08,975 - django.request - ERROR - Internal Server Error: /accounts/login/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
-2026-06-26 09:07:09,088 - django.request - WARNING - Not Found: /favicon.ico
-2026-06-26 09:09:29,640 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-26 09:09:29,640 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-26 09:09:29,641 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-26 09:09:29,641 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-26 09:09:29,641 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-26 09:09:29,641 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-26 09:09:29,642 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-26 09:09:29,642 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-26 09:09:29,643 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-26 09:09:29,643 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-26 09:09:29,643 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-26 09:09:29,644 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-26 09:09:29,644 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-26 09:09:29,644 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-26 09:09:29,644 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-26 09:09:29,645 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-26 09:09:29,645 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-26 09:09:29,645 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-26 09:09:29,646 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-06-26 09:16:33,946 - django.request - ERROR - Internal Server Error: /treatmentplant/1/technology/
+2026-08-31 15:18:19,860 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-03 10:44:40,226 - django.request - ERROR - Internal Server Error: /treatmentplant/1/technology/
 Traceback (most recent call last):
   File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
     response = get_response(request)
@@ -366,1251 +13,37 @@ Traceback (most recent call last):
   File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
     return self.form_valid(form)
            ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3417, in form_valid
-    kpi_calculator.calculate_kpi()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 842, in calculate_kpi
-    gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
-  File "<string>", line 9, in __init__
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 2987, in __post_init__
-    self.gac_density_kg_per_m3 = parameters[
-                                 ~~~~~~~~~~^
-        TPN['mass_density_of_chemical']] * 1000
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyError: 'mass density of chemical'
-2026-06-26 09:24:18,060 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC density; falling back to model_parameters.
-2026-06-26 09:24:18,062 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=GAC porosity; falling back to model_parameters.
-2026-06-26 09:24:18,063 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=empty bed contact time; falling back to model_parameters.
-2026-06-26 09:24:18,064 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=filter area; falling back to model_parameters.
-2026-06-26 09:24:18,064 - drinq.views - INFO - No optimizer CSV mapping for process=gac property=grain diameter; falling back to model_parameters.
-2026-06-26 09:24:18,065 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-06-26 09:24:18,066 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-06-26 09:24:18,066 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-06-26 09:24:18,067 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-06-26 09:24:18,067 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-06-26 09:24:18,068 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-06-26 09:24:18,068 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-06-26 09:24:18,069 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-06-26 09:24:18,071 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-06-26 09:24:18,072 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-06-26 09:24:18,072 - drinq.views - INFO - No optimizer CSV mapping for process=gac wq=dissolved organic carbon; falling back to constraints.
-2026-06-26 09:24:18,074 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-06-26 09:24:18,076 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-06-26 09:24:18,077 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-07-07 10:46:11,295 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-07-07 10:46:42,934 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-07-07 10:47:37,184 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-07-07 10:48:11,849 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-07-07 10:48:34,798 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-07-07 10:48:34,799 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-07-07 10:48:34,800 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-07-07 10:48:34,800 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-07-07 10:48:34,800 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-07-07 10:48:34,800 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-07-07 10:48:34,800 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-07-07 10:48:51,983 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 557, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 553, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 457, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 266, in stimela_simulate
-    chl_results = chl_process.simulate(
-        t_eval=timestamps,
-    ...<2 lines>...
-        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 131, in simulate
-    solution = solve_ivp(
-        lambda t, y: self.model(t, y, wq_params, dosage),
-    ...<5 lines>...
-        atol=1e-6,
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
-    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
-    f = self.fun(self.t, self.y)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
-    return self.fun_single(t, y)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
-    return np.asarray(fun(t, y), dtype=dtype)
-                      ~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 132, in <lambda>
-    lambda t, y: self.model(t, y, wq_params, dosage),
-                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
-    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
-     ~~~~~~~~~~~~~~~~~~~~~^~~~~
-ZeroDivisionError: float division by zero
-2026-07-07 10:58:52,185 - django.request - WARNING - Not Found: /treatmentplant/
-2026-07-07 11:19:11,930 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-07-07 11:19:11,930 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-07-07 11:19:11,931 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-07-07 11:19:11,931 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-07-07 11:19:11,931 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-07-07 11:19:11,931 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-07-07 11:19:11,931 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-07-07 11:19:11,932 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-07-07 11:19:55,483 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 557, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 553, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 457, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 266, in stimela_simulate
-    chl_results = chl_process.simulate(
-        t_eval=timestamps,
-    ...<2 lines>...
-        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 131, in simulate
-    solution = solve_ivp(
-        lambda t, y: self.model(t, y, wq_params, dosage),
-    ...<5 lines>...
-        atol=1e-6,
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
-    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
-    f = self.fun(self.t, self.y)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
-    return self.fun_single(t, y)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
-    return np.asarray(fun(t, y), dtype=dtype)
-                      ~~~^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 132, in <lambda>
-    lambda t, y: self.model(t, y, wq_params, dosage),
-                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
-    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
-     ~~~~~~~~~~~~~~~~~~~~~^~~~~
-ZeroDivisionError: float division by zero
-2026-07-07 11:23:22,051 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-07-07 11:23:22,051 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-07-07 11:23:22,052 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-07-07 11:23:22,052 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-27 16:19:54,505 - django.request - WARNING - Not Found: /configuration_manage/5/edit/
-2026-08-27 16:20:08,751 - django.request - ERROR - Internal Server Error: /api/process_parameters/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
-    calculator = TreatmentPlantPerformanceCalculator(
-        treatmentplant_id=plant.id,
-    ...<2 lines>...
-        technologies=technology_names
-    )
-  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1249, in __init__
-    name_in_dbtable=self.db_kpi_mapping.get(
-                    ^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'NoneType' object has no attribute 'get'
-2026-08-27 16:21:59,376 - django.request - ERROR - Internal Server Error: /session_select/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2123, in get_prep_value
-    return int(value)
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'SimpleLazyObject'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 142, in get
-    return self.render_to_response(self.get_context_data())
-                                   ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
-    kwargs["form"] = self.get_form()
-                     ~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 37, in get_form
-    return form_class(**self.get_form_kwargs())
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\forms.py", line 175, in __init__
-    self.fields['session'].queryset = self.config_objects.filter(
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        user=user)
-        ^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
-    child_clause, needed_inner = self.build_filter(
-                                 ~~~~~~~~~~~~~~~~~^
-        child,
-        ^^^^^^
-    ...<7 lines>...
-        update_join_types=update_join_types,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1555, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1385, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-               ~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2125, in get_prep_value
-    raise e.__class__(
-        "Field '%s' expected a number but got %r." % (self.name, value),
-    ) from e
-TypeError: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x000002056BE879D0>>.
-2026-08-27 16:26:58,362 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-27 16:26:58,363 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-27 16:26:58,364 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-27 16:27:12,653 - drinq.views - ERROR - Background optimizer execution failed: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 579, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 478, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 265, in stimela_simulate
-    init_state = datatypes.ChlorinationState(
-        reschl=initials.reschl_initial,
-    ...<2 lines>...
-        ecoli=initials.ecoli_initial
-    )
-TypeError: ChlorinationState.__init__() got an unexpected keyword argument 'ecoli'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 583, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1402, in _calculate_population_energies
-    raise RuntimeError(
-    ...<2 lines>...
-    ) from e
-RuntimeError: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-2026-08-31 10:33:04,515 - django.security.DisallowedHost - ERROR - Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\utils\deprecation.py", line 128, in __call__
-    response = self.process_request(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\middleware\common.py", line 48, in process_request
-    host = request.get_host()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\http\request.py", line 151, in get_host
-    raise DisallowedHost(msg)
-django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
-2026-08-31 10:33:04,561 - django.request - WARNING - Bad Request: /
-2026-08-31 10:33:18,656 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\settings.py changed, reloading.
-2026-08-31 10:33:22,880 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\settings.py changed, reloading.
-2026-08-31 10:35:59,838 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 10:35:59,839 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 10:35:59,840 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 10:35:59,840 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 10:35:59,841 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 10:35:59,841 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 10:35:59,842 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 10:35:59,843 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 10:35:59,844 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:35:59,844 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:35:59,845 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 10:35:59,846 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 10:35:59,847 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 10:53:18,680 - django.request - ERROR - Internal Server Error: /treatmentplant/5/technology/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
-    return self.form_valid(form)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3471, in form_valid
-    kpi_calculator.calculate_kpi()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 887, in calculate_kpi
-    ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
-  File "<string>", line 9, in __init__
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 3839, in __post_init__
-    self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000 # kg/m3
-                        ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyError: 'mass density of chemical'
-2026-08-31 10:53:18,747 - django.request - WARNING - Not Found: /favicon.ico
-2026-08-31 10:53:25,029 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 10:53:25,030 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 10:53:25,031 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 10:53:25,032 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 10:53:25,032 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 10:53:25,033 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 10:53:25,034 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 10:53:25,034 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 10:53:25,036 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:53:25,036 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:53:25,037 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 10:53:25,038 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 10:53:25,039 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 10:54:55,184 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\templatetags\kpi_format.py changed, reloading.
-2026-08-31 10:55:42,947 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\templatetags\kpi_format.py changed, reloading.
-2026-08-31 10:55:57,163 - django.request - ERROR - Internal Server Error: /treatmentplant/5/technology/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
-    return self.form_valid(form)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3471, in form_valid
-    kpi_calculator.calculate_kpi()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 887, in calculate_kpi
-    ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
-  File "<string>", line 9, in __init__
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 3839, in __post_init__
-    self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000 # kg/m3
-                        ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyError: 'mass density of chemical'
-2026-08-31 10:56:03,060 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 10:56:03,061 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 10:56:03,062 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 10:56:03,062 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 10:56:03,063 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 10:56:03,063 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 10:56:03,064 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 10:56:03,064 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 10:56:03,066 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:56:03,066 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 10:56:03,067 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 10:56:03,068 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 10:56:03,069 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 10:57:20,839 - django.request - ERROR - Internal Server Error: /accounts/login/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
-2026-08-31 10:57:30,500 - django.request - ERROR - Internal Server Error: /accounts/login/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
-2026-08-31 10:57:36,326 - django.request - ERROR - Internal Server Error: /accounts/login/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
-2026-08-31 10:57:40,277 - django.request - ERROR - Internal Server Error: /session_select/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2123, in get_prep_value
-    return int(value)
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'SimpleLazyObject'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 142, in get
-    return self.render_to_response(self.get_context_data())
-                                   ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
-    kwargs["form"] = self.get_form()
-                     ~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 37, in get_form
-    return form_class(**self.get_form_kwargs())
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\forms.py", line 175, in __init__
-    self.fields['session'].queryset = self.config_objects.filter(
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        user=user)
-        ^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
-    child_clause, needed_inner = self.build_filter(
-                                 ~~~~~~~~~~~~~~~~~^
-        child,
-        ^^^^^^
-    ...<7 lines>...
-        update_join_types=update_join_types,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1555, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1385, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-               ~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2125, in get_prep_value
-    raise e.__class__(
-        "Field '%s' expected a number but got %r." % (self.name, value),
-    ) from e
-TypeError: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x0000020ACF7E7ED0>>.
-2026-08-31 10:58:05,526 - django.request - ERROR - Internal Server Error: /session_select/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2123, in get_prep_value
-    return int(value)
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'SimpleLazyObject'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 142, in get
-    return self.render_to_response(self.get_context_data())
-                                   ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
-    kwargs["form"] = self.get_form()
-                     ~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 37, in get_form
-    return form_class(**self.get_form_kwargs())
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\forms.py", line 175, in __init__
-    self.fields['session'].queryset = self.config_objects.filter(
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        user=user)
-        ^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
-    child_clause, needed_inner = self.build_filter(
-                                 ~~~~~~~~~~~~~~~~~^
-        child,
-        ^^^^^^
-    ...<7 lines>...
-        update_join_types=update_join_types,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1555, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1385, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-               ~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2125, in get_prep_value
-    raise e.__class__(
-        "Field '%s' expected a number but got %r." % (self.name, value),
-    ) from e
-TypeError: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x0000020ACF6D49B0>>.
-2026-08-31 10:58:14,148 - django.request - ERROR - Internal Server Error: /session_select/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2123, in get_prep_value
-    return int(value)
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'SimpleLazyObject'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 142, in get
-    return self.render_to_response(self.get_context_data())
-                                   ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
-    kwargs["form"] = self.get_form()
-                     ~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 37, in get_form
-    return form_class(**self.get_form_kwargs())
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\forms.py", line 175, in __init__
-    self.fields['session'].queryset = self.config_objects.filter(
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        user=user)
-        ^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
-    child_clause, needed_inner = self.build_filter(
-                                 ~~~~~~~~~~~~~~~~~^
-        child,
-        ^^^^^^
-    ...<7 lines>...
-        update_join_types=update_join_types,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1555, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1385, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-               ~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2125, in get_prep_value
-    raise e.__class__(
-        "Field '%s' expected a number but got %r." % (self.name, value),
-    ) from e
-TypeError: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x0000020ACE5E55D0>>.
-2026-08-31 10:58:38,377 - django.request - ERROR - Internal Server Error: /session_select/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2123, in get_prep_value
-    return int(value)
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'SimpleLazyObject'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 142, in get
-    return self.render_to_response(self.get_context_data())
-                                   ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
-    kwargs["form"] = self.get_form()
-                     ~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 37, in get_form
-    return form_class(**self.get_form_kwargs())
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\forms.py", line 175, in __init__
-    self.fields['session'].queryset = self.config_objects.filter(
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        user=user)
-        ^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
-    child_clause, needed_inner = self.build_filter(
-                                 ~~~~~~~~~~~~~~~~~^
-        child,
-        ^^^^^^
-    ...<7 lines>...
-        update_join_types=update_join_types,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1555, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\query.py", line 1385, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-               ~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\fields\__init__.py", line 2125, in get_prep_value
-    raise e.__class__(
-        "Field '%s' expected a number but got %r." % (self.name, value),
-    ) from e
-TypeError: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x0000020ACF761BD0>>.
-2026-08-31 11:01:52,340 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:01:52,341 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:01:52,342 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:01:52,344 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:01:52,344 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-08-31 11:01:52,345 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-08-31 11:01:52,346 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-08-31 11:01:52,347 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:01:52,348 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-08-31 11:01:52,348 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-08-31 11:01:52,349 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:01:52,351 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:01:52,352 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:01:52,353 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:01:52,354 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-08-31 11:01:52,355 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-31 11:01:52,356 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-31 11:01:52,357 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-31 11:01:52,357 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-31 11:01:52,358 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:01:52,359 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:01:52,360 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:01:52,361 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:01:52,363 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:02:20,592 - drinq.views - ERROR - Background optimizer execution failed: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 579, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 478, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 265, in stimela_simulate
-    init_state = datatypes.ChlorinationState(
-        reschl=initials.reschl_initial,
-    ...<2 lines>...
-        ecoli=initials.ecoli_initial
-    )
-TypeError: ChlorinationState.__init__() got an unexpected keyword argument 'ecoli'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 583, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1402, in _calculate_population_energies
-    raise RuntimeError(
-    ...<2 lines>...
-    ) from e
-RuntimeError: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-2026-08-31 11:16:57,033 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:16:57,034 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:16:57,035 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:16:57,036 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:16:57,036 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=baffling factor; falling back to model_parameters.
-2026-08-31 11:16:57,037 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=chemical dosing solution concentration (w/w%); falling back to model_parameters.
-2026-08-31 11:16:57,038 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=retention time (min); falling back to model_parameters.
-2026-08-31 11:16:57,039 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:16:57,040 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=target residual concentration (mg/l); falling back to model_parameters.
-2026-08-31 11:16:57,041 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination property=volume; falling back to model_parameters.
-2026-08-31 11:16:57,042 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:16:57,043 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:16:57,045 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:16:57,046 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:16:57,048 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=E. coli; falling back to constraints.
-2026-08-31 11:16:57,049 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-31 11:16:57,050 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=haloacetic acids; falling back to constraints.
-2026-08-31 11:16:57,051 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-31 11:16:57,052 - drinq.views - INFO - No optimizer CSV mapping for process=chlorination wq=trihalomethanes; falling back to constraints.
-2026-08-31 11:16:57,053 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:16:57,053 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:16:57,054 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:16:57,054 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:16:57,055 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:17:20,827 - drinq.views - ERROR - Background optimizer execution failed: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
-    calc_energies = list(
-        self._mapwrapper(self.func, parameters_pop[0:S])
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
-    return self.f(x, *self.args)
-           ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 579, in objective_wrapper
-    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
-                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 478, in objective_scalar
-    sim = stimela_simulate(
-        inputs, params, initials,
-        chlorine_dose, volume
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 265, in stimela_simulate
-    init_state = datatypes.ChlorinationState(
-        reschl=initials.reschl_initial,
-    ...<2 lines>...
-        ecoli=initials.ecoli_initial
-    )
-TypeError: ChlorinationState.__init__() got an unexpected keyword argument 'ecoli'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3022, in _run_optimizer_job
-    run_output_dir = self._run_optimizer_pipeline(workspace_root)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2683, in _run_optimizer_pipeline
-    result_payload = optimize_process(
-        process_key,
-        str(proc['config_json']),
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
-    return runner(config, **overrides)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
-    return module.solve(
-           ~~~~~~~~~~~~^
-        inputs,
-        ^^^^^^^
-    ...<7 lines>...
-        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 583, in solve
-    result = differential_evolution(
-        objective_wrapper,
-    ...<9 lines>...
-        disp=True
-    )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
-    return fun(*args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
-    ret = solver.solve()
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
-    self._calculate_population_energies(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.population[self.feasible]))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1402, in _calculate_population_energies
-    raise RuntimeError(
-    ...<2 lines>...
-    ) from e
-RuntimeError: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
-2026-08-31 11:22:36,969 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:22:40,303 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:22:47,297 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:23:09,868 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:23:20,322 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:24:22,234 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:24:22,235 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:24:22,237 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:24:22,238 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:24:22,239 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:24:22,240 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:24:22,241 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:24:22,242 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:24:22,244 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:24:22,245 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:24:22,247 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:24:22,248 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:24:22,250 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:25:46,418 - django.request - ERROR - Internal Server Error: /treatmentplant/5/technology/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
-    return self.form_valid(form)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3535, in form_valid
-    kpi_calculator.calculate_kpi()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 887, in calculate_kpi
-    ciex = CationIonExchange(**tech_kwargs)  # noqa, E501
-  File "<string>", line 9, in __init__
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 3839, in __post_init__
-    self.nacl_density = parameters[TPN['mass_density_of_chemical']] * 1000 # kg/m3
-                        ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyError: 'mass density of chemical'
-2026-08-31 11:26:52,269 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-08-31 11:26:58,322 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-08-31 11:29:11,579 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
-2026-08-31 11:31:40,615 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:31:40,616 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:31:40,617 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:31:40,617 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:31:40,618 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:31:40,618 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:31:40,619 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:31:40,620 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:31:40,622 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:31:40,623 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:31:40,623 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:31:40,624 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:31:40,625 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:35:39,023 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:35:39,024 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:35:39,025 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:35:39,027 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:35:39,027 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:35:39,028 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:35:39,029 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:35:39,030 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:35:39,032 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:35:39,033 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:35:39,034 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:35:39,034 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:35:39,035 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:47:59,421 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:48:32,043 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:48:43,162 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:48:54,372 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:49:12,006 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:49:20,549 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 11:51:19,628 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:51:19,630 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:51:19,631 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:51:19,632 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:51:19,633 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:51:19,633 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:51:19,634 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:51:19,635 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:51:19,636 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:51:19,637 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:51:19,638 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:51:19,639 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:51:19,640 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 11:54:57,434 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 11:54:57,435 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 11:54:57,436 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 11:54:57,437 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 11:54:57,438 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 11:54:57,439 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 11:54:57,439 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 11:54:57,440 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 11:54:57,442 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:54:57,444 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 11:54:57,445 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 11:54:57,446 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 11:54:57,448 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 12:08:20,393 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:09:17,130 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:09:48,220 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:09:55,383 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:10:22,288 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:10:56,337 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 12:11:51,376 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 12:11:51,378 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 12:11:51,379 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 12:11:51,379 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 12:11:51,380 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 12:11:51,381 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 12:11:51,382 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 12:11:51,383 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 12:11:51,385 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 12:11:51,386 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 12:11:51,387 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dynamic viscosity; falling back to constraints.
-2026-08-31 12:11:51,388 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=electrical conductivity; falling back to constraints.
-2026-08-31 12:11:51,390 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=temperature; falling back to constraints.
-2026-08-31 12:41:28,341 - django.request - ERROR - Internal Server Error: /treatmentplant/7/technology/
-Traceback (most recent call last):
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
-    return handler(request, *args, **kwargs)
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
-    return self.form_valid(form)
-           ~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3826, in form_valid
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
     calculation_updated_rows = self._run_calculation_pipeline(
         treatment_plant)
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3208, in _run_calculation_pipeline
-    kpi_calculator.sum_kpis()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 949, in sum_kpis
-    for kpi_name, kpi_value in kpis.items():
-                               ^^^^^^^^^^
-AttributeError: 'NoneType' object has no attribute 'items'
-2026-08-31 12:42:53,907 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-2026-08-31 12:43:38,592 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 12:43:38,593 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 12:43:38,594 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 12:43:38,594 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 12:43:56,172 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-2026-08-31 13:00:23,959 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 13:01:10,494 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 13:01:22,619 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 13:01:27,535 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 13:02:07,596 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 13:23:13,342 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-2026-08-31 13:23:28,080 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 13:23:28,081 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 13:23:28,083 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 13:23:28,086 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 13:23:47,912 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-2026-08-31 13:37:54,350 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
-2026-08-31 13:39:52,790 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
-2026-08-31 13:40:07,678 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single technology_properties=filter area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,679 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=filter area; falling back to model_parameters.
-2026-08-31 13:40:07,681 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single technology_properties=sand filter bed height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,682 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand filter bed height; falling back to model_parameters.
-2026-08-31 13:40:07,684 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single technology_properties=sand media grain size; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,684 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand media grain size; falling back to model_parameters.
-2026-08-31 13:40:07,686 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single technology_properties=sand porosity; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,687 - drinq.views - INFO - No optimizer CSV mapping for process=filtration_single property=sand porosity; falling back to model_parameters.
-2026-08-31 13:40:07,689 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation technology_properties=mixer velocity gradient; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,689 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=mixer velocity gradient; falling back to model_parameters.
-2026-08-31 13:40:07,690 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation technology_properties=power efficiency of mixer(s); falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,690 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=power efficiency of mixer(s); falling back to model_parameters.
-2026-08-31 13:40:07,692 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation technology_properties=target concentration of dosing chemical; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,693 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=target concentration of dosing chemical; falling back to model_parameters.
-2026-08-31 13:40:07,695 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation technology_properties=volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,695 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation property=volume; falling back to model_parameters.
-2026-08-31 13:40:07,697 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single waterquality_parameters=total suspended solids; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,698 - drinq.api_calculation - INFO - No pystim junction row for technology=Rapid sand filtration, submerged, single medium process=filtration_single waterquality_parameters=total suspended solids; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,700 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation waterquality_parameters=dissolved organic carbon; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,700 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 13:40:07,701 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation waterquality_parameters=dissolved organic carbon; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,701 - drinq.views - INFO - No optimizer CSV mapping for process=coagulation-flocculation wq=dissolved organic carbon; falling back to constraints.
-2026-08-31 13:40:07,709 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation waterquality_parameters=total suspended solids; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 13:40:07,711 - drinq.api_calculation - INFO - No pystim junction row for technology=Coagulant dosing with ferric chloride by dynamic mixing process=coagulation-flocculation waterquality_parameters=total suspended solids; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
-2026-08-31 14:17:49,216 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 14:17:59,140 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
-2026-08-31 14:18:29,771 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\migrations\0001_initial.py changed, reloading.
-2026-08-31 14:22:13,569 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
-2026-08-31 14:27:09,271 - drinq.views - ERROR - Background optimizer execution failed: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3227, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1002, in calculate_kpi
+    gac_filtration = GranularActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 3052, in __post_init__
+    TPN['gac_regeneration_interval']]
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'gac_regeneration_interval'
+2026-09-03 10:45:54,553 - drinq.views - ERROR - Background optimizer execution failed: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
 Traceback (most recent call last):
   File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
     calc_energies = list(
         self._mapwrapper(self.func, parameters_pop[0:S])
     )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 530, in __call__
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 529, in __call__
     return self.f(x, *self.args)
            ~~~~~~^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 579, in objective_wrapper
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 584, in objective_wrapper
     obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 478, in objective_scalar
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 483, in objective_scalar
     sim = stimela_simulate(
         inputs, params, initials,
         chlorine_dose, volume
     )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 265, in stimela_simulate
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 270, in stimela_simulate
     init_state = datatypes.ChlorinationState(
         reschl=initials.reschl_initial,
     ...<2 lines>...
@@ -1642,13 +75,13 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 583, in solve
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 588, in solve
     result = differential_evolution(
         objective_wrapper,
     ...<9 lines>...
         disp=True
     )
-  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 307, in wrapper
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 306, in wrapper
     return fun(*args, **kwargs)
   File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
     ret = solver.solve()
@@ -1662,3 +95,191 @@ Traceback (most recent call last):
     ...<2 lines>...
     ) from e
 RuntimeError: The map-like callable must be of the form f(func, iterable), returning a sequence of numbers the same length as 'iterable'
+2026-09-03 11:27:08,338 - django.request - ERROR - Internal Server Error: /treatmentplant/9/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 11:27:48,501 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3515, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2701, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<7 lines>...
+        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 588, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<9 lines>...
+        disp=True
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 584, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 483, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        chlorine_dose, volume
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 279, in stimela_simulate
+    chl_results = chl_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 139, in simulate
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, wq_params, dosage),
+    ...<5 lines>...
+        atol=1e-6,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 140, in <lambda>
+    lambda t, y: self.model(t, y, wq_params, dosage),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
+    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
+     ~~~~~~~~~~~~~~~~~~~~~^~~~~
+ZeroDivisionError: float division by zero
+2026-09-03 11:35:59,947 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3515, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 2701, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\api.py", line 97, in optimize_chlorination
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<7 lines>...
+        tol=float(_resolve_algo_value(algo, "tol", tol, 1e-3)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 588, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<9 lines>...
+        disp=True
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\optimize\_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\_lib\_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 584, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 483, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        chlorine_dose, volume
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela_optim\scripts\chlorination_optim.py", line 279, in stimela_simulate
+    chl_results = chl_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        dosage=[dosage_gph for _ in timestamps]  # g/h for Stimela
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 139, in simulate
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, wq_params, dosage),
+    ...<5 lines>...
+        atol=1e-6,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\scipy\integrate\_ivp\base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 140, in <lambda>
+    lambda t, y: self.model(t, y, wq_params, dosage),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\pystimela\dwtmodels\chlorination.py", line 104, in model
+    (wparams.flow_per_sec / vol) * (clconc - state.reschl)
+     ~~~~~~~~~~~~~~~~~~~~~^~~~~
+ZeroDivisionError: float division by zero
