@@ -404,3 +404,5 @@ Traceback (most recent call last):
     for kpi_name, kpi_value in kpis.items():
                                ^^^^^^^^^^
 AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:43:54,886 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-03 13:44:49,677 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation

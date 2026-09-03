@@ -187,3 +187,5 @@ Traceback (most recent call last):
     for kpi_name, kpi_value in kpis.items():
                                ^^^^^^^^^^
 AttributeError: 'NoneType' object has no attribute 'items'
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
