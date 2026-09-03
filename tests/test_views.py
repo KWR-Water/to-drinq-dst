@@ -12,10 +12,12 @@ from drinq.models import (
     MultiStepConfiguration,
     TreatmentPlant,
     Technology,
+    TechnologyKPI,
     TechnologyProperty,
     TechnologyPropertyJunction,
     TreatmentPlantLayout,
     TreatmentPlantTechnologyPropertyValue,
+    TreatmentPlantTechnologyKPIValue,
     TreatmentPlantProperty,
     TreatmentPlantPropertyValue,
     WaterqualityParameter,
@@ -386,6 +388,109 @@ class TreatmentPlantComparisonViewTests(TestCase):
         )
 
 
+class DesignParameterResultsViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='results-user',
+            password='secretpass',
+        )
+        self.client.force_login(self.user)
+
+        self.configuration = MultiStepConfiguration.objects.create(
+            user=self.user,
+            session_key='results-session',
+            name='Results Config',
+        )
+        self.treatment_plant = TreatmentPlant.objects.create(
+            name='Results Plant',
+            option=1,
+            configuration=self.configuration,
+        )
+
+        flow_property, _ = TreatmentPlantProperty.objects.get_or_create(
+            name='nominal flow rate',
+            defaults={'unit': 'm^3/h'},
+        )
+        TreatmentPlantPropertyValue.objects.create(
+            treatmentplant=self.treatment_plant,
+            property=flow_property,
+            value='100.0',
+        )
+
+        self.first_technology = Technology.objects.create(
+            name='Coagulation',
+            description='First technology',
+        )
+        self.second_technology = Technology.objects.create(
+            name='Filtration',
+            description='Second technology',
+        )
+        self.first_kpi = TechnologyKPI.objects.create(
+            name='Specific energy',
+            description='Energy use per treated unit',
+            unit='kWh/m^3',
+        )
+        self.second_kpi = TechnologyKPI.objects.create(
+            name='Chemical dose',
+            description='Chemical use per treated unit',
+            unit='mg/L',
+        )
+
+        TreatmentPlantLayout.objects.create(
+            treatmentplant=self.treatment_plant,
+            step=1,
+            technology=self.first_technology,
+        )
+        TreatmentPlantLayout.objects.create(
+            treatmentplant=self.treatment_plant,
+            step=2,
+            technology=self.second_technology,
+        )
+
+        TreatmentPlantTechnologyKPIValue.objects.create(
+            treatmentplant=self.treatment_plant,
+            technology=self.first_technology,
+            kpi=self.first_kpi,
+            value=1.25,
+        )
+        TreatmentPlantTechnologyKPIValue.objects.create(
+            treatmentplant=self.treatment_plant,
+            technology=self.second_technology,
+            kpi=self.second_kpi,
+            value=0.75,
+        )
+
+        self.url = reverse(
+            'design_parameter_results',
+            kwargs={'plant_id': self.treatment_plant.id},
+        )
+
+    def test_renders_collapsible_technology_sections(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Treatment plant KPIs')
+        self.assertContains(response, 'Treatment plant KPIs for plant Results Plant')
+        self.assertContains(response, 'KPIs per Technology')
+        self.assertContains(response, 'Expand all')
+        self.assertContains(response, 'Collapse all')
+        self.assertContains(response, 'Step 1: Coagulation')
+        self.assertContains(response, 'Step 2: Filtration')
+        self.assertContains(response, 'data-bs-toggle="collapse"', html=False)
+        self.assertContains(
+            response,
+            'technology-kpi-collapse-1',
+            html=False,
+        )
+        self.assertContains(
+            response,
+            'technology-kpi-collapse-2',
+            html=False,
+        )
+
+
 class TestDesignParameterResultsExportCsvView(TestCase):
     def setUp(self):
         self.client = Client()
@@ -578,6 +683,31 @@ class TechnologyPropertiesOptimizeTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Optimize conditions')
+
+    def test_renders_collapsible_technology_sections(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Expand all')
+        self.assertContains(response, 'Collapse all')
+        self.assertContains(response, 'Step 1 — Chlorination contactor')
+        self.assertContains(
+            response,
+            'technology-properties-collapse-1',
+            html=False,
+        )
+
+    def test_optimizer_managed_value_remains_editable(self):
+        response = self.client.get(self.url)
+
+        formset = response.context['formset']
+        matching_form = next(
+            form for form in formset.forms
+            if getattr(form.instance, 'technologyproperty_id', None) == self.property.id
+        )
+
+        self.assertFalse(matching_form.fields['value'].disabled)
+        self.assertIn('optimizer-managed-input', matching_form.fields['value'].widget.attrs.get('class', ''))
 
     def test_hides_optimize_button_without_optimizer_flags(self):
         self.property_junction.sent_to_optimizer = False
@@ -1108,6 +1238,34 @@ class TechnologyPropertiesOptimizeTests(TestCase):
         self.assertContains(
             response,
             'Optimization is in progress. Updated results may take a while.',
+        )
+
+    def test_shows_results_button_when_optimizer_is_done(self):
+        with patch.object(
+            TechnologyPropertiesView,
+            '_get_optimizer_status',
+            return_value={
+                'state': 'done',
+                'message': 'Optimization completed.',
+                'updated_rows': [
+                    {
+                        'technology_id': self.technology.id,
+                        'row_type': 'property',
+                        'name': self.property.name,
+                        'value': 4.0,
+                        'unit': self.property.unit,
+                    },
+                ],
+            },
+        ):
+            response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Optimization completed.')
+        self.assertContains(response, 'btn btn-primary mt-2')
+        self.assertContains(
+            response,
+            'View Treatment plant KPI results',
         )
 
 # How to debug invalid forms:

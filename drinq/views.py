@@ -1222,29 +1222,41 @@ class DesignParameterResultsView(generic.DetailView):
             treatmentplant=self.object
         ).select_related('technology', 'kpi')
 
-        # Group by technology
-        tech_kpis = defaultdict(list)
+        # Group by technology id so the display can follow the treatment
+        # layout order while still showing the same KPI set per technology.
+        tech_kpis_by_id = defaultdict(list)
         for kpi_value in tech_kpi_qs:
-            tech_kpis[kpi_value.technology].append(kpi_value)
+            tech_kpis_by_id[kpi_value.technology_id].append(kpi_value)
 
         # Get the ordered list of technologies by step from
-        # TreatmentPlantLayout
+        # TreatmentPlantLayout.
         layout_qs = TreatmentPlantLayout.objects.filter(
             treatmentplant=self.object
         ).select_related('technology').order_by('step')
-        ordered_techs = [
-            layout.technology for layout in layout_qs
-            if layout.technology is not None]
-        adaptability_data = get_adaptability_scores_for_technologies(
-            ordered_techs)
+        ordered_layouts = [layout for layout in layout_qs if layout.technology]
+
+        ordered_techs = []
+        seen_technology_ids = set()
+        for layout in ordered_layouts:
+            tech_id = layout.technology_id
+            if tech_id in seen_technology_ids:
+                continue
+            ordered_techs.append(layout.technology)
+            seen_technology_ids.add(tech_id)
+
+        adaptability_data = get_adaptability_scores_for_technologies(ordered_techs)
 
         # Build an ordered list of technology KPI blocks.
         technology_kpis_ordered = []
-        for tech in ordered_techs:
-            if tech in tech_kpis:
+        for layout in ordered_layouts:
+            tech = layout.technology
+            tech_kpis = tech_kpis_by_id.get(layout.technology_id, [])
+            if tech_kpis:
                 technology_kpis_ordered.append({
+                    'step': layout.step,
                     'technology': tech,
-                    'kpis': tech_kpis[tech],
+                    'kpis': tech_kpis,
+                    'kpi_count': len(tech_kpis),
                     'adaptability_score': adaptability_data[
                         'technology_scores'].get(tech.id),
                     'criteria_count': adaptability_data[
@@ -3577,7 +3589,7 @@ class TechnologyPropertiesView(generic.FormView):
         return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
 
     def _apply_optimizer_field_locking(self, formset, treatment_plant):
-        """Disable manual edits for optimizer-managed non-digested fields."""
+        """Highlight optimizer-managed non-digested fields without locking edits."""
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant
         ).values_list('technology', flat=True)
@@ -3609,12 +3621,12 @@ class TechnologyPropertiesView(generic.FormView):
                 continue
 
             if 'value' in form.fields:
-                form.fields['value'].disabled = True
                 css_class = form.fields['value'].widget.attrs.get('class', '')
-                css_class = (css_class + ' optimizer-locked-input').strip()
+                css_class = (css_class + ' optimizer-managed-input').strip()
                 form.fields['value'].widget.attrs['class'] = css_class
                 form.fields['value'].widget.attrs['title'] = (
-                    'This value is managed by the optimizer.'
+                    'This value is sent to the optimizer, but you can still '
+                    'edit it before calculating or optimizing.'
                 )
 
         return formset

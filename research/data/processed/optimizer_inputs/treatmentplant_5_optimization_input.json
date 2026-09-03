@@ -4,7 +4,7 @@
     "name": "str - FeCl3 dm - CIEX - sm RSF",
     "slug": "str-fecl3-dm-ciex-sm-rsf"
   },
-  "generated_at": "2026-09-03T09:21:40.981502+00:00",
+  "generated_at": "2026-09-03T13:31:47.183492+00:00",
   "technology_properties": [
     {
       "technology_id": 18,
@@ -12,7 +12,7 @@
       "technologyproperty_id": 10,
       "technologyproperty_name": "filter area",
       "unit": "m^2",
-      "value": 7.058333333333333,
+      "value": 7.842592592592592,
       "source_table": "technology_property"
     },
     {
@@ -21,7 +21,7 @@
       "technologyproperty_id": 135,
       "technologyproperty_name": "sand filter bed height",
       "unit": "m",
-      "value": 0.6,
+      "value": 1.4,
       "source_table": "technology_property"
     },
     {
@@ -30,7 +30,7 @@
       "technologyproperty_id": 133,
       "technologyproperty_name": "sand media grain size",
       "unit": "mm",
-      "value": 0.6,
+      "value": 0.72,
       "source_table": "technology_property"
     },
     {
@@ -66,7 +66,7 @@
       "technologyproperty_id": 15,
       "technologyproperty_name": "target concentration of dosing chemical",
       "unit": "g/m^3",
-      "value": 20,
+      "value": 3.1,
       "source_table": "technology_property"
     },
     {
@@ -101,7 +101,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 1,
+      "value": 0.154,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -125,7 +125,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 2,
+      "value": 1.828,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -161,7 +161,7 @@
       "unit": "",
       "is_inputparameter": true,
       "is_targetparameter": false,
-      "value": 4.06,
+      "value": 3.94,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -197,7 +197,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 5,
+      "value": 0.307,
       "source_table": "waterqualityparameter_technology"
     }
   ]
