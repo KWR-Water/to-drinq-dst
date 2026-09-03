@@ -982,7 +982,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = rsf.parameters  # noqa, E501
                         elif ('rapid sand filtration' in technology.lower() and
                               'submerged' in technology.lower() and
-                              'double' in technology.lower()):  # noqa, E501
+                              'dual' in technology.lower()):  # noqa, E501
                             rsfd = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = rsfd.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfd.parameters  # noqa, E501

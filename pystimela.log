@@ -283,3 +283,124 @@ Traceback (most recent call last):
     (wparams.flow_per_sec / vol) * (clconc - state.reschl)
      ~~~~~~~~~~~~~~~~~~~~~^~~~~
 ZeroDivisionError: float division by zero
+2026-09-03 13:15:04,490 - drinq.views - ERROR - Background optimizer execution failed: 'NoneType' object has no attribute 'items'
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3522, in _run_optimizer_job
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:17:07,053 - django.request - ERROR - Internal Server Error: /treatmentplant/10/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:39:21,100 - drinq.views - ERROR - Background optimizer execution failed: 'NoneType' object has no attribute 'items'
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3522, in _run_optimizer_job
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:40:07,724 - django.request - ERROR - Internal Server Error: /treatmentplant/10/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:41:52,770 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-03 13:41:52,843 - django.request - ERROR - Internal Server Error: /treatmentplant/10/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-03 13:41:53,187 - django.request - ERROR - Internal Server Error: /treatmentplant/10/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3846, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'

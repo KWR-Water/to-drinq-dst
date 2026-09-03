@@ -163,3 +163,27 @@ Traceback (most recent call last):
     (wparams.flow_per_sec / vol) * (clconc - state.reschl)
      ~~~~~~~~~~~~~~~~~~~~~^~~~~
 ZeroDivisionError: float division by zero
+Background optimizer execution failed: 'NoneType' object has no attribute 'items'
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3522, in _run_optimizer_job
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+Background optimizer execution failed: 'NoneType' object has no attribute 'items'
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3522, in _run_optimizer_job
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3228, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1090, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
