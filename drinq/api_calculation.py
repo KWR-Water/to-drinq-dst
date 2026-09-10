@@ -926,7 +926,7 @@ class TechnologyPerformanceCalculator:
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
-                        elif ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        elif ('inline dosing' in technology.lower()):
                             coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
@@ -1010,11 +1010,11 @@ class TechnologyPerformanceCalculator:
                             pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
-                        elif ('UV' and 'H2O2') in technology.lower():  # noqa, E501
+                        elif ('uv' in technology.lower()) and ('h2o2' in technology.lower()):  # noqa, E501
                             uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = uv_aop.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_aop.parameters  # noqa, E501
-                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                        elif ('ozone' in technology.lower()) and ('baffled' in technology.lower()):  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
@@ -1042,11 +1042,11 @@ class TechnologyPerformanceCalculator:
                             clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = clm_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = clm_dis.parameters  # noqa, E501
-                        elif ('UV' and 'disinfection') in technology.lower():  # noqa, E501
+                        elif ('uv' in technology.lower()) and ('disinfection' in technology.lower()):  # noqa, E501
                             uv_dis = UVdisinfection(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = uv_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_dis.parameters  # noqa, E501
-                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                        elif ('ozone' in technology.lower()) and ('baffled' in technology.lower()):  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
