@@ -956,7 +956,7 @@ class TechnologyPerformanceCalculator:
                             sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = sludgeblanket_cl.parameters  # noqa, E501
-                        elif 'chain scraped sedimentation' in technology.lower():  # noqa, E501
+                        elif 'chain-scraped sedimentation' in technology.lower():  # noqa, E501
                             chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = chain_scraped_sed.parameters  # noqa, E501
@@ -992,7 +992,11 @@ class TechnologyPerformanceCalculator:
                             rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfp.parameters  # noqa, E501
-
+                        elif 'moving bed sand filtration' in technology.lower():
+                            rsmb = RapidSandMovingBedFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = rsmb.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = rsmb.parameters  # noqa, E501
+            
                     case 'omp removal':
                         if ('nanofiltration') in technology.lower():  # noqa, E501
                             membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501

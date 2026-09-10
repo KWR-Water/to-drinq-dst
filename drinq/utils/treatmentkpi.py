@@ -2904,6 +2904,11 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.units_per_lane = parameters[TPN['units_per_lane']]
+        if self.units_per_lane <= 1:
+            raise ValueError(
+                "units_per_lane must be > 1 to reserve a unit for standby; "
+                f"got {self.units_per_lane}."
+           )
         self.flow_per_unit_m3hr = self.flow_per_lane_m3perh/(
             self.units_per_lane - 1)  #Always 1 pressurized filter stand-by
         (
@@ -2953,21 +2958,22 @@ class RapidSandMovingBedFiltration(TreatmentKPI):
 
     @property
     def hydraulic_headloss__bar(self) -> float:
+        hydraulic_loading_rate_m3m2h=self.flow_per_unit_m3hr / self.unit_area_m2
         return calculate_hydraulic_headloss_rapid_sand_filters_m(
             water_density_kg_per_m3=DENS_WATER_KG_PER_M3,
-            water_viscosity=self.water_viscosity,
-            sand_porosity=self.sand_porosity,
-            sand_media_grain_size=self.sand_media_grain_size,
-            anthracite_porosity=self.sand_porosity,
-            anthracite_media_grain_size=self.anthracite_media_grain_size,
-            hydraulic_loading_rate_m3m2h=self.hydraulic_loading_rate_m3m2h,
-            sand_bed_depth_m=self.sand_bed_height_m,
-            anthracite_bed_depth_m=self.anthracite_bed_height_m,
+            water_viscosity=WATER_VISCOSITY_N_S_PER_M2,
+            sand_porosity=0.4,
+            sand_media_grain_size=1.5,
+            anthracite_porosity=0.4,
+            anthracite_media_grain_size=0,  # dummy number
+            hydraulic_loading_rate_m3m2h=hydraulic_loading_rate_m3m2h,
+            sand_bed_height_m=1.5,
+            anthracite_bed_height_m=0,  # calculated as zero as anthracite depth = 0m
             tank_height=self.unit_height_m)
             
     @property
     def power__kw(self) -> float:
-        power_kw = self.lanes * self.power_lane_kw  # projected over hours and days. 
+        power_kw = (self.units_per_lane - 1) * self.lanes * self.unit_power_kw  # projected over hours and days. 
         return power_kw
 
 
