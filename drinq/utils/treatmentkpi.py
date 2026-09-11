@@ -1008,7 +1008,7 @@ class CoagulationInlineMixing(TreatmentKPI):
 
     @property
     def hydraulic_headloss__bar(self) -> float:
-        total_headloss = (0.001 * self.unit_length) + self.unit_length
+        total_headloss = (0.001 * self.unit_length) #+ self.unit_length
         return meters_of_water_to_bar(total_headloss) 
 
     @property

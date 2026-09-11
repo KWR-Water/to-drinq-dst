@@ -531,3 +531,6 @@ id,technology,property,defaultvalue,is_designparameter,is_digested,sent_to_optim
 530,36,95,60,0,0,0
 531,29,95,37,0,0,0
 532,17,22,2.165,0,0,0
+533,33,20,2.5,1,0,0
+534,50,20,2.5,1,0,0
+535,50,16,1,1,0,0

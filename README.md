@@ -14,6 +14,8 @@ and activate the (conda) python environment with:
 ## Optional: integration with pyStimela and optimisation per process
 Use the dedicated optimizer environment file:
 `conda env create -f environment_optim.yml`
+- Install the optimizer environment for Mac:
+`conda env create -f environment_optim_mac.yml`
 `conda activate todrinq_dst_optim`
 
 ### Required optimizer wheels in this repository
