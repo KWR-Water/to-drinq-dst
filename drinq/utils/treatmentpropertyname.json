@@ -169,6 +169,7 @@
   "gac_porosity": "GAC porosity",
   "gac_regeneration_interval": "gac regeneration interval",
   "regeneration_energy_per_kg_of_gac": "regeneration energy per kg of gac",
+  "energy_per_mgl_doc_removed": "energy per mg/L of DOC removed",
   "air_pressure_difference": "air pressure difference",
   "bed_height": "bed height",
   "baffling_factor": "baffling factor",

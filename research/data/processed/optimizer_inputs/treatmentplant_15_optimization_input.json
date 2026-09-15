@@ -1,0 +1,204 @@
+{
+  "treatment_plant": {
+    "id": 15,
+    "name": "strainer_inline_flotation_pelletlime_rapidsandpressurized_gac_chlorination_cleantank",
+    "slug": "strainer_inline_flotation_pelletlime_rapidsandpressurized_gac_chlorination_cleantank"
+  },
+  "generated_at": "2026-09-14T12:38:09.542358+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 166,
+      "technologyproperty_name": "GAC porosity",
+      "unit": null,
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 169,
+      "technologyproperty_name": "bed height",
+      "unit": "m",
+      "value": 0,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 71,
+      "technologyproperty_name": "empty bed contact time",
+      "unit": "minutes",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 10,
+      "technologyproperty_name": "filter area",
+      "unit": "m^2",
+      "value": 0,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 105,
+      "technologyproperty_name": "grain diameter",
+      "unit": "mm",
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 22,
+      "technologyproperty_name": "mass density of chemical",
+      "unit": "g/cm^3",
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 170,
+      "technologyproperty_name": "baffling factor",
+      "unit": null,
+      "value": 1,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 26,
+      "technologyproperty_name": "chemical dosing solution concentration (w/w%)",
+      "unit": "%",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 18,
+      "technologyproperty_name": "retention time (min)",
+      "unit": "minutes",
+      "value": 30,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 27,
+      "technologyproperty_name": "target residual concentration (mg/l)",
+      "unit": "g/m^3",
+      "value": 0.2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 1,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 34,
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 52,
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 1,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 40,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 8,
+      "waterqualityparameter_name": "E. coli",
+      "unit": "CFU/L",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 500,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 18,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 50,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 42,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 17,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 150,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 41,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

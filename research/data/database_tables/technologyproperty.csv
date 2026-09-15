@@ -174,3 +174,4 @@ id,name,unit,description,category,parent_property
 173,unit length ,m,length of unit tank,1,
 174,gac regeneration interval,days,days between regeneration of GAC,3,
 175,regeneration energy per kg of gac,kWh/kg,energy consumption per kg of regenerated GAC  ,3,
+176,energy per mg/L of DOC removed,kWh/m^3 per mg/L,marginal UV/AOP energy per mg/L of DOC-equivalent oxidant demand addressed,2,

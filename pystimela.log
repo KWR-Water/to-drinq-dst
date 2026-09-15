@@ -450,3 +450,1019 @@ Traceback (most recent call last):
 ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
 2026-09-03 15:29:02,308 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
 2026-09-03 15:29:47,632 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-14 08:51:50,113 - django.request - ERROR - Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/rest_framework/views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/rest_framework/views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+2026-09-14 08:51:50,164 - django.request - WARNING - Not Found: /favicon.ico
+2026-09-14 09:45:49,171 - django.request - ERROR - Internal Server Error: /treatmentplant/15/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 964, in calculate_kpi
+    daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 4176, in __post_init__
+    self.surface_overflow_rate = parameters[TPN['surface_overflow_rate']]  # m3/m2/h
+                                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'surface overflow rate'
+2026-09-14 10:39:11,299 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+2026-09-14 10:39:46,441 - django.request - ERROR - Internal Server Error: /treatmentplant/15/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 964, in calculate_kpi
+    daf = AirFlotationDAF(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 4176, in __post_init__
+    self.surface_overflow_rate = parameters[TPN['surface_overflow_rate']]  # m3/m2/h
+                                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'surface overflow rate'
+2026-09-14 10:39:46,501 - django.request - WARNING - Not Found: /favicon.ico
+2026-09-14 11:02:15,591 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+2026-09-14 11:02:57,743 - django.request - ERROR - Internal Server Error: /treatmentplant/15/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 992, in calculate_kpi
+    rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 2783, in __post_init__
+    self.backwash_flow_rate__m3_per_m2_per_h = parameters[
+                                               ~~~~~~~~~~^
+        TPN['backwash_filtration_rate']]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'backwash filtration rate'
+2026-09-14 12:25:02,627 - django.request - WARNING - The request's session was deleted before the request completed. The user may have logged out in a concurrent request, for example.: /form_complete/8gle1nko0kldctnc0cylfua0p9sjs2n9/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 127, in save
+    obj.save(
+    ~~~~~~~~^
+        force_insert=must_create, force_update=not must_create, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1130, in _save_table
+    updated = self._do_update(
+        base_qs, using, pk_val, values, update_fields, forced_update
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1195, in _do_update
+    return filtered._update(values) > 0
+           ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/query.py", line 1278, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 2003, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/middleware.py", line 59, in process_response
+    request.session.save()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 136, in save
+    raise UpdateError
+django.contrib.sessions.backends.base.UpdateError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/deprecation.py", line 131, in __call__
+    response = self.process_response(request, response)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/middleware.py", line 61, in process_response
+    raise SessionInterrupted(
+    ...<3 lines>...
+    )
+django.contrib.sessions.exceptions.SessionInterrupted: The request's session was deleted before the request completed. The user may have logged out in a concurrent request, for example.
+2026-09-14 12:27:53,733 - django.request - WARNING - The request's session was deleted before the request completed. The user may have logged out in a concurrent request, for example.: /form_complete/8gle1nko0kldctnc0cylfua0p9sjs2n9/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 127, in save
+    obj.save(
+    ~~~~~~~~^
+        force_insert=must_create, force_update=not must_create, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1130, in _save_table
+    updated = self._do_update(
+        base_qs, using, pk_val, values, update_fields, forced_update
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1195, in _do_update
+    return filtered._update(values) > 0
+           ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/query.py", line 1278, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 2003, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/middleware.py", line 59, in process_response
+    request.session.save()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 136, in save
+    raise UpdateError
+django.contrib.sessions.backends.base.UpdateError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/deprecation.py", line 131, in __call__
+    response = self.process_response(request, response)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/middleware.py", line 61, in process_response
+    raise SessionInterrupted(
+    ...<3 lines>...
+    )
+django.contrib.sessions.exceptions.SessionInterrupted: The request's session was deleted before the request completed. The user may have logged out in a concurrent request, for example.
+2026-09-14 12:28:27,730 - django.request - ERROR - Internal Server Error: /accounts-auth/logout/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/views.py", line 137, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/views.py", line 141, in post
+    auth_logout(request)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/__init__.py", line 171, in logout
+    request.session.flush()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 418, in flush
+    self.delete()
+    ~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 175, in delete
+    self.model.objects.get(session_key=session_key).delete()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/deletion.py", line 502, in delete
+    count = query.delete_batch(pk_list, self.using)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-14 12:28:43,875 - django.request - ERROR - Internal Server Error: /accounts-auth/logout/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/utils/decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/views.py", line 137, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/views.py", line 141, in post
+    auth_logout(request)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/__init__.py", line 171, in logout
+    request.session.flush()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 418, in flush
+    self.delete()
+    ~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 175, in delete
+    self.model.objects.get(session_key=session_key).delete()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/deletion.py", line 502, in delete
+    count = query.delete_batch(pk_list, self.using)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-14 12:30:04,887 - django.request - ERROR - Internal Server Error: /form-name/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/auth/mixins.py", line 73, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 497, in form_valid
+    self.request.session.cycle_key()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 432, in cycle_key
+    self.create()
+    ~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 74, in create
+    self.save(must_create=True)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 127, in save
+    obj.save(
+    ~~~~~~~~^
+        force_insert=must_create, force_update=not must_create, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1161, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/base.py", line 1202, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/query.py", line 1847, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1836, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-14 12:38:10,123 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+2026-09-14 12:38:21,638 - django.request - ERROR - Internal Server Error: /treatmentplant/15/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 930, in calculate_kpi
+    coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 945, in __post_init__
+    for tech_property in self.digest_parameter_list:
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not iterable
+2026-09-14 13:19:14,234 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 13:28:18,300 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 14:47:01,677 - drinq.views - ERROR - Background optimizer execution failed: Can't instantiate abstract class UVAOP without an implementation for abstract method 'chemical_solution_concentration__mg_per_l'
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3534, in _run_optimizer_job
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1014, in calculate_kpi
+    uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
+TypeError: Can't instantiate abstract class UVAOP without an implementation for abstract method 'chemical_solution_concentration__mg_per_l'
+2026-09-14 14:47:27,162 - django.request - ERROR - Internal Server Error: /treatmentplant/16/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1014, in calculate_kpi
+    uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
+TypeError: Can't instantiate abstract class UVAOP without an implementation for abstract method 'chemical_solution_concentration__mg_per_l'
+2026-09-14 14:47:27,217 - django.request - WARNING - Not Found: /favicon.ico
+2026-09-14 14:59:00,190 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 15:01:17,328 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 15:09:49,827 - django.request - ERROR - Internal Server Error: /treatmentplant/17/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1042, in calculate_kpi
+    clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 1856, in __post_init__
+    self.chlorine_disinfection = ChlorineDisinfection(
+                                 ~~~~~~~~~~~~~~~~~~~~^
+        parameters=parameters,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        digest_parameter_list=self.digest_parameter_list,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 1714, in __post_init__
+    self.baffling_factor = parameters[
+                           ~~~~~~~~~~^
+        TPN['baffling_factor']]  # noqa: E501
+        ^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'baffling factor'
+2026-09-14 15:11:35,914 - django.request - ERROR - Internal Server Error: /treatmentplant/17/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1042, in calculate_kpi
+    clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 1856, in __post_init__
+    self.chlorine_disinfection = ChlorineDisinfection(
+                                 ~~~~~~~~~~~~~~~~~~~~^
+        parameters=parameters,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        digest_parameter_list=self.digest_parameter_list,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 1714, in __post_init__
+    self.baffling_factor = parameters[
+                           ~~~~~~~~~~^
+        TPN['baffling_factor']]  # noqa: E501
+        ^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'baffling factor'
+2026-09-14 15:21:07,941 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 15:21:18,624 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 15:28:17,236 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-14 15:28:17,241 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-14 15:29:40,057 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-14 15:29:40,058 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-14 15:56:03,526 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-14 16:03:07,000 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-14 16:03:07,007 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration

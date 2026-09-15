@@ -108,9 +108,8 @@ class TreatmentDataclassMixin:
         self.design_parameters = self.design_parameters
         self.plant_kpis = self.plant_kpis
         self.chem_parameters = self.chem_parameters
-        if self.digest_parameter_list is not None and len(self.digest_parameter_list) == 0:
-            self.digest_parameter_list = None
-        self.digest_parameter_list = self.digest_parameter_list
+        if self.digest_parameter_list is None:
+            self.digest_parameter_list = []
 
 
 class TreatmentKPI(ABC, TreatmentDataclassMixin):
@@ -580,7 +579,7 @@ def pressurisedvesselcalc_m_m2(
 def movingbedvesselcalc_m_m2(
     flow_per_unit_m3hr: float,
 ) -> tuple[int | None, int | None, int | None]:
-    V = flow_per_unit_m3hr
+    V = flow_per_unit_m3hr / 3.6  # convert m3/h to L/s (10^-3 m3/s), the table's units
     heights = np.array([3.9, 4.7, 5.20, 5.7, 5.55, 6.05, 6.55, 5.5, 6.0])
     diameters_m = np.array([1.4, 2.0, 2.0, 2.0, 2.5, 2.5, 2.5, 2.8, 2.8])
     filtration_flows = np.array([
@@ -607,7 +606,7 @@ def movingbedvesselcalc_m_m2(
 def inlinepipesize(
     flow_per_unit_m3hr: float,
 ) -> tuple[float | None, float | None, int | None]:
-    V = flow_per_unit_m3hr * 0.1 # assuming around 6 minutes retention time
+    V = flow_per_unit_m3hr * 0.0083  # assuming 30 seconds retention time
     motorpower_kw = np.array([
         0.35, 0.55, 0.75, 1, 1.5, 2.25, 2.25, 2.25, 3.7, 7.5, 15, 22
     ])
@@ -632,8 +631,8 @@ def inlinepipesize(
     L = length_m[idx]
     D = diameters_mm[idx]
     Dm = D / 1000  # diameter in meters
-    unit_length_m = int(np.ceil(1.1 * Dm))
-    unit_area_m2 = int(D*L)
+    unit_length_m = int(np.ceil(1.1 * L))
+    unit_area_m2 = Dm * L
     powermixing_kw = motorpower_kw[idx]
     return unit_area_m2, powermixing_kw, unit_length_m
 
@@ -1721,7 +1720,7 @@ class ChlorineDisinfection(TreatmentKPI):
         self.unit_volume_m3 = calculate_unit_volume_m3(
             flow_per_lane_m3h=self.flow_per_lane_m3perh,
             units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
+            retention_time_min=self.retention_time_min) / self.baffling_factor
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
                 self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
@@ -1897,7 +1896,8 @@ class ChloramineDisinfection(TreatmentKPI):
         self.unit_volume_m3 = calculate_unit_volume_m3(
             flow_per_lane_m3h=self.flow_per_lane_m3perh,
             units_per_lane=self.units_per_lane,
-            retention_time_min=self.retention_time_min)
+            retention_time_min=self.retention_time_min
+        ) / self.chlorine_disinfection.baffling_factor
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
                 self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
@@ -3336,14 +3336,16 @@ class UVAOP(TreatmentKPI):
     lane_area_m2: float
     chemical_emission_factor: float
     emission_factor_electricity: float
+    energy_intensity_baseline:float
+    energy_per_mgl_doc_removed:float
 
     def __post_init__(self):
         super().__post_init__()
         parameters = self.parameters
         plant_kpis = self.plant_kpis
         design_parameters = self.design_parameters
-        # wq_parameters = self.wq_parameters
-        
+        wq_parameters = self.wq_parameters
+
         self.lanes = design_parameters.get('number of lanes', None)
         self.tank_height_m = parameters[TPN['tank_height']]
         self.nominal_flow_m3perh = plant_kpis.get(
@@ -3362,8 +3364,20 @@ class UVAOP(TreatmentKPI):
         self.chemicals_tank_height_m = parameters[
             TPN['tank_height_chemical_storage']]
         self.storage_time_days = parameters[TPN['storage_time_of_chemicals_days']]
-        self.energy_per_m3_kwh = parameters[
-            TPN['energy_intensity']]
+        self.doc_in_mgl = wq_parameters[
+            'dissolved organic carbon'][INPUT_WQPARAMETER_KEY]
+        self.doc_target_mgl = wq_parameters[
+            'dissolved organic carbon'][TARGET_WQPARAMETER_KEY]
+        self.energy_per_mgl_doc_removed = parameters[
+            TPN['energy_per_mgl_doc_removed']]
+        self.energy_intensity_baseline = parameters[TPN['energy_intensity']]
+        # DOC in the source water scavenges OH radicals, so the UV/H2O2
+        # dose (and thus energy) needed to hit the same target removal
+        # grows with the DOC-equivalent oxidant demand addressed, i.e.
+        # the gap between input and target DOC.
+        self.energy_per_m3_kwh = (
+            self.energy_intensity_baseline + self.energy_per_mgl_doc_removed * max(
+                0, self.doc_in_mgl - self.doc_target_mgl))
         self.volume_chemical_day = calculate_dosing_volume__m3perday_perunit(
             concentration_mgL=self.conc_chem_mgL,
             flow_per_lane_m3hr=self.flow_per_lane_m3perh,
@@ -3395,6 +3409,10 @@ class UVAOP(TreatmentKPI):
         return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
 
     @property
+    def chemical_solution_concentration__mg_per_l(self) -> float:
+        return self.conc_chem_mgL
+
+    @property
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Calculates daily mass of pure H2O2 required."""
         daily_flow_m3 = self.nominal_flow_m3perh * 24
@@ -3406,7 +3424,7 @@ class UVAOP(TreatmentKPI):
         """Calculates area for H2O2 storage tanks including safety bunding."""
         daily_mass_solution_kg = (
             self.sum_per_chemical(self.daily_mass_of_chemicals__kg)
-            / self.solution_wwperc
+            / (self.solution_wwperc / 100)
         )
         # Density of 35% H2O2 is ~1.1 kg/L:
         volume_m3 = daily_mass_solution_kg / 1100.0
