@@ -2049,3 +2049,469 @@ AttributeError: 'MembraneFiltration' object has no attribute 'emission_factor_el
 2026-09-16 16:46:34,750 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Ceramic microfiltration
 2026-09-16 16:47:48,032 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Ceramic microfiltration
 2026-09-16 16:50:04,604 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-17 13:30:13,423 - django.request - ERROR - Internal Server Error: /treatmentplant/23/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1003, in calculate_kpi
+    microfiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 2029, in __post_init__
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: units_per_lane must be > 1 to reserve a unit for backwash; got 1.
+2026-09-17 13:30:34,099 - django.request - ERROR - Internal Server Error: /treatmentplant/23/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1003, in calculate_kpi
+    microfiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 2029, in __post_init__
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: units_per_lane must be > 1 to reserve a unit for backwash; got 1.
+2026-09-17 13:31:13,033 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 13:35:28,124 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 13:39:40,939 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Ceramic microfiltration
+2026-09-17 13:43:21,468 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 13:47:35,400 - django.request - ERROR - Internal Server Error: /treatmentplant/23/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3760, in form_valid
+    instance.save()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1130, in _save_table
+    updated = self._do_update(
+        base_qs, using, pk_val, values, update_fields, forced_update
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1195, in _do_update
+    return filtered._update(values) > 0
+           ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1278, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 2003, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-17 13:47:40,622 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 219, in post
+    TreatmentplantDesignParameter.objects.update_or_create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        treatmentplant=plant,
+        ^^^^^^^^^^^^^^^^^^^^^
+        designparameter_id=param_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        defaults={'value': item_val}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1009, in update_or_create
+    obj.save(using=self.db, update_fields=update_fields)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1130, in _save_table
+    updated = self._do_update(
+        base_qs, using, pk_val, values, update_fields, forced_update
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1195, in _do_update
+    return filtered._update(values) > 0
+           ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1278, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 2003, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-17 13:49:50,447 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 13:51:03,341 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 13:56:52,693 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 219, in post
+    TreatmentplantDesignParameter.objects.update_or_create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        treatmentplant=plant,
+        ^^^^^^^^^^^^^^^^^^^^^
+        designparameter_id=param_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        defaults={'value': item_val}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1009, in update_or_create
+    obj.save(using=self.db, update_fields=update_fields)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1130, in _save_table
+    updated = self._do_update(
+        base_qs, using, pk_val, values, update_fields, forced_update
+    )
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\base.py", line 1195, in _do_update
+    return filtered._update(values) > 0
+           ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\query.py", line 1278, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 2003, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database is locked
+2026-09-17 13:58:32,428 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 14:10:44,650 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:13,982 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:21,803 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:28,798 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:34,205 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:42,067 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:11:49,854 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:12:03,606 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:12:39,048 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:13:04,306 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:13:13,924 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:13:18,711 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:13:24,283 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:14:26,495 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:14:34,946 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:14:45,633 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 14:15:05,210 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 15:52:51,188 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:53:28,626 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:53:32,537 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:55:07,625 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:55:12,068 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:55:20,137 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 15:55:27,921 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 16:26:43,848 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 16:27:27,353 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 16:27:55,733 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
+2026-09-17 16:28:01,026 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:28:39,491 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:28:51,238 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:29:18,268 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:29:38,106 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:30:41,761 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:34:14,989 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1427, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-09-17 16:35:10,398 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
+2026-09-17 16:36:40,309 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 16:37:24,659 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 16:37:47,704 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 16:38:35,201 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1427, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-09-17 16:39:42,561 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 16:40:53,854 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 16:41:52,967 - drinq.views - WARNING - Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+2026-09-17 16:43:05,465 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 16:44:14,052 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 16:45:19,571 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 16:47:44,780 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 16:59:49,153 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 17:00:57,383 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-09-17 17:01:34,634 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py changed, reloading.
+2026-09-17 17:01:58,385 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 17:02:50,220 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 17:10:18,854 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 17:11:13,844 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Moving bed sand filtration
+2026-09-17 17:27:20,246 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 17:34:26,444 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.
+2026-09-17 17:35:01,936 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py changed, reloading.

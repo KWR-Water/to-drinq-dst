@@ -220,10 +220,13 @@ OPTIMIZER_OUTPUT_DB_MAPPING: dict[
     'chlorination': {
         'properties': {
             'chlorine_dose_mgL': [
+                'target concentration of dosing chemical',
+                'target residual concentration (mg/l)',
                 'chlorination chemical dose',
                 'chlorine dose',
             ],
             'volume_m3': [
+                'volume',
                 'chlorination volume',
                 'contact volume',
             ],
@@ -262,8 +265,8 @@ OPTIMIZER_OUTPUT_DB_MAPPING: dict[
     },
     'gac': {
         'properties': {
-            'surf_m2': ['gac surface'],
-            'lbed_m': ['gac depth'],
+            'surf_m2': ['filter area', 'gac surface'],
+            'lbed_m': ['bed height', 'gac depth'],
         },
         'kpis': {},
     },
@@ -692,6 +695,7 @@ class TechnologyPerformanceCalculator:
     plant_kpis: dict[str, float | int]  # plant performance indicators
     tech_kpinames: list[str]  # technology performance indicators
     digested_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
+    optimized_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
 
     def __init__(
         self,
@@ -705,6 +709,7 @@ class TechnologyPerformanceCalculator:
         waterquality_parameters: dict[str, dict[str, float | int]] = dict(),
         tech_kpinames: list[str] = None,
         digested_tech_parameter_list: dict[str, list[str]] = None,
+        optimized_tech_parameter_list: dict[str, list[str]] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.tech_parameters = tech_parameters
@@ -720,6 +725,7 @@ class TechnologyPerformanceCalculator:
         self.tech_kpinames = tech_kpinames
         self.tech_kpis = {technology: None for technology in technologies}
         self.digested_tech_parameter_list = digested_tech_parameter_list
+        self.optimized_tech_parameter_list = optimized_tech_parameter_list
         self.summed_kpis = dict()
 
     def _extract_chemical_prices_for_technology(
@@ -892,6 +898,9 @@ class TechnologyPerformanceCalculator:
         for stage in stages:
             for technology in technologies:
                 digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
+                optimized_property_list = self.optimized_tech_parameter_list.get(technology, None)  # noqa, E501
+                if optimized_property_list is None:
+                    optimized_property_list = []
                 if digest_property_list is None:
                     digest_property_list = []
                 tech_wq_parameters = wq_parameters.get(technology, {})
@@ -906,6 +915,7 @@ class TechnologyPerformanceCalculator:
                         ).keys()
                     ),
                     'digest_parameter_list': digest_property_list,
+                    'optimized_parameter_list': optimized_property_list,
                 }
                 match stage.lower():
                     case 'algae screening':

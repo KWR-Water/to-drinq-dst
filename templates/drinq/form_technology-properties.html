@@ -33,6 +33,16 @@
       padding: 0.1rem 0.35rem;
       font-weight: 600;
     }
+    .technology-optimized-badge {
+      font-size: 0.72rem;
+      margin-left: 0.5rem;
+      background: #2e7d32;
+      color: #ffffff;
+      border-radius: 0.25rem;
+      padding: 0.15rem 0.4rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
   </style>
   <div class="card shadow-sm p-3 bg-white">
     <h1 class="mb-3">Technology properties</h1>
@@ -63,10 +73,23 @@
       </div>
     {% endif %}
 
+    {% if any_technology_optimized %}
+      <div class="alert alert-success d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+        <div>
+          <strong>Optimized values are in place</strong> for:
+          {% for tech in optimized_technologies %}
+            {{ tech.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+          . <strong>Calculate results</strong> keeps these values; editing any of their inputs
+          clears optimization for that technology automatically.
+        </div>
+      </div>
+    {% endif %}
+
     {% if optimizer_updated_rows %}
       <div class="card border-warning mb-3">
         <div class="card-header bg-warning text-dark">
-          {% if optimizer_status.action == 'optimize' %}Optimizer-updated rows{% else %}Calculated values{% endif %}
+          {% if optimizer_status.action == 'optimize' %}Updated rows{% else %}Calculated values{% endif %}
         </div>
         <div class="card-body p-2">
           <div class="table-responsive">
@@ -135,7 +158,14 @@
             >
               <div class="d-flex justify-content-between align-items-start gap-3">
                 <div>
-                  <div class="h4 mb-1">Step {{ forloop.counter }} — {{ tech.name }}</div>
+                  <div class="h4 mb-1">
+                    Step {{ forloop.counter }} — {{ tech.name }}
+                    {% with tech_status=technology_optimization_status|dict_get:tech.id %}
+                      {% if tech_status.is_optimized %}
+                        <span class="technology-optimized-badge">Optimized{% if tech_status.optimized_at %} on {{ tech_status.optimized_at|date:"Y-m-d H:i" }}{% endif %}</span>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
                   <div class="small text-muted">Open to edit the default values for this technology.</div>
                 </div>
                 <div class="text-end small text-muted flex-shrink-0">
@@ -327,9 +357,17 @@
       <div class="d-flex justify-content-between">
         <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-secondary">Back</a>
         <div class="d-flex gap-2">
-          <button type="submit" name="action" value="calculate" class="btn btn-primary">Calculate results</button>
+          <button type="submit" name="action" value="calculate" class="btn btn-primary">
+            {% if any_technology_optimized %}Recalculate (keeps optimized values){% else %}Calculate results{% endif %}
+          </button>
           {% if show_optimize_button %}
             <button type="submit" name="action" value="optimize" class="btn btn-outline-primary">Optimize conditions</button>
+          {% endif %}
+          {% if any_technology_optimized %}
+            <button type="submit" name="action" value="reset_optimization" class="btn btn-outline-danger"
+                    onclick="return confirm('This discards optimizer results for all technologies and recalculates default/user-specified values. Continue?');">
+              Recalculate with non-optimized values
+            </button>
           {% endif %}
         </div>
       </div>
