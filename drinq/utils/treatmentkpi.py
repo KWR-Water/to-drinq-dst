@@ -1634,7 +1634,7 @@ class ChainScrapedSedimentation(TreatmentKPI):
         scraper_power_per_unit_kw = (
             self.scraper_power_coeff_kw_m2 * self.unit_area_m2)
         total_power_kw = scraper_power_per_unit_kw * number_of_units
-        return np.ceil(total_power_kw)
+        return total_power_kw
 
 
     @property
@@ -1798,7 +1798,8 @@ class ChlorineDisinfection(TreatmentKPI):
             flow_per_lane_m3hr=self.flow_per_lane_m3perh,
             units_per_lane=1,
         )
-        volume_chlorine_m3day = dosing_per_lane * self.lanes
+        mass_chlorine_kgday = dosing_per_lane * self.lanes
+        volume_chlorine_m3day = mass_chlorine_kgday / 1190  # density of chlorine dosing solution, kg/m3
         chlorine_dosing_flow_m3s = volume_chlorine_m3day / (24 * 3600)
         power_chlorine_kw = (
             chlorine_dosing_flow_m3s * 9.81 * 1190* (self.chemicals_tank_height_m +1)) / (0.7 * 1000)
@@ -2032,6 +2033,8 @@ class MembraneFiltration(TreatmentKPI):
         self.number_of_units = self.units_per_lane * self.lanes
         self.nominal_flow_m3perh = plant_kpis.get(
             NOMINAL_FLOW_RATE_NAME, None)
+        self.emission_factor_electricity = design_parameters.get(
+            EMISSION_FACTOR_ELEC_NAME, None) 
         self.flow_per_lane_m3perh = calculate_flow_per_lane(
             self.lanes, self.nominal_flow_m3perh)
         self.flow_per_unit_m3perh = (
@@ -3534,7 +3537,7 @@ class BaffledOzonationContactor(TreatmentKPI):
             TPN['target_concentration_of_dosing_chemical']]  # 3 mg/l
         self.energy_per_kg_ozone_kwh = parameters[
             TPN['energy_consumption_per_kg_ozone']]  # 8
-        self.ecoli_initial = wq_parameters['E-Coli'][
+        self.ecoli_initial = wq_parameters['E. coli'][
             INPUT_WQPARAMETER_KEY]
         self.uv254_initial = wq_parameters['UV 254'][
             INPUT_WQPARAMETER_KEY]
@@ -4542,7 +4545,7 @@ class UVdisinfection(TreatmentKPI):
     def power__kw(self) -> float:
         uv_transmittance_percent = 90 # assuming UV transmittance of 90% 
         power_kW = self.power_per_m3_kW * self.nominal_flow_m3perh /(uv_transmittance_percent/100)
-        return np.ceil(power_kW)
+        return power_kW
 
     @property
     def hydraulic_headloss__bar(self) -> float:

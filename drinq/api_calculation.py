@@ -997,6 +997,13 @@ class TechnologyPerformanceCalculator:
                             self.tech_kpis[technology] = rsmb.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsmb.parameters  # noqa, E501
             
+                    case 'microfiltration':
+                        if ('polymeric microfiltration' in technology.lower() or
+                                'ceramic microfiltration' in technology.lower()):
+                            microfiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = microfiltration.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = microfiltration.parameters  # noqa, E501
+
                     case 'omp removal':
                         if ('nanofiltration') in technology.lower():  # noqa, E501
                             membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501

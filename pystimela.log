@@ -1652,3 +1652,400 @@ Traceback (most recent call last):
     a1 = 1.0 / dy
          ~~~~^~~~
 ZeroDivisionError: float division by zero
+2026-09-16 15:45:45,571 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 264, in optimize_ozonation
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<8 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 686, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<11 lines>...
+        callback=time_limit_callback
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 677, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 569, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        ozone_dosed, hreact, areact
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 350, in stimela_simulate
+    ozon_results = ozon_process.simulate(
+        t_eval=timestamps,
+        init_state=init_state,
+        wq_params=in_wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 395, in simulate
+    solution = self.solve_ode(t_eval, init_state.to_numpy(), wq_params)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 374, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, in_wp),
+    ...<5 lines>...
+        atol=1e-9,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 660, in solve_ivp
+    message = solver.step()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 201, in step
+    success, message = self._step_impl()
+                       ~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/lsoda.py", line 163, in _step_impl
+    solver._y, solver.t = integrator.run(
+                          ~~~~~~~~~~~~~~^
+        solver.f, solver.jac or (lambda: None), solver._y, solver.t,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.t_bound, solver.f_params, solver.jac_params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ode.py", line 1376, in run
+    y1, t, istate = self.runner(
+                    ~~~~~~~~~~~^
+        f, y0, t0, t1, rtol, atol, itask, istate, rwork, iwork,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        jac, jt, f_params, 1, jac_params,  # tfirst=1 for (t, y) signature
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.state_doubles, self.state_ints
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 375, in <lambda>
+    lambda t, y: self.model(t, y, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 133, in model
+    water_velocity = flow_water / reactor_area
+                     ~~~~~~~~~~~^~~~~~~~~~~~~~
+ZeroDivisionError: float division by zero
+2026-09-16 15:45:58,362 - django.request - ERROR - Internal Server Error: /treatmentplant/22/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1050, in calculate_kpi
+    ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
+  File "<string>", line 9, in __init__
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 3538, in __post_init__
+    self.ecoli_initial = wq_parameters['E-Coli'][
+                         ~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'E-Coli'
+2026-09-16 15:51:55,759 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-16 15:55:20,276 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 264, in optimize_ozonation
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<8 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 686, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<11 lines>...
+        callback=time_limit_callback
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 677, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 569, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        ozone_dosed, hreact, areact
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 350, in stimela_simulate
+    ozon_results = ozon_process.simulate(
+        t_eval=timestamps,
+        init_state=init_state,
+        wq_params=in_wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 395, in simulate
+    solution = self.solve_ode(t_eval, init_state.to_numpy(), wq_params)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 374, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, in_wp),
+    ...<5 lines>...
+        atol=1e-9,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 660, in solve_ivp
+    message = solver.step()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 201, in step
+    success, message = self._step_impl()
+                       ~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/lsoda.py", line 163, in _step_impl
+    solver._y, solver.t = integrator.run(
+                          ~~~~~~~~~~~~~~^
+        solver.f, solver.jac or (lambda: None), solver._y, solver.t,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.t_bound, solver.f_params, solver.jac_params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ode.py", line 1376, in run
+    y1, t, istate = self.runner(
+                    ~~~~~~~~~~~^
+        f, y0, t0, t1, rtol, atol, itask, istate, rwork, iwork,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        jac, jt, f_params, 1, jac_params,  # tfirst=1 for (t, y) signature
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.state_doubles, self.state_ints
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 375, in <lambda>
+    lambda t, y: self.model(t, y, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 133, in model
+    water_velocity = flow_water / reactor_area
+                     ~~~~~~~~~~~^~~~~~~~~~~~~~
+ZeroDivisionError: float division by zero
+2026-09-16 15:55:23,845 - django.request - ERROR - Internal Server Error: /treatmentplant/23/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3240, in _run_calculation_pipeline
+    kpi_calculator.sum_kpis()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1094, in sum_kpis
+    for kpi_name, kpi_value in kpis.items():
+                               ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'items'
+2026-09-16 16:41:06,012 - drinq.views - ERROR - Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3527, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2713, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 264, in optimize_ozonation
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<8 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 686, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<11 lines>...
+        callback=time_limit_callback
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 677, in objective_wrapper
+    obj_val, _ = objective_scalar(x, inputs, params, limits, weights, initials)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 569, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        ozone_dosed, hreact, areact
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/ozonation_optim.py", line 350, in stimela_simulate
+    ozon_results = ozon_process.simulate(
+        t_eval=timestamps,
+        init_state=init_state,
+        wq_params=in_wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 395, in simulate
+    solution = self.solve_ode(t_eval, init_state.to_numpy(), wq_params)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 374, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, in_wp),
+    ...<5 lines>...
+        atol=1e-9,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 660, in solve_ivp
+    message = solver.step()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 201, in step
+    success, message = self._step_impl()
+                       ~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/lsoda.py", line 163, in _step_impl
+    solver._y, solver.t = integrator.run(
+                          ~~~~~~~~~~~~~~^
+        solver.f, solver.jac or (lambda: None), solver._y, solver.t,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.t_bound, solver.f_params, solver.jac_params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ode.py", line 1376, in run
+    y1, t, istate = self.runner(
+                    ~~~~~~~~~~~^
+        f, y0, t0, t1, rtol, atol, itask, istate, rwork, iwork,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        jac, jt, f_params, 1, jac_params,  # tfirst=1 for (t, y) signature
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.state_doubles, self.state_ints
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 375, in <lambda>
+    lambda t, y: self.model(t, y, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/ozonation.py", line 133, in model
+    water_velocity = flow_water / reactor_area
+                     ~~~~~~~~~~~^~~~~~~~~~~~~~
+ZeroDivisionError: float division by zero
+2026-09-16 16:41:11,281 - django.request - ERROR - Internal Server Error: /treatmentplant/24/technology/
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/django/views/generic/edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3858, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3239, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/api_calculation.py", line 1004, in calculate_kpi
+    self.tech_kpis[technology] = microfiltration.get_kpi_dict()  # noqa, E501
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 2077, in get_kpi_dict
+    return {kpi: self.get_kpi(kpi=kpi) for kpi in TECH_KPI_MAPPINGS.keys()}
+                 ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 2069, in get_kpi
+    return getattr(self, function_name)
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py", line 2112, in co2_emissions__kg_co2_eq_per_m3
+    if self.emission_factor_electricity is None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MembraneFiltration' object has no attribute 'emission_factor_electricity'
+2026-09-16 16:45:33,105 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
+2026-09-16 16:46:34,750 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Ceramic microfiltration
+2026-09-16 16:47:48,032 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Ceramic microfiltration
+2026-09-16 16:50:04,604 - django.utils.autoreload - INFO - /Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/utils/treatmentkpi.py changed, reloading.
