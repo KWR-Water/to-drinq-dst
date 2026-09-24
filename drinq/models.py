@@ -606,10 +606,16 @@ class StageStage(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     stage_current = models.ForeignKey(
         Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_current',
         related_name='current')
     stage_next = models.ForeignKey(
         Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_next',
         related_name='next')
+    stage_previous = models.ForeignKey(
+        Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_previous',
+        related_name='previous')
 
     class Meta:
         # managed = False
@@ -855,6 +861,15 @@ class TechnologyRelatedtechnology(models.Model):
     related_technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE, blank=True, null=True,
         db_column='relatedtechnology', related_name='related_tech')
+    relatedtechnology_is_nextstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_nextstep')
+    relatedtechnology_is_previousstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_previousstep')
+    relatedtechnology_is_currentstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_currentstep')
 
     class Meta:
         # managed = False

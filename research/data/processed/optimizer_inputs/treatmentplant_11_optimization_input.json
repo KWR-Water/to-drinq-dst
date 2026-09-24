@@ -4,7 +4,7 @@
     "name": "str - FeCl3 dm - Chain-scr-ST - CIEX - moving bed - GAC",
     "slug": "str-fecl3-dm-chain-scr-st-ciex-moving-bed-gac"
   },
-  "generated_at": "2026-09-17T15:10:37.359523+00:00",
+  "generated_at": "2026-09-18T07:57:48.783476+00:00",
   "technology_properties": [
     {
       "technology_id": 14,
@@ -21,7 +21,7 @@
       "technologyproperty_id": 169,
       "technologyproperty_name": "bed height",
       "unit": "m",
-      "value": 4.0,
+      "value": 4.86,
       "source_table": "technology_property"
     },
     {
@@ -30,7 +30,7 @@
       "technologyproperty_id": 71,
       "technologyproperty_name": "empty bed contact time",
       "unit": "minutes",
-      "value": 20.0,
+      "value": 15.0,
       "source_table": "technology_property"
     },
     {
@@ -39,7 +39,7 @@
       "technologyproperty_id": 10,
       "technologyproperty_name": "filter area",
       "unit": "m^2",
-      "value": 1.470486111111111,
+      "value": 1.21,
       "source_table": "technology_property"
     },
     {
@@ -84,7 +84,7 @@
       "technologyproperty_id": 15,
       "technologyproperty_name": "target concentration of dosing chemical",
       "unit": "g/m^3",
-      "value": 2.6,
+      "value": 3.6,
       "source_table": "technology_property"
     },
     {
@@ -93,7 +93,7 @@
       "technologyproperty_id": 1,
       "technologyproperty_name": "volume",
       "unit": "m^3",
-      "value": 35.04,
+      "value": 27.94,
       "source_table": "technology_property"
     }
   ],
@@ -119,7 +119,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 0.04066,
+      "value": 0.03859,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -143,7 +143,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 1.847,
+      "value": 1.818,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -179,7 +179,7 @@
       "unit": "",
       "is_inputparameter": true,
       "is_targetparameter": false,
-      "value": 4.17,
+      "value": 3.9,
       "source_table": "waterqualityparameter_technology"
     },
     {
@@ -215,7 +215,7 @@
       "unit": "mg/liter",
       "is_inputparameter": false,
       "is_targetparameter": true,
-      "value": 0.321,
+      "value": 0.324,
       "source_table": "waterqualityparameter_technology"
     }
   ]

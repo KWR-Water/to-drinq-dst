@@ -577,6 +577,69 @@ def get_watersource(request):
     return water_source
 
 
+def _dedupe_ids(technology_ids: list[int]) -> list[int]:
+    deduped: list[int] = []
+    for technology_id in technology_ids:
+        if technology_id not in deduped:
+            deduped.append(technology_id)
+    return deduped
+
+
+def _build_choice_buckets(technology_ids: tuple[int, ...]) -> list[list[int]]:
+    """Build the stage buckets contributed by a single deciding-factor
+    choice: an optional previous-step bucket, the current stage's
+    technology alternatives (all kept together in one bucket), and an
+    optional next-step bucket.
+    """
+    tech_related_objs = TechnologyRelatedtechnology.objects
+    previous_ids: list[int] = []
+    next_ids: list[int] = []
+    for technology_id in technology_ids:
+        related_tech_previous = tech_related_objs.filter(
+            technology_id=technology_id,
+            relatedtechnology_is_previousstep=True,
+        ).first()
+        if related_tech_previous is not None:
+            related_id = related_tech_previous.related_technology_id
+            if related_id not in previous_ids:
+                previous_ids.append(related_id)
+
+        related_tech_next = tech_related_objs.filter(
+            technology_id=technology_id,
+            relatedtechnology_is_nextstep=True,
+        ).first()
+        if related_tech_next is not None:
+            related_id = related_tech_next.related_technology_id
+            if related_id not in next_ids:
+                next_ids.append(related_id)
+
+    choice_buckets: list[list[int]] = []
+    if previous_ids:
+        choice_buckets.append(previous_ids)
+    choice_buckets.append(_dedupe_ids(list(technology_ids)))
+    if next_ids:
+        choice_buckets.append(next_ids)
+    return choice_buckets
+
+
+def _append_stage_buckets(
+    stage_buckets: list[list[int]],
+    choice_buckets: list[list[int]],
+) -> list[list[int]]:
+    """Append a choice's buckets to the running, in-order stage sequence.
+
+    A bucket that exactly repeats the immediately preceding one is
+    skipped (e.g. a next-step bucket already introduced by an earlier
+    choice's current or previous bucket). Genuine repeats that occur
+    later in the sequence are preserved as their own buckets.
+    """
+    for bucket in choice_buckets:
+        if stage_buckets and stage_buckets[-1] == bucket:
+            continue
+        stage_buckets.append(bucket)
+    return stage_buckets
+
+
 class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
     template_name = "drinq/multi_form.html"
     success_url = 'form_multistep'
@@ -786,19 +849,25 @@ class QuestionsCompleteView(generic.TemplateView):
         }
         if results is not None and configuration is not None:
             choices = results.values_list('answer', flat=True)
+            stage_buckets: list[list[int]] = []
             for choice in choices:
                 if choice is not None:
                     choice_description = dst.get_choice_description(
                         choice=choice, query_set=None)
                     if choice_description is not None:
                         context['choices'].update({choice: choice_description})
-                    technology = dst.get_technology_of_choice(choice=choice)
-                    if technology:
-                        technologies += [technology]
+                    technology_ids = dst.get_technology_of_choice(
+                        choice=choice)
+                    if technology_ids:
+                        stage_buckets = _append_stage_buckets(
+                            stage_buckets,
+                            _build_choice_buckets(technology_ids),
+                        )
 
-            context['technologies'] = technologies
+            technologies = stage_buckets
+            context['technologies'] = [tuple(bucket) for bucket in technologies]
             treatment_options, treatment_maps = dst.get_treatment_trains(
-                technology_tuples=technologies)
+                technology_tuples=context['technologies'])
 
             # Build available technologies and stage names per step
             num_stages = len(technologies)
@@ -3443,10 +3512,12 @@ class TechnologyPropertiesView(generic.FormView):
         for tech_id in tech_ids:
             related_tech_id = None
             try:
-                related_technology = TechnologyRelatedtechnology.objects.get(technology_id=tech_id)
-                related_tech_id = related_technology.id
+                related_tech = TechnologyRelatedtechnology.objects.filter(
+                    relatedtechnology_is_currentstep=True).get(
+                        technology_id=tech_id)
+                related_tech_id = related_tech.id
             except TechnologyRelatedtechnology.DoesNotExist:
-                related_technology = None
+                related_tech = None
             try:
                 tccp = TechnologyConstructionCostParameter.objects.filter(
                     technology_id=tech_id).first()
