@@ -4,7 +4,7 @@
     "name": "strainer_inline_flotation_pelletlime_rapidsandpressurized_gac_chlorination_cleantank",
     "slug": "strainer_inline_flotation_pelletlime_rapidsandpressurized_gac_chlorination_cleantank"
   },
-  "generated_at": "2026-09-14T12:38:09.542358+00:00",
+  "generated_at": "2026-09-17T12:02:36.608449+00:00",
   "technology_properties": [
     {
       "technology_id": 14,
@@ -21,7 +21,7 @@
       "technologyproperty_id": 169,
       "technologyproperty_name": "bed height",
       "unit": "m",
-      "value": 0,
+      "value": 4,
       "source_table": "technology_property"
     },
     {
@@ -39,7 +39,7 @@
       "technologyproperty_id": 10,
       "technologyproperty_name": "filter area",
       "unit": "m^2",
-      "value": 0,
+      "value": 2.3527777777777774,
       "source_table": "technology_property"
     },
     {
@@ -111,7 +111,7 @@
       "technologyproperty_id": 1,
       "technologyproperty_name": "volume",
       "unit": "m^3",
-      "value": 1,
+      "value": 35.291666666666664,
       "source_table": "technology_property"
     }
   ],

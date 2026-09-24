@@ -101,6 +101,7 @@ class TreatmentDataclassMixin:
     wq_parameters: dict[str, dict[str, float | int | str]] | None = None
     chem_parameters: list[str] | None = None
     digest_parameter_list: list[str] | None = None
+    optimized_parameter_list: list[str] | None = None
 
     def __post_init__(self):
         self.parameters = self.parameters
@@ -110,6 +111,8 @@ class TreatmentDataclassMixin:
         self.chem_parameters = self.chem_parameters
         if self.digest_parameter_list is None:
             self.digest_parameter_list = []
+        if self.optimized_parameter_list is None:
+            self.optimized_parameter_list = []
 
 
 class TreatmentKPI(ABC, TreatmentDataclassMixin):
@@ -152,6 +155,24 @@ class TreatmentKPI(ABC, TreatmentDataclassMixin):
     def daily_mass_of_chemicals__kg(self) -> dict[str, float]:
         """Abstract property for daily mass of chemicals (kg)."""
         pass
+
+    def _digested_value(self, tech_property: str, computed_value: float) -> float:
+        """Resolve a digested property, honoring an optimizer-provided value.
+
+        If `tech_property` was optimized (present in `optimized_parameter_list`
+        with a value already persisted in `parameters`), that value is kept
+        instead of being overwritten by `computed_value`. Either way, the
+        resolved value is written back to `self.parameters`.
+        """
+        if (
+            tech_property in self.optimized_parameter_list
+            and tech_property in self.parameters
+        ):
+            value = self.parameters[tech_property]
+        else:
+            value = computed_value
+        self.parameters[tech_property] = value
+        return value
 
     def chemical_names(self) -> list[str]:
         if not self.chem_parameters:
@@ -771,8 +792,8 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
-                self.volume_m3 = self.tanks_area_m2 * self.tank_height
-                self.parameters[tech_property] = self.volume_m3  # overwrite area
+                self.volume_m3 = self._digested_value(
+                    tech_property, self.tanks_area_m2 * self.tank_height)
 
     def __repr__(self):
         return f"CoagulationDynamicMixing(tank height (m)={self.tank_height}, " \
@@ -1264,12 +1285,12 @@ class FlocculationDynamicMixing(TreatmentKPI):
         self.tanks_area_m2 = self.unit_area_m2 * self.units_per_lane * self.lanes
         for tech_property in self.digest_parameter_list:
             if tech_property == 'unit length':
-                 self.floc_length = np.ceil (3 * np.sqrt(self.unit_area_m2 / 3)) # flocculation length
-                 self.parameters[tech_property] = self.floc_length  
+                 self.floc_length = self._digested_value(
+                     tech_property, np.ceil(3 * np.sqrt(self.unit_area_m2 / 3)))
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
-                 self.volume_m3 = self.tanks_area_m2 * self.tank_height
-                 self.parameters[tech_property] = self.volume_m3 
+                 self.volume_m3 = self._digested_value(
+                     tech_property, self.tanks_area_m2 * self.tank_height)
 
     def __repr__(self):
         return f"FlocculationDynamicMixing(tank height (m)={self.tank_height}, " \
@@ -1723,8 +1744,9 @@ class ChlorineDisinfection(TreatmentKPI):
             retention_time_min=self.retention_time_min) / self.baffling_factor
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
-                self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
-                self.parameters[tech_property] = self.volume_m3  # overwrite area
+                self.volume_m3 = self._digested_value(
+                    tech_property,
+                    self.unit_volume_m3 * self.units_per_lane * self.lanes)
 
     def __repr__(self):
         return f"ChlorineDisinfection(tank height (m)={self.tank_height_m}, " \
@@ -2449,8 +2471,8 @@ class RapidSandSingleMediumFiltration(TreatmentKPI):
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'filter area':
-                self.filter_area_m2 = self.tanks_area_m2
-                self.parameters[tech_property] = self.filter_area_m2  # overwrite filter area
+                self.filter_area_m2 = self._digested_value(
+                    tech_property, self.tanks_area_m2)
 
     def __repr__(self):
         return f"Rapid Sand filtration, single medium"
@@ -2646,8 +2668,8 @@ class RapidSandDoubleMediumFiltration(TreatmentKPI):
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'filter area':
-                self.filter_area_m2 = self.tanks_area_m2
-                self.parameters[tech_property] = self.filter_area_m2  # overwrite filter area
+                self.filter_area_m2 = self._digested_value(
+                    tech_property, self.tanks_area_m2)
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
@@ -2804,8 +2826,8 @@ class RapidSandPressurizedVesselFiltration(TreatmentKPI):
             self.backwash_pump_area_m2 + self.backwash_water_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'filter area':
-                self.filter_area_m2 = self.tanks_area_m2
-                self.parameters[tech_property] = self.filter_area_m2
+                self.filter_area_m2 = self._digested_value(
+                    tech_property, self.tanks_area_m2)
 
     def __repr__(self):
         return f"Backwash nominal flow (m3/hr)={self.backwash_pump_flow_m3_per_h}, " \
@@ -3069,15 +3091,16 @@ class GranularActivatedCarbonFiltration(TreatmentKPI):
             self.flow_per_unit_m3hr/self.unit_area_m2)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
-                self.volume_m3 = self.unit_volume_m3 * self.units_per_lane * self.lanes
-                self.parameters[tech_property] = self.volume_m3  
+                self.volume_m3 = self._digested_value(
+                    tech_property,
+                    self.unit_volume_m3 * self.units_per_lane * self.lanes)
             elif tech_property == 'filter area':
-                self.unit_area = self.unit_area_m2
-                self.parameters[tech_property] = self.unit_area  
+                self.unit_area = self._digested_value(
+                    tech_property, self.unit_area_m2)
             elif tech_property == 'bed height':
-                self.bed_height_m = (
+                self.bed_height_m = self._digested_value(
+                    tech_property,
                     np.ceil(self.unit_volume_m3 / self.unit_area_m2))
-                self.parameters[tech_property] = self.bed_height_m  
         self.gac_inventory_kg = (
             self.unit_volume_m3 * self.units_per_lane * self.lanes * self.gac_density_kg_per_m3)
 
@@ -3550,14 +3573,14 @@ class BaffledOzonationContactor(TreatmentKPI):
         self.bromate_final = wq_parameters['bromate'][TARGET_WQPARAMETER_KEY] 
         for tech_property in self.digest_parameter_list:
             if tech_property == 'volume':
-                self.volume_m3 = (
-                    self.flow_per_lane_m3perh * self.lanes *
-                    self.retention_time_min) / 60.0
-                self.parameters[tech_property] = self.volume_m3  # overwrite volume
+                self.volume_m3 = self._digested_value(
+                    tech_property,
+                    (self.flow_per_lane_m3perh * self.lanes *
+                     self.retention_time_min) / 60.0)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'area':
-                self.area_m2 = self.volume_m3 / self.tank_height_m
-                self.parameters[tech_property] = self.area_m2  # overwrite area
+                self.area_m2 = self._digested_value(
+                    tech_property, self.volume_m3 / self.tank_height_m)
 
     def __repr__(self):
         return f"Ozonation tank height (m)={self.tank_height_m}, " \

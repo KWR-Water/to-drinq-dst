@@ -37,6 +37,6 @@ id,technology_property,pystim_name
 36,455,mix_eff__tocheck
 37,296,theta
 38,297,hreact
-39,404,ozonation_volume__tocheck
+39,404,volume_m3
 40,426,ozonation_chemical_dose
 41,506,areact

@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from collections import OrderedDict, defaultdict
 import json
 import csv
+import hashlib
 import subprocess
 import shutil
 import os
@@ -99,6 +100,7 @@ from drinq.models import (
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
+    TreatmentPlantTechnologyOptimizationStatus,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
     TechnologyChemicalagentJunction,
@@ -2892,6 +2894,98 @@ class TechnologyPropertiesView(generic.FormView):
                 merged[key] = row
         return list(merged.values())
 
+    def _sort_updated_rows(self, rows, tech_order_index):
+        row_type_order = {
+            'property': 0,
+            'waterquality': 1,
+            'kpi': 2,
+        }
+        return sorted(
+            rows,
+            key=lambda row: (
+                tech_order_index.get(
+                    row.get('technology_id'),
+                    len(tech_order_index),
+                ),
+                row_type_order.get(row.get('row_type'), len(row_type_order)),
+                str(row.get('name') or ''),
+            ),
+        )
+
+    def _compute_technology_input_hash(self, treatment_plant, technology):
+        """Hash the inputs that determine a technology's optimized result.
+
+        Covers plant-wide design parameters plus the technology's
+        non-digested property values and water-quality parameters. Any
+        change to these inputs should invalidate a prior optimizer result
+        for this technology.
+        """
+        design_values = {
+            dp.designparameter.name: dp.value
+            for dp in TreatmentplantDesignParameter.objects.filter(
+                treatmentplant=treatment_plant)
+        }
+        non_digested_ids = list(
+            TechnologyPropertyJunction.objects.filter(
+                technology=technology, is_digested=False,
+            ).values_list('property_id', flat=True)
+        )
+        property_values = {
+            str(row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=treatment_plant,
+                technology=technology,
+                technologyproperty_id__in=non_digested_ids,
+            )
+        }
+        wq_values = {
+            str(row.wq_tech_parameter_id): row.value
+            for row in TreatmentPlantWaterQualityParameterValue.objects.filter(  # noqa, E501
+                treatmentplant=treatment_plant,
+                wq_tech_parameter__technology=technology,
+            )
+        }
+        payload = json.dumps(
+            {
+                'design': design_values,
+                'properties': property_values,
+                'wq': wq_values,
+            },
+            sort_keys=True,
+            default=str,
+        )
+        return hashlib.sha256(payload.encode('utf-8')).hexdigest()
+
+    def _mark_technology_optimized(self, treatment_plant, technology):
+        """Record that `technology` now holds a fresh optimizer result."""
+        input_hash = self._compute_technology_input_hash(
+            treatment_plant, technology)
+        TreatmentPlantTechnologyOptimizationStatus.objects.update_or_create(
+            treatmentplant=treatment_plant,
+            technology=technology,
+            defaults={
+                'is_optimized': True,
+                'optimized_at': timezone.now(),
+                'input_snapshot_hash': input_hash,
+            },
+        )
+
+    def _invalidate_stale_optimized_technologies(self, treatment_plant):
+        """Clear is_optimized for technologies whose inputs changed since
+        their last optimizer run, so the calculation pipeline stops
+        reusing stale optimizer values for them."""
+        statuses = (
+            TreatmentPlantTechnologyOptimizationStatus.objects
+            .filter(treatmentplant=treatment_plant, is_optimized=True)
+            .select_related('technology')
+        )
+        for status in statuses:
+            current_hash = self._compute_technology_input_hash(
+                treatment_plant, status.technology)
+            if current_hash != status.input_snapshot_hash:
+                status.is_optimized = False
+                status.save(update_fields=['is_optimized'])
+
     def _persist_optimizer_results_to_db(
         self,
         treatment_plant,
@@ -2925,6 +3019,7 @@ class TechnologyPropertiesView(generic.FormView):
                 report = json.load(fp)
 
             numeric_values = self._iter_numeric_result_values(report)
+            technology_properties_persisted = 0
 
             for optimizer_key, numeric_value in numeric_values.items():
                 prop_obj = dac.get_optimizer_output_property_for_technology(
@@ -2955,10 +3050,17 @@ class TechnologyPropertiesView(generic.FormView):
                             treatmentplant=treatment_plant,
                             technology=technology,
                             technologyproperty=prop_obj,
-                            defaults={'value': numeric_value},
+                            defaults={
+                                'value': numeric_value,
+                                'source': (
+                                    TreatmentPlantTechnologyPropertyValue
+                                    .SOURCE_OPTIMIZED
+                                ),
+                            },
                         )
                     )
                     persisted_properties += 1
+                    technology_properties_persisted += 1
                     updated_rows.append(
                         self._build_update_row(
                             technology=technology,
@@ -3048,6 +3150,9 @@ class TechnologyPropertiesView(generic.FormView):
                         )
                     )
                     break
+
+            if technology_properties_persisted > 0:
+                self._mark_technology_optimized(treatment_plant, technology)
 
         return {
             'properties': persisted_properties,
@@ -3161,12 +3266,14 @@ class TechnologyPropertiesView(generic.FormView):
         tech_properties = {}
         defaultval_tech_props = {}
         digested_tech_prop_names = {}
+        optimized_tech_prop_names = {}
         all_tech_properties = TechnologyProperty.objects.all()
         for tech_id in tech_ids:
             technology = Technology.objects.get(id=tech_id)
             tech_properties[technology.name] = {}
             wq_parameters[technology.name] = {}
             digested_tech_prop_names[technology.name] = []
+            optimized_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
             for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
@@ -3208,6 +3315,20 @@ class TechnologyPropertiesView(generic.FormView):
             for isdigested_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_digested=True):
                 digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
+            is_technology_optimized = (
+                TreatmentPlantTechnologyOptimizationStatus.objects
+                .filter(
+                    treatmentplant=treatment_plant,
+                    technology=technology,
+                    is_optimized=True,
+                ).exists()
+            )
+            if is_technology_optimized:
+                for optimized_tp in TechnologyPropertyJunction.objects.filter(
+                            technology=technology, is_digested=True,
+                            sent_to_optimizer=True):
+                    optimized_tech_prop_names[technology.name] += [
+                        optimized_tp.property.name]
             for tp in TreatmentPlantTechnologyPropertyValue.objects.filter(
                         treatmentplant=treatment_plant,
                         technology=Technology.objects.get(id=tech_id)
@@ -3235,6 +3356,7 @@ class TechnologyPropertiesView(generic.FormView):
             plant_kpis=dwtp.plant_kpis,
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
+            optimized_tech_parameter_list=optimized_tech_prop_names,
         )
         kpi_calculator.calculate_kpi()
         kpi_calculator.sum_kpis()
@@ -3259,11 +3381,20 @@ class TechnologyPropertiesView(generic.FormView):
                     prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
                     tech = Technology.objects.get(name=tech_name)
                     prop_obj = TechnologyProperty.objects.get(name=prop_name)
+                    is_optimized_value = (
+                        prop_name in optimized_tech_prop_names[tech_name])
                     TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
                         treatmentplant=treatment_plant,
                         technology=tech,
                         technologyproperty=prop_obj,
-                        defaults={'value': str(prop_value)}
+                        defaults={
+                            'value': str(prop_value),
+                            'source': (
+                                TreatmentPlantTechnologyPropertyValue.SOURCE_OPTIMIZED  # noqa, E501
+                                if is_optimized_value
+                                else TreatmentPlantTechnologyPropertyValue.SOURCE_DIGESTED  # noqa, E501
+                            ),
+                        }
                     )
                     calculation_updated_rows.append(
                         self._build_update_row(
@@ -3771,6 +3902,35 @@ class TechnologyPropertiesView(generic.FormView):
             instance.save()
             saved.append(instance)
 
+        # Any edited inputs may invalidate a technology's prior optimizer
+        # result; recompute this before deciding what to (re)calculate.
+        self._invalidate_stale_optimized_technologies(treatment_plant)
+
+        if action == 'reset_optimization':
+            TreatmentPlantTechnologyOptimizationStatus.objects.filter(
+                treatmentplant=treatment_plant,
+            ).update(is_optimized=False)
+            calculation_updated_rows = self._run_calculation_pipeline(
+                treatment_plant)
+            self._set_optimizer_status(
+                treatment_plant.id,
+                {
+                    'state': 'done',
+                    'seen': False,
+                    'action': 'calculate',
+                    'message': (
+                        'Optimized values cleared. Recalculated '
+                        f'{len(calculation_updated_rows)} properties and '
+                        'KPI values using default/user-specified inputs.'
+                    ),
+                    'updated_rows': calculation_updated_rows,
+                    'progress': {},
+                    'completed_processes': [],
+                },
+            )
+            return redirect(
+                'technology_properties', plant_id=treatment_plant.id)
+
         if action == 'optimize':
             payload = self._build_optimizer_payload(treatment_plant)
             output_path = self._write_optimizer_payload(
@@ -3947,6 +4107,9 @@ class TechnologyPropertiesView(generic.FormView):
         layouts = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).order_by('step').select_related('technology')
         tech_order = [lay.technology for lay in layouts]
+        tech_order_index = {}
+        for index, tech in enumerate(tech_order):
+            tech_order_index.setdefault(tech.id, index)
 
         # Map tech id to Technology instance
         tech_map = {tech.id: tech for tech in tech_order}
@@ -4122,9 +4285,10 @@ class TechnologyPropertiesView(generic.FormView):
 
         context['optimizer_status'] = optimizer_status
         # KPI values are shown on the KPI results page, not this summary.
-        context['optimizer_updated_rows'] = [
-            row for row in updated_rows if row.get('row_type') != 'kpi'
-        ]
+        context['optimizer_updated_rows'] = self._sort_updated_rows(
+            [row for row in updated_rows if row.get('row_type') != 'kpi'],
+            tech_order_index,
+        )
         context['optimizer_updated_properties_by_tech'] = {
             key: sorted(list(value))
             for key, value in updated_properties_by_tech.items()
@@ -4135,6 +4299,43 @@ class TechnologyPropertiesView(generic.FormView):
         }
 
         self._mark_optimizer_status_seen(treatment_plant.id)
+
+        optimization_statuses = {
+            status.technology_id: status
+            for status in TreatmentPlantTechnologyOptimizationStatus.objects.filter(  # noqa, E501
+                treatmentplant=treatment_plant,
+                technology_id__in=[tech.id for tech in tech_order],
+            )
+        }
+        technology_optimization_status = {
+            tech.id: {
+                'is_optimized': (
+                    optimization_statuses[tech.id].is_optimized
+                    if tech.id in optimization_statuses else False
+                ),
+                'optimized_at': (
+                    optimization_statuses[tech.id].optimized_at
+                    if tech.id in optimization_statuses else None
+                ),
+            }
+            for tech in tech_order
+        }
+        context['technology_optimization_status'] = (
+            technology_optimization_status)
+        optimized_technologies = []
+        seen_optimized_technology_ids = set()
+        for tech in tech_order:
+            if tech.id in seen_optimized_technology_ids:
+                continue
+            if not technology_optimization_status[tech.id]['is_optimized']:
+                continue
+            optimized_technologies.append(tech)
+            seen_optimized_technology_ids.add(tech.id)
+        context['optimized_technologies'] = optimized_technologies
+        context['any_technology_optimized'] = any(
+            status['is_optimized']
+            for status in technology_optimization_status.values()
+        )
 
         context['show_optimize_button'] = self._has_optimizer_targets(
             treatment_plant)

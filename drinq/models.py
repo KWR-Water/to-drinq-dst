@@ -417,6 +417,15 @@ class TreatmentPlantProperty(models.Model):
 
 
 class TreatmentPlantTechnologyPropertyValue(models.Model):
+    SOURCE_USER = 'user'
+    SOURCE_DIGESTED = 'digested'
+    SOURCE_OPTIMIZED = 'optimized'
+    SOURCE_CHOICES = [
+        (SOURCE_USER, 'User'),
+        (SOURCE_DIGESTED, 'Digested'),
+        (SOURCE_OPTIMIZED, 'Optimized'),
+    ]
+
     id = models.AutoField(primary_key=True, unique=True)
     treatmentplant = models.ForeignKey(
         TreatmentPlant,
@@ -431,6 +440,9 @@ class TreatmentPlantTechnologyPropertyValue(models.Model):
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='technologyproperty')
     value = models.FloatField(blank=True, null=False)
+    source = models.CharField(
+        max_length=16, choices=SOURCE_CHOICES, default=SOURCE_USER,
+        db_column='source')
 
     class Meta:
         # managed = False
@@ -439,6 +451,41 @@ class TreatmentPlantTechnologyPropertyValue(models.Model):
 
     def __str__(self):
         return f"{self.treatmentplant} ({self.technologyproperty}): {self.value}"
+
+
+class TreatmentPlantTechnologyOptimizationStatus(models.Model):
+    """Tracks whether a technology's digested properties for a plant
+    currently reflect a successful optimizer run, and the input state that
+    produced them (used to invalidate stale optimizer results)."""
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant, on_delete=models.CASCADE,
+        db_column='treatmentplant')
+    technology = models.ForeignKey(
+        'Technology', on_delete=models.CASCADE,
+        db_column='technology')
+    is_optimized = models.BooleanField(
+        default=False, db_column='is_optimized')
+    optimized_at = models.DateTimeField(
+        blank=True, null=True, db_column='optimized_at')
+    input_snapshot_hash = models.CharField(
+        max_length=64, blank=True, default='',
+        db_column='input_snapshot_hash')
+
+    class Meta:
+        db_table = 'treatmentplant_technology_optimization_status'
+        verbose_name_plural = (
+            "treatment plant technology optimization statuses")
+        constraints = [
+            models.UniqueConstraint(
+                fields=['treatmentplant', 'technology'],
+                name='unique_plant_technology_optimization_status'),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.treatmentplant} ({self.technology}): "
+            f"optimized={self.is_optimized}")
 
 
 class DesignParameter(models.Model):
