@@ -26,7 +26,7 @@ def get_choice_description(choice: int, query_set: QuerySet | None = None):
 
 def get_technology_of_choice(
     choice: int, query_set: QuerySet | None = None
-) -> list[int | None]:
+) -> tuple[int, ...] | None:
     """
     Get the technology based on the choice string.
     """
@@ -36,19 +36,21 @@ def get_technology_of_choice(
         technology_set = query_set.filter(choice_id=choice).values_list(
             'effective_technology', flat=True)
         if technology_set.first():
-            return tuple(technology_set, )
+            return tuple(technology_set)
         else:
             return None
     except TechnologyDecidingFactorJunction.DoesNotExist:
         return None
 
 
-def get_treatment_trains(technology_tuples: List[tuple]) -> List[Technology]:
+def get_treatment_trains(
+    technology_tuples: List[tuple[int, ...]]
+) -> tuple[dict, dict]:
     treatment_id_sets = get_unique_combinations(technology_tuples)
     number_of_options = len(treatment_id_sets)
     treatment_options, treatment_maps = {}, {}
     if number_of_options == 0:
-        return treatment_options
+        return treatment_options, treatment_maps
     elif number_of_options >= 1:
         for opt_nr, option in enumerate(treatment_id_sets):
             treatment_options[opt_nr+1] = {
