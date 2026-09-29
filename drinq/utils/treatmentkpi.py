@@ -4374,12 +4374,9 @@ class SludgeBlanketClarifier(TreatmentKPI):
             TPN['surface_overflow_rate']]  # m3/m2/h
         self.backwash_filtration_rate = parameters[
             TPN['backwash_filtration_rate']]  # m/h
-        self.backwash_duration_min = parameters[
-            TPN['backwash_duration']]
         self.retention_time_min = parameters[TPN['retention_time_min']]
         self.tank_height_m = parameters[TPN['tank_height']]
-        self.backwash_tank_height_m = parameters[TPN['backwash_tank_height']]
-        self.sludge_tank_height_m = parameters[TPN['tank_height']]  # m
+        self.sludge_tank_height_m = parameters[TPN['sludge_tank_height']]  # m
         self.scraper_power_coeff_w_m2 = parameters[
             TPN['scraper_power_coefficient']]
         self.power_efficiency_pumps = parameters[
@@ -4390,8 +4387,6 @@ class SludgeBlanketClarifier(TreatmentKPI):
             'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 1.05 g/cm3 (not user specified)
-        self.power_density_wperm3 = parameters[
-            TPN['power_density']]  # W/m3
         self.unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         self.unit_volume_m3 = self.flow_per_unit * (self.retention_time_min/60)
         self.tank_height_m = max(self.tank_height_m, self.unit_volume_m3 / self.unit_area_m2)
@@ -4437,14 +4432,8 @@ class SludgeBlanketClarifier(TreatmentKPI):
     def footprint_area__m2(self) -> float:
         """Total Area = Clarifier Area + Sludge Thickening Area."""
         sludge_area_m2 = self.daily_sludge_vol_m3 * 7 / self.sludge_tank_height_m # 7 days of sludge storage
-        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
-        backwash_volume_m3 = backwash_flow * (
-            self.backwash_duration_min / 60)
-        backwash_area_m2 = (
-            backwash_volume_m3 / self.backwash_tank_height_m  # monthly backwash
-        )
         return 1.2 * (
-            self.tanks_area_m2 + sludge_area_m2 + backwash_area_m2)
+            self.tanks_area_m2 + sludge_area_m2)
     
     @property
     def footprint_area_for_chemicals__m2(self):
@@ -4458,13 +4447,13 @@ class SludgeBlanketClarifier(TreatmentKPI):
     def power__kw(self) -> float:
         """Power for sludge scrapers/pumps based on sludge production."""     
         scraper_unit_kW = self.scraper_power_coeff_w_m2 * self.unit_area_m2 / 1000
-        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
-        head_backwash = 15  # assuming 15 meters of backwash pressure head
+        backwash_flow = self.backwash_filtration_rate # assuming 5m3/h flow
+        head_backwash = self.tank_height_m - 0.5
         backwash_pump_kw = (
             DENS_WATER_KG_PER_M3 * backwash_flow *
             GRAVITY_M_PER_S2 * head_backwash) /(
                 3600 * self.power_efficiency_pumps * 1000)
-        head_sludge = 1.5 * self.tank_height_m + 5 #assuming 1.5 times the tank height plus 5 meters for sludge pumping
+        head_sludge = 1.1 * self.tank_height_m + 5 #assuming 1.5 times the tank height plus 5 meters for sludge pumping
         sludge_flow_m3_h = 5  # assuming 5 m3/h of sludge flow for pumping
         sludge_pump_kw = (
             DENS_WATER_KG_PER_M3 * sludge_flow_m3_h *
@@ -4482,13 +4471,13 @@ class SludgeBlanketClarifier(TreatmentKPI):
         scraper_kw = scraper_unit_kW * self.lanes * self.units_per_lane
         scraper_hours_per_day = 3 * (30 / 60)  # 3x/day, 30 min each
 
-        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
-        head_backwash = 15
+        backwash_flow = self.backwash_filtration_rate # assuming 5m3/h flow
+        head_backwash = self.tank_height_m - 0.5
         backwash_pump_kw = (
             DENS_WATER_KG_PER_M3 * backwash_flow *
             GRAVITY_M_PER_S2 * head_backwash) / (
                 3600 * self.power_efficiency_pumps * 1000)
-        backwash_hours_per_day = (self.backwash_duration_min / 60) / 7  # once per week
+        backwash_hours_per_day = 1  # 1 hour per day for backwashing
 
         head_sludge = 1.5 * self.tank_height_m + 5
         sludge_flow_m3_h = 5  # assuming 5 m3/h of sludge flow for pumping
