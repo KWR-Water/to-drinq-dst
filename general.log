@@ -1228,3 +1228,8 @@ Traceback (most recent call last):
         "Population persons, peak daily demand factor, average consumption "
         " and leakage factor must be provided.")
 ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Construction cost parameters not found for technology: Ceramic microfiltration
+Construction cost parameters not found for technology: Ceramic microfiltration

@@ -857,8 +857,10 @@ class CoagulationDynamicMixing(TreatmentKPI):
 
     @property
     def hydraulic_headloss__bar(self) -> float:
-        total_headloss = (0.001 * self.tanks_area_m2) + self.tank_height
-        return meters_of_water_to_bar(total_headloss)
+        K = 3  # minor-loss coefficient: inlet/outlet + inter-stage baffle openings
+        velocity_m_per_s = (self.flow_per_lane / self.units_per_lane / 3600) / self.unit_area_m2
+        headloss_m = K * velocity_m_per_s**2 / (2 * GRAVITY_M_PER_S2)
+        return meters_of_water_to_bar(headloss_m)
 
     @property
     def power__kw(self) -> float:
@@ -1738,10 +1740,12 @@ class ChlorineDisinfection(TreatmentKPI):
             TARGET_WQPARAMETER_KEY]
         self.baffling_factor = parameters[
             TPN['baffling_factor']]  # noqa: E501
-        self.chlorine_concentration_mgL = calculate_chlorine_concentration_mgL(  # noqa: E501
-            residual_chlorine_mgL=self.target_residual_chlorine_mgL,
-            dosing_solution_concentration_w_w=self.chlorine_solution_w_w
-        )
+        # The actual chlorine dose (mg pure Cl2 per litre of water) is the
+        # dosing-chemical target concentration, same as every other chemical
+        # -dosing technology in this file (and already what ChloramineDisinfection
+        # assumes when it reads chlorine_dosing_mgL for its ammonia ratio).
+        # target_residual_chlorine_mgL is kept for reporting only.
+        self.chlorine_concentration_mgL = self.chlorine_dosing_mgL
         self.unit_volume_m3 = calculate_unit_volume_m3(
             flow_per_lane_m3h=self.flow_per_lane_m3perh,
             units_per_lane=self.units_per_lane,
@@ -3719,7 +3723,7 @@ class PelletSoftening(TreatmentKPI):
         self.rho_lime_kgm3 = parameters[TPN['mass_density_of_chemical']]* 1000  # g/cm3
         self.rho_water = DENS_WATER_KG_PER_M3  # assumption, kg/m3
         self.power_efficiency_pumps = parameters[
-            TPN['power_efficiency_of_pumps']]
+            TPN['power_efficiency_of_pumps']]/100
         self.chemical_purity_factor = parameters[
             TPN['lime_dosage_mass_fraction']]  # kg lime or caustic soda/kg CaCO3
         self.storage_days_chemicals = parameters[TPN['storage_time_of_chemicals_days']]
@@ -4661,7 +4665,7 @@ class LamellaClarifierSlope(TreatmentKPI):
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
-            TPN['power_efficiency_of_pumps']]
+            TPN['power_efficiency_of_pumps']]/100
         for tech_property in self.digest_parameter_list:
             if tech_property == 'area':
                 self.area_m2 = self.footprint_area__m2
@@ -4806,7 +4810,7 @@ class LamellaClarifierHorizontal(TreatmentKPI):
         self.sludge_density_kg_m3 = parameters[
             TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
         self.power_efficiency_pumps = parameters[
-            TPN['power_efficiency_of_pumps']]
+            TPN['power_efficiency_of_pumps']]/100
         for tech_property in self.digest_parameter_list:
             if tech_property == 'area':
                 self.area_m2 = self.footprint_area__m2

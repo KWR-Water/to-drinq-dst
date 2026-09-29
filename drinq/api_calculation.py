@@ -926,7 +926,7 @@ class TechnologyPerformanceCalculator:
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
 
                     case 'screening':
-                        if 'strainer' in technology.lower():
+                        if 'strainer' in technology.lower() and 'micro' not in technology.lower():
                             strainer = Strainer(**tech_kwargs)
                             self.tech_kpis[technology] = strainer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
@@ -946,7 +946,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = cascade_mixer.parameters  # noqa, E501
 
                     case 'flocculation':
-                        if ('dynamic mixing') in technology.lower():
+                        if ('dynamic mixing' in technology.lower()) and ('flocculation' in technology.lower()):  # noqa, E501
                             floc_dynmixer = FlocculationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
