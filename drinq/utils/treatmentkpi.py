@@ -1284,7 +1284,7 @@ class FlocculationDynamicMixing(TreatmentKPI):
             unit_height_m=self.tank_height)
         self.tanks_area_m2 = self.unit_area_m2 * self.units_per_lane * self.lanes
         for tech_property in self.digest_parameter_list:
-            if tech_property == 'unit length':
+            if tech_property == 'unit length ':
                  self.floc_length = self._digested_value(
                      tech_property, np.ceil(3 * np.sqrt(self.unit_area_m2 / 3)))
         for tech_property in self.digest_parameter_list:
@@ -1333,7 +1333,11 @@ class FlocculationDynamicMixing(TreatmentKPI):
 
     @property
     def hydraulic_headloss__bar(self) -> float:
-        return meters_of_water_to_bar(0.001 * self.floc_length + self.tank_height)
+        K = 3  # minor-loss coefficient: inlet/outlet + inter-stage baffle openings
+        velocity_m_per_s = (self.flow_per_unit_m3hr / 3600) / self.unit_area_m2
+        headloss_m = K * velocity_m_per_s**2 / (2 * GRAVITY_M_PER_S2)
+        return meters_of_water_to_bar(headloss_m)
+
 
     @property
     def power__kw(self) -> float:
@@ -4347,9 +4351,11 @@ class SludgeBlanketClarifier(TreatmentKPI):
     backwash_filtration_rate: float
     backwash_duration_min: float
     backwash_tank_height_m: float
-    scraper_power_coeff_kw_m2: float
+    scraper_power_coeff_w_m2: float
     power_efficiency_pumps: float
     area_m2: float
+    daily_sludge_vol_m3: float
+    sludge_production_kgh: float
 
     def __post_init__(self):
         super().__post_init__()
@@ -4374,7 +4380,7 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.tank_height_m = parameters[TPN['tank_height']]
         self.backwash_tank_height_m = parameters[TPN['backwash_tank_height']]
         self.sludge_tank_height_m = parameters[TPN['tank_height']]  # m
-        self.scraper_power_coeff_kw_m2 = parameters[
+        self.scraper_power_coeff_w_m2 = parameters[
             TPN['scraper_power_coefficient']]
         self.power_efficiency_pumps = parameters[
             TPN['power_efficiency_of_pumps']] / 100
@@ -4383,13 +4389,17 @@ class SludgeBlanketClarifier(TreatmentKPI):
         self.tss_out_mgl = wq_parameters[
             'total suspended solids'][TARGET_WQPARAMETER_KEY]  # mgl/l
         self.sludge_density_kg_m3 = parameters[
-            TPN['mass_density_of_tss']] * 1000  # 30 g/cm3 (not user specified)
+            TPN['mass_density_of_tss']] * 1000  # 1.05 g/cm3 (not user specified)
         self.power_density_wperm3 = parameters[
             TPN['power_density']]  # W/m3
         self.unit_area_m2 = self.flow_per_unit / self.surface_overflow_rate       
         self.unit_volume_m3 = self.flow_per_unit * (self.retention_time_min/60)
         self.tank_height_m = max(self.tank_height_m, self.unit_volume_m3 / self.unit_area_m2)
-        self.tanks_area_m2 = self.unit_area_m2 * self.units_per_lane * self.lanes 
+        self.tanks_area_m2 = self.unit_area_m2 * self.units_per_lane * self.lanes
+        self.sludge_production_kgh = self.nominal_flow_m3perh * (
+            self.tss_in_mgl - self.tss_out_mgl) / 1000.0
+        self.daily_sludge_vol_m3 = (
+            self.sludge_production_kgh * 24 / self.sludge_density_kg_m3)
         for tech_property in self.digest_parameter_list:
             if tech_property == 'area':
                 self.area_m2 = self.tanks_area_m2
@@ -4424,20 +4434,11 @@ class SludgeBlanketClarifier(TreatmentKPI):
         return {}  # No chemicals used in Sludge clarifiers 
     
     @property
-    def sludge_production_kg(self) -> float:
-        """Calculates sludge production (waste solids) in kg/day."""
-        sludge_production_kgh = self.nominal_flow_m3perh * (
-            self.tss_in_mgl - self.tss_out_mgl) / 1000.0
-        return sludge_production_kgh * 24.0
-
-    @property
     def footprint_area__m2(self) -> float:
         """Total Area = Clarifier Area + Sludge Thickening Area."""
-        daily_sludge_vol = (
-            self.sludge_production_kg / self.sludge_density_kg_m3)
-        sludge_area_m2 = daily_sludge_vol / self.sludge_tank_height_m
-        backwash_flow = self.unit_area_m2 / self.backwash_filtration_rate
-        backwash_volume_m3 = backwash_flow / (
+        sludge_area_m2 = self.daily_sludge_vol_m3 * 7 / self.sludge_tank_height_m # 7 days of sludge storage
+        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
+        backwash_volume_m3 = backwash_flow * (
             self.backwash_duration_min / 60)
         backwash_area_m2 = (
             backwash_volume_m3 / self.backwash_tank_height_m  # monthly backwash
@@ -4456,23 +4457,51 @@ class SludgeBlanketClarifier(TreatmentKPI):
     @property
     def power__kw(self) -> float:
         """Power for sludge scrapers/pumps based on sludge production."""     
-        scraper_unit_kW = self.scraper_power_coeff_kw_m2 * self.unit_area_m2
-        backwash_flow = self.unit_area_m2 / self.backwash_filtration_rate
-        head = 10  # assuming 10 meters of pressure head
+        scraper_unit_kW = self.scraper_power_coeff_w_m2 * self.unit_area_m2 / 1000
+        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
+        head_backwash = 15  # assuming 15 meters of backwash pressure head
         backwash_pump_kw = (
             DENS_WATER_KG_PER_M3 * backwash_flow *
-            GRAVITY_M_PER_S2 * head) /(
+            GRAVITY_M_PER_S2 * head_backwash) /(
+                3600 * self.power_efficiency_pumps * 1000)
+        head_sludge = 1.5 * self.tank_height_m + 5 #assuming 1.5 times the tank height plus 5 meters for sludge pumping
+        sludge_flow_m3_h = 5  # assuming 5 m3/h of sludge flow for pumping
+        sludge_pump_kw = (
+            DENS_WATER_KG_PER_M3 * sludge_flow_m3_h *
+            GRAVITY_M_PER_S2 * head_sludge) / (
                 3600 * self.power_efficiency_pumps * 1000)
         return (
             scraper_unit_kW * self.lanes *
-            self.units_per_lane) + backwash_pump_kw
+            self.units_per_lane) + backwash_pump_kw + sludge_pump_kw
 
 
     @property
     def daily_energy_consumption__kwh(self) -> float:
-        """Apply a reduced duty-cycle factor to daily energy use."""
-        daily_kWh = 0.03  # Scraper and backwash pumps run monthly.
-        return self.power__kw * 24.0 * daily_kWh
+        """Daily Energy consumption calculations for sludge scrapers/pumps based on sludge production."""  
+        scraper_unit_kW = self.scraper_power_coeff_w_m2 * self.unit_area_m2/1000
+        scraper_kw = scraper_unit_kW * self.lanes * self.units_per_lane
+        scraper_hours_per_day = 3 * (30 / 60)  # 3x/day, 30 min each
+
+        backwash_flow = self.unit_area_m2 * self.backwash_filtration_rate
+        head_backwash = 15
+        backwash_pump_kw = (
+            DENS_WATER_KG_PER_M3 * backwash_flow *
+            GRAVITY_M_PER_S2 * head_backwash) / (
+                3600 * self.power_efficiency_pumps * 1000)
+        backwash_hours_per_day = (self.backwash_duration_min / 60) / 7  # once per week
+
+        head_sludge = 1.5 * self.tank_height_m + 5
+        sludge_flow_m3_h = 5  # assuming 5 m3/h of sludge flow for pumping
+        sludge_pump_kw = (
+            DENS_WATER_KG_PER_M3 * sludge_flow_m3_h *
+            GRAVITY_M_PER_S2 * head_sludge) / (
+                3600 * self.power_efficiency_pumps * 1000)
+        sludge_pumping_per_hour = self.daily_sludge_vol_m3 / sludge_flow_m3_h   # working hours assuming 5 m3/h of sludge flow for pumping
+        return (
+            scraper_kw * scraper_hours_per_day +
+            backwash_pump_kw * backwash_hours_per_day +
+            sludge_pump_kw * sludge_pumping_per_hour
+        )
 
     @property
     def co2_emissions__kg_co2_eq_per_m3(self) -> float:
