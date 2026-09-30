@@ -1015,7 +1015,8 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = microfiltration.parameters  # noqa, E501
 
                     case 'omp removal':
-                        if ('nanofiltration') in technology.lower():  # noqa, E501
+                        if ('nanofiltration' in technology.lower() or
+                                'reverse osmosis' in technology.lower()):  # noqa: E501
                             membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = membr_filtration.parameters  # noqa, E501
