@@ -2131,7 +2131,10 @@ class MembraneFiltration(TreatmentKPI):
 
     @property
     def power__kw(self) -> float:
-        flow_m3_per_s = self.nominal_flow_m3perh / 3600
+        # Feed pump pushes the full feed stream (permeate + reject), not
+        # just the permeate flow the plant actually needs.
+        feed_flow_m3perh = self.nominal_flow_m3perh / self.recovery_rate
+        flow_m3_per_s = feed_flow_m3perh / 3600
         head_m = bar_to_meters_of_water(self.hydraulic_headloss__bar)
         power_watts = (
             DENS_WATER_KG_PER_M3 * GRAVITY_M_PER_S2 * head_m * flow_m3_per_s

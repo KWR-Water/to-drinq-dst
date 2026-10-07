@@ -158,3 +158,4 @@ Traceback (most recent call last):
         "Population persons, peak daily demand factor, average consumption "
         " and leakage factor must be provided.")
 ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
