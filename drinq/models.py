@@ -169,7 +169,8 @@ class MultiStepConfiguration(models.Model):
         db_table = 'form_multistep'
 
     def __str__(self) -> str:
-        return f'{self.name} ({self.user.username})'
+        username = self.user.username if self.user is not None else '-'
+        return f'{self.name} ({username})'
 
 
 class QuestionAnswer(models.Model):
@@ -848,9 +849,7 @@ class StageTechnologies(models.Model):
         db_table = 'stage_technologies'
 
     def __str__(self) -> str:
-        stage_name = Stage.objects.get(pk=self.stage).name
-        tech_name = Technology.objects.get(pk=self.technology).name
-        return f"Stage: {stage_name}, technology: {tech_name}"
+        return f"Stage: {self.stage}, technology: {self.technology}"
 
 
 class TechnologyRelatedtechnology(models.Model):
@@ -895,9 +894,9 @@ class TechnologyChemicalagentJunction(models.Model):
         db_table = 'technology_chemicalagent'
 
     def __str__(self) -> str:
-        tech_name = Technology.objects.get(pk=self.technology).name
-        chemical_agent = ChemicalAgent.objects.get(pk=self.chemical_agent).name
-        return f"Technology: {tech_name}, chemical agent: {chemical_agent}"
+        return (
+            f"Technology: {self.technology}, "
+            f"chemical agent: {self.chemical_agent}")
 
 
 class TechnologyPystimelaoptJunction(models.Model):
@@ -985,9 +984,10 @@ class WaterqualityParameterTechnologyJunction(models.Model):
         verbose_name_plural = "water quality parameter technology junctions"
 
     def __str__(self) -> str:
-        wqp = WaterqualityParameter.objects.get(pk=self.waterqualityparameter)
-        tech = Technology.objects.get(pk=self.technology)
-        return f"Water quality parameter: {wqp.name}, technology: {tech.name}, default value: {self.default_value}"  # noqa: E501
+        return (
+            f"Water quality parameter: {self.waterqualityparameter.name}, "
+            f"technology: {self.technology.name}, "
+            f"default value: {self.default_value}")
 
 
 class TreatmentPlantWaterQualityParameterValue(models.Model):

@@ -1276,10 +1276,12 @@ class ConstructionCostsKPI(PlantKPI):
         general_facilities_costs_percentage: float = 5,
     ) -> float:
         self.value = construction_costs_total(
-            construction_costs,
-            construction_costs_percentage,
-            tail_costs_percentage,
-            general_facilities_costs_percentage,
+            construction_costs=construction_costs,
+            plc_costs=0.0,
+            construction_costs_percentage=construction_costs_percentage,
+            tail_costs_percentage=tail_costs_percentage,
+            general_facilities_costs_percentage=(
+                general_facilities_costs_percentage),
         )
         return self.value
 

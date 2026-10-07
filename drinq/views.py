@@ -55,6 +55,7 @@ from pystimela_optim.scripts.ozonation_optim_update import (
     update_wq_from_results as update_ozonation_wq,
 )
 from warnings import warn
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.conf import settings
@@ -124,6 +125,7 @@ from drinq.forms import (
     build_technology_property_initials,
     )
 from drinq.chemistry_tools import smiles_to_svg
+from drinq.access import user_can_access_plant
 import drinq.decision_tree as dst
 import drinq.api_calculation as dac
 
@@ -182,11 +184,34 @@ DB_PLANTKPI_MAPPING = {
 logger = logging.getLogger(__name__)
 
 
+class TreatmentPlantAccessMixin(LoginRequiredMixin):
+    """Limit a plant page to the owner of its configuration and staff.
+
+    The plant is resolved from the ``plant_id`` or ``slug`` URL kwarg. Other
+    users get a 404, so the existence of a plant is not disclosed.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if 'plant_id' in kwargs:
+            plant = get_object_or_404(TreatmentPlant, pk=kwargs['plant_id'])
+        else:
+            plant = get_object_or_404(TreatmentPlant, slug=kwargs['slug'])
+        if not user_can_access_plant(request.user, plant):
+            raise Http404('Treatment plant does not exist.')
+        return super().dispatch(request, *args, **kwargs)
+
+
 def _optimizer_status_cache_key(plant_id, user_id):
     return f'optimizer_status:plant:{plant_id}:user:{user_id}'
 
 
+@login_required
 def optimizer_status(request, plant_id):
+    plant = get_object_or_404(TreatmentPlant, pk=plant_id)
+    if not user_can_access_plant(request.user, plant):
+        raise Http404('Treatment plant does not exist.')
     user_id = getattr(request.user, 'id', 0)
     cache_key = _optimizer_status_cache_key(plant_id, user_id)
     status = cache.get(cache_key) or {
@@ -295,7 +320,7 @@ class PasswordChangeOk(generic.TemplateView):
     template_name = "drinq/password_change_ok.html"
 
 
-class SessionSelectView(generic.edit.FormView):
+class SessionSelectView(LoginRequiredMixin, generic.edit.FormView):
     template_name = 'drinq/session_select.html'
     form_class = SessionSelectForm
 
@@ -752,7 +777,7 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
             return None, None, False
 
 
-class QuestionsCompleteView(generic.TemplateView):
+class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
     template_name = "drinq/form_complete.html"
 
     def _get_configuration_or_404(
@@ -944,7 +969,7 @@ class QuestionsCompleteView(generic.TemplateView):
         return context
 
 
-class NamedDesignCreateView(generic.CreateView):
+class NamedDesignCreateView(LoginRequiredMixin, generic.CreateView):
     model = TreatmentPlant
     form_class = TreatmentDesignSelectionForm
     template_name = 'drinq/form_complete.html'
@@ -964,8 +989,8 @@ class NamedDesignCreateView(generic.CreateView):
                 )
 
         # Create DesignOption and TreatmentPlantLayout
-        configuration = MultiStepConfiguration.objects.get(
-            id=configuration_id)
+        configuration = get_object_or_404(
+            MultiStepConfiguration, id=configuration_id, user=request.user)
         treatment_plant, created = TreatmentPlant.objects.get_or_create(
             name=name,
             description=f"{name} for option {option}",
@@ -1019,7 +1044,7 @@ class NamedDesignCreateView(generic.CreateView):
             )
 
 
-class NamedDesignUpdateView(generic.UpdateView):
+class NamedDesignUpdateView(TreatmentPlantAccessMixin, generic.UpdateView):
     model = TreatmentPlant
     form_class = TreatmentDesignSelectionForm
     template_name = 'drinq/form_edit-treatment-design-name.html'
@@ -1070,7 +1095,7 @@ class NamedDesignUpdateView(generic.UpdateView):
         return self.form_invalid(form)
 
 
-class TreatmentDesignDetailView(generic.DetailView):
+class TreatmentDesignDetailView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlantLayout
     template_name = 'drinq/treatmentdesign_details.html'
 
@@ -1151,7 +1176,7 @@ class TreatmentDesignDetailView(generic.DetailView):
         return context
 
 
-class DesignParameterInputView(generic.FormView):
+class DesignParameterInputView(TreatmentPlantAccessMixin, generic.FormView):
     template_name = 'drinq/form_design-parameter-input.html'
     form_class = DesignParameterValueFormSet
 
@@ -1265,7 +1290,7 @@ class DesignParameterInputView(generic.FormView):
         return self.form_invalid(formset)
 
 
-class DesignParameterResultsView(generic.DetailView):
+class DesignParameterResultsView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/treatmentplant_property_results.html'
     pk_url_kwarg = 'plant_id'
@@ -1358,7 +1383,7 @@ class DesignParameterResultsView(generic.DetailView):
         return context
 
 
-class DesignParameterResultsExportCsvView(generic.View):
+class DesignParameterResultsExportCsvView(TreatmentPlantAccessMixin, generic.View):
     """Export treatment plant KPI results to CSV."""
 
     def get(self, request, *args, **kwargs):
@@ -1609,7 +1634,9 @@ class TreatmentPlantComparisonView(LoginRequiredMixin, generic.FormView):
         return context
 
 
-class TechnologyParameterOverviewSelectionView(generic.TemplateView):
+class TechnologyParameterOverviewSelectionView(
+    LoginRequiredMixin, generic.TemplateView
+):
     """Show treatment designs that can be opened in the technology overview."""
 
     template_name = 'drinq/technology_parameter_overview_select.html'
@@ -1627,7 +1654,9 @@ class TechnologyParameterOverviewSelectionView(generic.TemplateView):
         return context
 
 
-class TechnologyParameterOverviewView(generic.DetailView):
+class TechnologyParameterOverviewView(
+    TreatmentPlantAccessMixin, generic.DetailView
+):
     """Read-only overview of technology properties and water quality values."""
 
     model = TreatmentPlant
@@ -1933,7 +1962,9 @@ class TechnologyParameterOverviewView(generic.DetailView):
         return context
 
 
-class DesignParameterOverviewView(generic.DetailView):
+class DesignParameterOverviewView(
+    TreatmentPlantAccessMixin, generic.DetailView
+):
     """Read-only overview of plant-wide design parameter values."""
 
     model = TreatmentPlant
@@ -1986,7 +2017,7 @@ class DesignParameterOverviewView(generic.DetailView):
         return context
 
 
-class AdaptabilityDetailView(generic.DetailView):
+class AdaptabilityDetailView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/adaptability_details.html'
     pk_url_kwarg = 'plant_id'
@@ -2048,7 +2079,7 @@ def index(request: HttpResponse):
     return render(request, 'drinq/index.html')
 
 
-class TechnologyPropertiesView(generic.FormView):
+class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
     """Collect technology-level property values (those flagged as
     design parameters). Persist them, run the performance calculator and
     redirect to the results page.

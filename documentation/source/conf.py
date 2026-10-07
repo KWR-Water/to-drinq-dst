@@ -39,7 +39,8 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
-    'sphinx_rtd_theme'
+    'sphinx_rtd_theme',
+    'sphinxcontrib.mermaid',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -1,0 +1,487 @@
+2026-10-07 14:06:45,800 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:06:46,254 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:06:46,695 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:06:47,116 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:06:47,997 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:06:48,000 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:06:48,004 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:06:48,007 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:06:48,009 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:06:48,011 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:06:48,019 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:06:48,022 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:06:48,025 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:06:48,027 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:06:49,866 - django.request - WARNING - Not Found: /configuration_manage/2/edit/
+2026-10-07 14:06:51,488 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:06:51,678 - drinq.views - WARNING - No technology found for optimizer process chlorination in plant 1
+2026-10-07 14:06:51,680 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:06:51,872 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:06:55,380 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:07:15,661 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:07:16,063 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:07:16,465 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:07:16,869 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:07:17,672 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:07:17,676 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:07:17,677 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:07:17,679 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:07:17,681 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:07:17,682 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:07:17,688 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:07:17,689 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:07:17,691 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:07:17,692 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:07:19,473 - django.request - WARNING - Not Found: /configuration_manage/2/edit/
+2026-10-07 14:07:21,030 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:07:21,210 - drinq.views - WARNING - No technology found for optimizer process chlorination in plant 1
+2026-10-07 14:07:21,213 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:07:21,396 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:07:24,765 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:07:29,487 - django.request - ERROR - Internal Server Error: /treatmentplant/45/technology/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 212, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\contrib\auth\mixins.py", line 73, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4129, in form_valid
+    calculation_updated_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3470, in _run_calculation_pipeline
+    kpi_calculator.calculate_kpi()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1020, in calculate_kpi
+    membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+  File "<string>", line 10, in __init__
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentkpi.py", line 2059, in __post_init__
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: units_per_lane must be > 1 to reserve a unit for backwash; got 1.0.
+2026-10-07 14:11:42,622 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\models.py changed, reloading.
+2026-10-07 14:12:16,934 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\admin.py changed, reloading.
+2026-10-07 14:12:47,279 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:12:47,668 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:12:48,061 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:12:48,457 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:12:49,239 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:12:49,240 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:12:49,242 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:12:49,243 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:12:49,245 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:12:49,246 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:12:49,247 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:12:49,248 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:12:49,251 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:12:49,253 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:13:01,623 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:13:02,020 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:13:02,428 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:13:02,833 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:13:03,655 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:13:03,657 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:13:03,658 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:13:03,660 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:13:03,662 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:13:03,664 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:13:03,667 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:13:03,670 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:13:03,672 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:13:03,673 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:13:06,349 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 305, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:13:07,756 - django.request - WARNING - Not Found: /configuration_manage/2/edit/
+2026-10-07 14:13:09,369 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:13:09,546 - drinq.views - WARNING - No technology found for optimizer process chlorination in plant 1
+2026-10-07 14:13:09,548 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:13:09,720 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:14:17,392 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\admin.py changed, reloading.
+2026-10-07 14:14:43,476 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:14:43,881 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:14:44,262 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:14:44,644 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:14:45,473 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:14:45,474 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:14:45,476 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:14:45,477 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:14:45,479 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:14:45,481 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:14:45,483 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:14:45,484 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:14:45,486 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:14:45,487 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:30:18,154 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py changed, reloading.
+2026-10-07 14:30:31,762 - django.utils.autoreload - INFO - C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py changed, reloading.
+2026-10-07 14:31:43,345 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:31:43,729 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:31:44,116 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:31:44,501 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:31:44,757 - django.request - WARNING - Unauthorized: /api/process_parameters/
+2026-10-07 14:31:45,014 - django.request - WARNING - Not Found: /api/process_parameters/
+2026-10-07 14:31:45,295 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 319, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:31:46,568 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:31:46,570 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:31:46,572 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:31:46,573 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:31:46,574 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:31:46,576 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:31:46,577 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:31:46,579 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:31:46,581 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:31:46,584 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:31:47,436 - django.request - WARNING - Not Found: /treatmentdesign/name/
+2026-10-07 14:31:50,221 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 319, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:31:51,578 - django.request - WARNING - Not Found: /configuration_manage/2/edit/
+2026-10-07 14:31:53,210 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:31:53,400 - drinq.views - WARNING - No technology found for optimizer process chlorination in plant 1
+2026-10-07 14:31:53,402 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:31:53,592 - drinq.views - ERROR - Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+2026-10-07 14:32:15,845 - django.request - WARNING - Forbidden: /accounts/register/
+2026-10-07 14:32:16,310 - django.request - WARNING - Unauthorized: /accounts/register/
+2026-10-07 14:32:16,820 - django.request - WARNING - Not Found: /accounts/users/2/
+2026-10-07 14:32:17,421 - django.request - WARNING - Unauthorized: /accounts/users/1/
+2026-10-07 14:32:17,746 - django.request - WARNING - Unauthorized: /api/process_parameters/
+2026-10-07 14:32:18,085 - django.request - WARNING - Not Found: /api/process_parameters/
+2026-10-07 14:32:18,461 - django.request - ERROR - Internal Server Error: /api/process_parameters/
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\vriesdi\AppData\Local\miniconda3\envs\todrinq_dst_optim\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_views.py", line 319, in post
+    calculator = TreatmentPlantPerformanceCalculator(
+        treatmentplant_id=plant.id,
+    ...<2 lines>...
+        technologies=technology_names
+    )
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1433, in __init__
+    name_in_dbtable=self.db_kpi_mapping.get(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-10-07 14:32:19,944 - django.request - WARNING - Not Found: /treatmentplant/1/parameters/
+2026-10-07 14:32:19,947 - django.request - WARNING - Not Found: /treatmentplant/1/technology/
+2026-10-07 14:32:19,950 - django.request - WARNING - Not Found: /treatmentplant/1/results/
+2026-10-07 14:32:19,952 - django.request - WARNING - Not Found: /treatmentplant/1/results/export/csv/
+2026-10-07 14:32:19,955 - django.request - WARNING - Not Found: /treatmentplant/1/adaptability/
+2026-10-07 14:32:19,958 - django.request - WARNING - Not Found: /treatmentplant/1/design-parameter-overview/
+2026-10-07 14:32:19,961 - django.request - WARNING - Not Found: /treatmentplant/1/technology-overview/
+2026-10-07 14:32:19,963 - django.request - WARNING - Not Found: /treatmentplant/1/technology/optimizer-status/
+2026-10-07 14:32:19,966 - django.request - WARNING - Not Found: /treatmentdesign_details/plant
+2026-10-07 14:32:19,969 - django.request - WARNING - Not Found: /treatmentdesign_details/plant/edit/
+2026-10-07 14:32:20,993 - django.request - WARNING - Not Found: /treatmentdesign/name/

@@ -1,6 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -10,5 +10,5 @@ from drinq.models import CustomUser
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     serializer_class = UserSerializer

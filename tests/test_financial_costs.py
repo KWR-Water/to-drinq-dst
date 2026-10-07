@@ -1,5 +1,24 @@
 import unittest
+from drinq.api_calculation import KPI_CONSTRUCTION_COSTS, ConstructionCostsKPI
 from drinq.utils.financial_costs import construction_costs_total
+
+
+class TestConstructionCostsKPI(unittest.TestCase):
+    def test_surcharge_percentages_are_applied_to_construction_costs(self):
+        kpi = ConstructionCostsKPI(name=KPI_CONSTRUCTION_COSTS, value=None)
+        result = kpi.calculate_value(
+            construction_costs=1000,
+            construction_costs_percentage=20,
+            tail_costs_percentage=5,
+            general_facilities_costs_percentage=10,
+        )
+        self.assertAlmostEqual(result, 1000 * 1.20 * 1.05 * 1.10, places=9)
+        self.assertEqual(kpi.value, result)
+
+    def test_default_surcharges(self):
+        kpi = ConstructionCostsKPI(name=KPI_CONSTRUCTION_COSTS, value=None)
+        result = kpi.calculate_value(construction_costs=1000)
+        self.assertAlmostEqual(result, 1000 * 1.20 * 1.05 * 1.05, places=9)
 
 
 class TestConstructionCostsTotal(unittest.TestCase):
