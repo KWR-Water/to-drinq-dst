@@ -11,9 +11,8 @@ requires-python = ">=3.13"
 license = "EUPL-1.2"
 license-files = ["LICENSE"]
 authors = [
-    { name = "Martin Korevaar" },
-    { name = "Martin van der Schans" },
-    { name = "Erwin Vonk" },
+    { name = "Dirk Vries (KWR)" },
+    { name = "Greg Kyritsakas (TU Delft)" },
 ]
 classifiers = [
     "Framework :: Django :: 5.1",
