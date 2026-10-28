@@ -1,4 +1,6 @@
 # Setup of the package
+Licensed under the EUPL v. 1.2; see [License](#license).
+
 ## For developers: configuration
 The application imports `pystimela` and `pystimela_optim` when it starts, so
 the optimizer environment is required. Follow the steps as below:
@@ -50,6 +52,29 @@ Run only the optimizer unit tests with:
 ### Create a conda environment before first use
 See the first step in the developers section (the optimizer environment).
 
+# Building the package
+The package metadata is defined in `pyproject.toml`; `setup.py` is a thin
+shim for tools that still call it. Python 3.13 or newer is required.
+
+1. In the activated optimizer environment, install the build tool:
+`pip install build`
+2. Build the source distribution and the wheel from the repository root:
+`python -m build`
+The results are written to `dist/`.
+3. Install the result, for example in a clean environment:
+`pip install dist/todrinq_dst-0.1.0-py3-none-any.whl`
+
+Notes:
+- `pystimela` and `pystimela_optim` are not on PyPI and are not listed as
+dependencies. Install both wheels from `whl/` first (see above).
+- The Django `templates/` and `templatetags/` folders are outside the Python
+packages. They are only part of the source distribution (see `MANIFEST.in`),
+so run the server from a source checkout rather than from the wheel.
+- Optional extras: `pip install ".[dev]"` (debug toolbar) and
+`pip install sphinx` (Sphinx requirements).
+- The version is set in `pyproject.toml`; the documentation reads it
+from there.
+
 # Documentation
 The documentation is written with Sphinx. The sources are in
 `documentation/source`; the generated files are written to
@@ -89,3 +114,14 @@ running make.bat; the result is in `documentation/build/html`
   * which do data analysis
   * which do model analyses
   * which test new functionalities
+
+# License
+Copyright (c) KWR Water Research Institute
+
+Licensed under the EUPL
+
+This project is licensed under the European Union Public Licence (EUPL)
+v. 1.2. See the `LICENSE` file for the full text.
+
+The `closuretree` app is third-party code under the Apache License 2.0; see
+the headers in its files.

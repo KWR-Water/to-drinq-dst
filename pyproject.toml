@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "todrinq-dst"
+version = "0.1.0"
+description = "ToDrinQ decision support tool (DST)"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "EUPL-1.2"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Dirk Vries (KWR)" },
+    { name = "Greg Kyritsakas (TU Delft)" },
+]
+classifiers = [
+    "Framework :: Django :: 5.1",
+    "Programming Language :: Python :: 3.13",
+]
+# pystimela and pystimela_optim are not on PyPI; install the wheels in whl/.
+dependencies = [
+    "Django>=5.1,<5.2",
+    "django-formtools",
+    "django-autoslug==1.9.9",
+    "django-betterforms==2.0.0",
+    "django-crispy-forms==2.1",
+    "django-extensions==3.2.3",
+    "django-pandas==0.6.7",
+    "djangorestframework==3.14.0",
+    "pubchempy==1.0.4",
+    "numpy>=2.5,<3",
+    "pandas>=3.0.3",
+    "scipy>=1.18.1",
+    "matplotlib",
+    "rdkit>=2024.03",
+    "requests",
+    # django-betterforms imports pkg_resources, removed in setuptools>=81.
+    "setuptools<81",
+]
+
+[project.optional-dependencies]
+dev = ["django-debug-toolbar"]
+docs = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-mermaid",
+    "matplotlib",
+    "ipykernel",
+]
+
+[tool.setuptools.packages.find]
+include = ["accounts*", "closuretree*", "drinq*"]
+
+[tool.setuptools.package-data]
+drinq = ["static/**/*"]
