@@ -1311,3 +1311,4 @@ Traceback (most recent call last):
     ...<2 lines>...
     )
 ValueError: units_per_lane must be > 1 to reserve a unit for backwash; got 1.0.
+2026-10-29 09:05:37,894 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
