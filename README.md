@@ -1,6 +1,27 @@
 # Setup of the package
 Licensed under the EUPL v. 1.2; see [License](#license).
 
+## Contributing to the DST
+
+Contributions to the ToDrinQ Decision Support Tool (DST) are welcome:
+bug reports, documentation, tests, treatment models, datasets, and code.
+Read the [contribution guide](CONTRIBUTING.rst) before starting. The same
+guide is included in the Sphinx documentation under **Contributing**.
+
+**Maintenance availability:** The current main developers have limited
+time for maintenance. Issue responses, pull request reviews, approvals,
+and merges may take some time; no response or review timeframe is
+guaranteed. Please plan accordingly and keep contributions focused.
+
+- Discuss substantial changes in a GitHub issue before implementing them.
+- Work on a short-lived branch; external contributors should use a fork.
+- Open a pull request (PR) against `main` with relevant tests,
+  documentation, and validation results.
+- Main developers review PRs and merge approved changes into `main`.
+  Authors do not approve or merge their own PRs. Changes to scientific
+  results also need domain review.
+- Do not submit credentials, private data, or sensitive database contents.
+
 ## For developers: configuration
 The application imports `pystimela` and `pystimela_optim` when it starts, so
 the optimizer environment is required. Follow the steps as below:

@@ -16,6 +16,7 @@ treatment processes can be optimised with ``pystimela`` models using the
     :maxdepth: 2
 
     getting-started.rst
+    contributing.rst
     overview.rst
     tutorial.rst
     decision_process.rst
