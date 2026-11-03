@@ -17,8 +17,13 @@ authors = [
 classifiers = [
     "Framework :: Django :: 5.1",
     "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Environment :: Web Environment",
+    "Topic :: Scientific/Engineering",
 ]
-# pystimela and pystimela_optim are not on PyPI; install the wheels in whl/.
+# pystimela (v0.0.2) and pystimela_optim (v0.1.2) are ToDrinQ foreground IP
+# developed by NTUA, with EUPL v. 1.2 distribution planned. Not on PyPI; wheels are
+# provided in the whl/ directory. See INTELLECTUAL_PROPERTY.rst for details.
 dependencies = [
     "Django>=5.1,<5.2",
     "django-formtools",

@@ -17,6 +17,7 @@ treatment processes can be optimised with ``pystimela`` models using the
 
     getting-started.rst
     contributing.rst
+    intellectual-property.rst
     overview.rst
     tutorial.rst
     decision_process.rst

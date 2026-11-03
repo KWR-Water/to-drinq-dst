@@ -125,6 +125,75 @@ review. Provide:
 Use synthetic or appropriately licensed example data, not confidential
 utility, customer, or personal data.
 
+Intellectual Property and Licensing
+-----------------------------------
+This project incorporates both foreground and background intellectual property.
+See the `Intellectual Property`_ document for detailed information.
+The scope is the whole ToDrinQ project: the NTUA-developed ``pystimela`` and
+``pystimela_optim`` packages are foreground IP, not background dependencies,
+because they were developed within that project. Their separate packaging
+and absence from PyPI do not change this classification. EUPL v. 1.2
+distribution is planned. Attribution does not assign ownership; applicable
+project agreements determine rights holders and access rights.
+
+When contributing, ensure compliance with licensing and attribution requirements:
+
+* **Foreground IP:** All contributions to code, models, documentation, and tests
+  are released under the EUPL v. 1.2 license (compatible with this project's
+  license). By contributing, you grant the rights necessary for this use.
+
+* **Background IP:** If incorporating third-party code, models, or datasets:
+
+  - Verify the source license is compatible with EUPL v. 1.2
+  - Include proper attribution and licensing information in the code or documentation
+  - Document the provenance and source in your pull request
+  - Do not include proprietary, confidential, or incompatibly licensed materials
+
+* **Scientific Data and Models:** When contributing scientific models or datasets:
+
+  - Provide clear documentation of sources, equations, units, and assumptions
+  - Include licensing and attribution information for any external sources
+  - Ensure applicability limits and assumptions are clearly stated
+  - Do not use confidential utility, customer, or personal data
+
+The following table summarizes the project's intellectual property landscape:
+
++------------------------------+---------------------+--------------------------+--------------------------+
+| Component                    | Version/Source      | License                  | Type                     |
++==============================+=====================+==========================+==========================+
+| pystimela                    | 0.0.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| pystimela_optim              | 0.1.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| closuretree                  | (included)          | Apache License 2.0       | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Select2                      | (organisation)      | MIT License              | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Bootstrap (JS and CSS)       | Local / CDN         | MIT License              | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| jQuery                       | Local / CDN         | MIT License              | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Popper                       | 2.11.8              | MIT License              | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Chart.js                     | CDN (not pinned)    | MIT License              | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Django ecosystem             | PyPI                | Various (OSI approved)   | Background IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| ToDrinQ DST code             | Original            | EUPL v. 1.2              | Foreground IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Scientific models & datasets | Check provenance    | Check component terms    | Depends on provenance    |
++------------------------------+---------------------+--------------------------+--------------------------+
+| Documentation & tests        | Original            | EUPL v. 1.2              | Foreground IP            |
++------------------------------+---------------------+--------------------------+--------------------------+
+
+Third-party JavaScript and CSS remain background IP whether bundled or
+CDN-loaded. Preserve their licence texts and copyright notices; the DST's
+EUPL licence does not replace vendor licences. Record versions, sources,
+and licences when adding frontend assets, including those absent from
+``pyproject.toml``. Original project scripts may be foreground IP, but
+pre-existing vendor code is not. See `Intellectual Property`_ for versions,
+upstream links, and collected-static-asset review requirements.
+
 Pull request checklist
 ----------------------
 Before requesting review, check that the PR includes:
@@ -206,3 +275,4 @@ CI workflows, assign reviewers, or certify the repository for publication.
 .. _pull requests: https://github.com/KWR-Water/to-drinq-dst/pulls
 .. _README: https://github.com/KWR-Water/to-drinq-dst/blob/main/README.md
 .. _licence: https://github.com/KWR-Water/to-drinq-dst/blob/main/LICENSE
+.. _Intellectual Property: https://github.com/KWR-Water/to-drinq-dst/blob/main/INTELLECTUAL_PROPERTY.rst

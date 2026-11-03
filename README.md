@@ -43,7 +43,16 @@ Note: the optimizer route is planned to become optional in a future update,
 with lazy imports of `pystimela` and `pystimela_optim`. Until then, the
 optimizer packages are required to run the server and the tests.
 
-## Integration with pyStimela and optimisation per process
+## Integration with pystimela and optimisation per process
+
+### About pystimela and pystimela_optim
+The pystimela packages (pystimela and pystimela_optim) are optimization frameworks
+developed by researchers from the National Technical University of Athens (NTUA).
+They were developed within the ToDrinQ project and are foreground IP, despite
+being packaged separately. Distribution under EUPL v. 1.2 is planned; they are
+not available on PyPI. See [Intellectual Property](INTELLECTUAL_PROPERTY.rst)
+for details and the background-IP inventory of third-party frontend libraries,
+including Bootstrap, jQuery, Popper, Chart.js, and Select2.
 
 ### Required optimizer wheels in this repository
 The optimizer runtime requires both wheels:
@@ -86,8 +95,10 @@ The results are written to `dist/`.
 `pip install dist/todrinq_dst-0.1.0-py3-none-any.whl`
 
 Notes:
-- `pystimela` and `pystimela_optim` are not on PyPI and are not listed as
-dependencies. Install both wheels from `whl/` first (see above).
+- `pystimela` and `pystimela_optim` were developed by NTUA within ToDrinQ,
+  with EUPL distribution planned. They are not on PyPI or listed as package
+  dependencies. Install the pre-built wheels from `whl/` first (see above).
+- See [Intellectual Property](INTELLECTUAL_PROPERTY.rst) for licensing details.
 - The Django `templates/` and `templatetags/` folders are outside the Python
 packages. They are only part of the source distribution (see `MANIFEST.in`),
 so run the server from a source checkout rather than from the wheel.
