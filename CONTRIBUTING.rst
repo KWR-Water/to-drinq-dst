@@ -130,11 +130,13 @@ Intellectual Property and Licensing
 This project incorporates both foreground and background intellectual property.
 See the `Intellectual Property`_ document for detailed information.
 The scope is the whole ToDrinQ project: the NTUA-developed ``pystimela`` and
-``pystimela_optim`` packages are foreground IP, not background dependencies,
-because they were developed within that project. Their separate packaging
-and absence from PyPI do not change this classification. EUPL v. 1.2
-distribution is planned. Attribution does not assign ownership; applicable
-project agreements determine rights holders and access rights.
+``pystimela_optim`` packages are foreground IP. Their separate packaging
+and public availability from `pystimela
+<https://bitbucket.org/team_makro/pystimela/>`_ and `pystimela_optim
+<https://bitbucket.org/team_makro/pystimelaoptim/>`_ do not change this
+classification. Both packages are distributed under EUPL v. 1.2 and are not
+available on PyPI. Attribution does not assign ownership; applicable project
+agreements determine rights holders and access rights.
 
 When contributing, ensure compliance with licensing and attribution requirements:
 
@@ -161,9 +163,9 @@ The following table summarizes the project's intellectual property landscape:
 +------------------------------+---------------------+--------------------------+--------------------------+
 | Component                    | Version/Source      | License                  | Type                     |
 +==============================+=====================+==========================+==========================+
-| pystimela                    | 0.0.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
+| pystimela                    | 0.0.2 (NTUA)        | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
-| pystimela_optim              | 0.1.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
+| pystimela_optim              | 0.1.2 (NTUA)        | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
 | closuretree                  | (included)          | Apache License 2.0       | Background IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+

@@ -46,13 +46,18 @@ optimizer packages are required to run the server and the tests.
 ## Integration with pystimela and optimisation per process
 
 ### About pystimela and pystimela_optim
-The pystimela packages (pystimela and pystimela_optim) are optimization frameworks
-developed by researchers from the National Technical University of Athens (NTUA).
-They were developed within the ToDrinQ project and are foreground IP, despite
-being packaged separately. Distribution under EUPL v. 1.2 is planned; they are
-not available on PyPI. See [Intellectual Property](INTELLECTUAL_PROPERTY.rst)
-for details and the background-IP inventory of third-party frontend libraries,
-including Bootstrap, jQuery, Popper, Chart.js, and Select2.
+The pystimela packages are optimization frameworks developed by researchers
+from the National Technical University of Athens (NTUA) within the ToDrinQ
+project. They are foreground IP, packaged separately, and publicly available
+under the EUPL v. 1.2 license:
+
+- [pystimela](https://bitbucket.org/team_makro/pystimela/)
+- [pystimela_optim](https://bitbucket.org/team_makro/pystimelaoptim/)
+
+The packages are not available on PyPI. See
+[Intellectual Property](INTELLECTUAL_PROPERTY.rst) for details and the
+background-IP inventory of third-party frontend libraries, including
+Bootstrap, jQuery, Popper, Chart.js, and Select2.
 
 ### Required optimizer wheels in this repository
 The optimizer runtime requires both wheels:
@@ -96,8 +101,11 @@ The results are written to `dist/`.
 
 Notes:
 - `pystimela` and `pystimela_optim` were developed by NTUA within ToDrinQ,
-  with EUPL distribution planned. They are not on PyPI or listed as package
-  dependencies. Install the pre-built wheels from `whl/` first (see above).
+  and are publicly available under EUPL v. 1.2 from the
+  [pystimela](https://bitbucket.org/team_makro/pystimela/) and
+  [pystimela_optim](https://bitbucket.org/team_makro/pystimelaoptim/)
+  repositories. They are not on PyPI or listed as package dependencies.
+  Install the pre-built wheels from `whl/` first (see above).
 - See [Intellectual Property](INTELLECTUAL_PROPERTY.rst) for licensing details.
 - The Django `templates/` and `templatetags/` folders are outside the Python
 packages. They are only part of the source distribution (see `MANIFEST.in`),

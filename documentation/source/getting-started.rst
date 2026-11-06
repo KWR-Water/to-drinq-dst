@@ -13,6 +13,10 @@ root.
   ``pystimela_optim`` wheels from the ``whl/`` folder. Use
   ``environment_optim_mac.yml`` on macOS.
 
+The packages are also publicly available under EUPL v. 1.2 from
+`pystimela <https://bitbucket.org/team_makro/pystimela/>`_ and
+`pystimela_optim <https://bitbucket.org/team_makro/pystimelaoptim/>`_.
+
 .. note::
     ``drinq/views.py`` imports ``pystimela`` and ``pystimela_optim`` when the
     server starts. Run the server and the tests in the optimiser environment,

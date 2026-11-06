@@ -109,12 +109,12 @@ pystimela and pystimela_optim
   (NTUA), within the scope of ToDrinQ
 * **Classification:** Foreground IP of the ToDrinQ project, even though packaged
   separately from the DST
-* **Planned distribution licence:** EUPL v. 1.2
-* **Distribution:** Pre-built wheels in ``whl/``; not available on PyPI
-
-The planned EUPL distribution does not itself confirm the licence metadata or
-redistribution permissions of every currently bundled wheel. Confirm those
-before publication.
+* **Distribution licence:** EUPL v. 1.2
+* **Public repositories:**
+  `pystimela <https://bitbucket.org/team_makro/pystimela/>`_ and
+  `pystimela_optim <https://bitbucket.org/team_makro/pystimelaoptim/>`_
+* **Distribution:** Publicly available from Bitbucket; pre-built wheels are
+  also included in ``whl/``. The packages are not available on PyPI.
 
 Original DST contributions
 ---------------------------
@@ -129,12 +129,10 @@ Original project contributions include:
 * Test suites, validation frameworks, and documentation
 * All original Python, HTML, CSS, and JavaScript code
 
-The repository carries a KWR Water Research Institute copyright notice and is
-licensed under EUPL v. 1.2 (see ``LICENSE``). This does not establish exclusive
-KWR ownership of all project results, NTUA packages, or contributed datasets.
-Record the relevant contributors, rights holders, and provenance for each
-component; do not assume all scientific models or datasets are original work.
-
+The provenance of the scientific models and datasets currently in this
+repository has been checked. Repeat the provenance and rights review for future
+additions or material changes. The repository carries a KWR Water Research
+Institute copyright notice and is licensed under EUPL v. 1.2 (see ``LICENSE``).
 
 IPR Summary
 ===========
@@ -144,9 +142,9 @@ The following table summarizes the intellectual property landscape of this proje
 +------------------------------+---------------------+--------------------------+--------------------------+
 | Component                    | Version/Source      | License                  | Type                     |
 +==============================+=====================+==========================+==========================+
-| pystimela                    | 0.0.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
+| pystimela                    | 0.0.2 (NTUA)        | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
-| pystimela_optim              | 0.1.2 (NTUA)        | EUPL v. 1.2 (planned)    | Foreground IP            |
+| pystimela_optim              | 0.1.2 (NTUA)        | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
 | closuretree                  | (included)          | Apache License 2.0       | Background IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
@@ -164,7 +162,7 @@ The following table summarizes the intellectual property landscape of this proje
 +------------------------------+---------------------+--------------------------+--------------------------+
 | ToDrinQ DST code             | Original            | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
-| Scientific models & datasets | Check provenance    | Check component terms    | Depends on provenance    |
+| Scientific models & datasets | Checked; review new additions | Check component terms  | Depends on provenance    |
 +------------------------------+---------------------+--------------------------+--------------------------+
 | Documentation & tests        | Original            | EUPL v. 1.2              | Foreground IP            |
 +------------------------------+---------------------+--------------------------+--------------------------+
@@ -174,9 +172,11 @@ Attribution and Acknowledgments
 ===============================
 
 **Optimization Framework**
-  The pystimela and pystimela_optim packages were developed by researchers at the
-  National Technical University of Athens (NTUA) and are being released as
-  open-source software under the EUPL v. 1.2 license.
+  The pystimela and pystimela_optim packages were developed by researchers at
+  the National Technical University of Athens (NTUA). They are publicly
+  available under the EUPL v. 1.2 license from
+  `pystimela <https://bitbucket.org/team_makro/pystimela/>`_ and
+  `pystimela_optim <https://bitbucket.org/team_makro/pystimelaoptim/>`_.
 
 **Third-Party Libraries**
   This project builds on excellent open-source libraries, including:
