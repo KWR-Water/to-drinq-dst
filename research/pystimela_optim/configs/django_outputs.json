@@ -1,0 +1,61 @@
+{
+  "Process_outputs": {
+    "chlorination_volume": {
+      "value": 10.0
+    },
+    "chlorination_chemical_dose": {
+      "value": 1.5
+    },
+    "single_filtration_surface": {
+      "value": 10.0
+    },
+    "single_filtration_depth": {
+      "value": 1.2
+    },
+    "single_filtration_grain_size_a": {
+      "value": 0.7
+    },
+    "dual_filtration_surface": {
+      "value": 12.0
+    },
+    "dual_filtration_depth": {
+      "value": 1.0
+    },
+    "dual_filtration_depth_b": {
+      "value": 0.8
+    },
+    "dual_filtration_grain_size_a": {
+      "value": 0.9
+    },
+    "dual_filtration_grain_size_b": {
+      "value": 1.2
+    },
+    "gac_surface": {
+      "value": 8.0
+    },
+    "gac_depth": {
+      "value": 1.5
+    },
+    "coagulation_volume": {
+      "value": 10.0
+    },
+    "coagulation_chemical_dose": {
+      "value": 0.08
+    },
+    "flocculation_surface": {
+      "value": 20.0
+    },
+    "flocculation_length": {
+      "value": 4.0
+    },
+    "ozonation_area": {
+      "value": 8.0
+    },
+    "ozonation_height": {
+      "value": 3.0
+    },
+    "ozonation_chemical_dose": {
+      "value": 1.0
+    }
+  }
+}

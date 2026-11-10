@@ -1,0 +1,14 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+model_parameters,meetee,True
+decision_variables,areact,5.881944444444444
+decision_variables,theta,15
+decision_variables,hreact,3
+decision_variables,ozonation_chemical_dose,3
+decision_variables,ozonation_volume__tocheck,17.645833333333332
+constraints,ecoli,500
+constraints,uv254,3.5
+constraints,aoc,30
+constraints,bromate,0
+constraints,bromate,10
+constraints,bromide,0.048

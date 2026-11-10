@@ -1,0 +1,11 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+decision_variables,lbed2_m,0.5
+decision_variables,diam2_mm,0.8
+decision_variables,filporo2,0.6
+decision_variables,surf_m2,0
+decision_variables,lbed1_m,0.6
+decision_variables,diam1_mm,0.6
+decision_variables,filporo1,0.4
+constraints,suspended_solids,15
+constraints,suspended_solids,1

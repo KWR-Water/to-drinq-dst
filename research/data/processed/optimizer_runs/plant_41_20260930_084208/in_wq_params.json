@@ -1,0 +1,128 @@
+{
+  "treatment_plant_id": 41,
+  "timestamps": [
+    0.0,
+    60.0,
+    120.0
+  ],
+  "WQ_parameters": {
+    "flow": {
+      "value": 141.167,
+      "unit": "m3/h"
+    },
+    "temperature": {
+      "value": 18,
+      "unit": "degr. Celcius"
+    },
+    "DOC": {
+      "value": 1.941,
+      "unit": "mg/liter"
+    },
+    "ammonia": {
+      "value": 0.05,
+      "unit": "mg/L"
+    },
+    "pH": {
+      "value": 4.71,
+      "unit": "-"
+    },
+    "uv254": {
+      "value": 0.065,
+      "unit": "1/m"
+    },
+    "bromide": {
+      "value": 0.02,
+      "unit": "mg/L"
+    },
+    "suspended_solids": {
+      "value": 0.217,
+      "unit": "mg/liter"
+    },
+    "conductivity": {
+      "value": 300.328,
+      "unit": "mS/m"
+    },
+    "m-number": {
+      "value": -0.024,
+      "unit": "mmol/L"
+    },
+    "bromate": {
+      "value": 1.0,
+      "unit": "ug/L"
+    },
+    "ecoli": {
+      "value": 0.0,
+      "unit": "cfu/100mL"
+    },
+    "AOC": {
+      "value": 30.0,
+      "unit": "ug/L"
+    },
+    "residual_chlorine": {
+      "units": "mg/L",
+      "value": 4.934
+    },
+    "TTHMs": {
+      "units": "µg/L",
+      "value": 11.738
+    },
+    "HAAs": {
+      "units": "µg/L",
+      "value": 77.27
+    }
+  },
+  "wq_parameters": {
+    "flow": {
+      "value": 141.167,
+      "unit": "m3/h"
+    },
+    "temperature": {
+      "value": 18,
+      "unit": "degr. Celcius"
+    },
+    "DOC": {
+      "value": 3,
+      "unit": "mg/liter"
+    },
+    "ammonia": {
+      "value": 0.05,
+      "unit": "mg/L"
+    },
+    "pH": {
+      "value": 7.2,
+      "unit": "-"
+    },
+    "uv254": {
+      "value": 0.1,
+      "unit": "1/m"
+    },
+    "bromide": {
+      "value": 0.02,
+      "unit": "mg/L"
+    },
+    "suspended_solids": {
+      "value": 20,
+      "unit": "mg/liter"
+    },
+    "conductivity": {
+      "value": 300.0,
+      "unit": "mS/m"
+    },
+    "m-number": {
+      "value": 0.0,
+      "unit": "mmol/L"
+    },
+    "bromate": {
+      "value": 1.0,
+      "unit": "ug/L"
+    },
+    "ecoli": {
+      "value": 0.0,
+      "unit": "cfu/100mL"
+    },
+    "AOC": {
+      "value": 30.0,
+      "unit": "ug/L"
+    }
+  }
+}

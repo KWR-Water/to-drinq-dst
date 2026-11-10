@@ -1,0 +1,13 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+decision_variables,baffling_factor,1
+decision_variables,solution,15
+decision_variables,theta,30
+decision_variables,chlorination_chemical_dose,2
+decision_variables,chlorination_chemical_dose,0.2
+decision_variables,chlorination_volume,35.291666666666664
+constraints,ecoli,500
+constraints,haas_initial,50
+constraints,haas_initial,0
+constraints,tthms_initial,150
+constraints,tthms_initial,0

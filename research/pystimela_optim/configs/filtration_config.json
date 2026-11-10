@@ -1,0 +1,94 @@
+{
+  "process": "filtration",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 141.167,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 18,
+        "unit": "degr. Celcius"
+      },
+      "suspended_solids": {
+        "value": 0.427,
+        "unit": "mg/liter"
+      }
+    }
+  },
+  "limits": {
+    "surf_min_m2": 9.411133333333334,
+    "surf_max_m2": 28.2334,
+    "lbed_min_m": 0.12,
+    "lbed_max_m": 12.0,
+    "diam_min_mm": 0.06,
+    "diam_max_mm": 6.0,
+    "theta_min": 5.0,
+    "theta_max": 60.0,
+    "headloss_max_m": 1.5,
+    "tss_out_max_mgL": 1.0,
+    "accum_max_kgm3": 500000.0
+  },
+  "initials": {
+    "suspended_solids_initial": 0.0,
+    "init_accumulation_initial": 0.0
+  },
+  "weights": {
+    "lam_TSS": 20000.0,
+    "lam_HL": 20000.0,
+    "lam_ACC": 10000.0,
+    "lam_theta": 1000000.0
+  },
+  "params": {
+    "lwater": 1.0,
+    "filporo": 39.0,
+    "nmax": 75.0,
+    "rhod": 30.0,
+    "lambda0": 0.15,
+    "n1": 290.0,
+    "n2": 310.0,
+    "numcel": 5,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "sand_filter_cost": 80.0
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 300,
+    "popsize": 30,
+    "tol": 0.001,
+    "workers": 1
+  },
+  "backwash_freq_h": 0.0,
+  "bounds": [
+    {
+      "name": "surf_m2",
+      "min": 9.411133333333334,
+      "max": 28.2334,
+      "units": "m2"
+    },
+    {
+      "name": "lbed_m",
+      "min": 0.12,
+      "max": 12.0,
+      "units": "m"
+    },
+    {
+      "name": "diam_mm",
+      "min": 0.06,
+      "max": 6.0,
+      "units": "mm"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from django_outputs.json",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;suspended_solids",
+    "scaling": "bounds derived using ±10.0× from django base values"
+  }
+}

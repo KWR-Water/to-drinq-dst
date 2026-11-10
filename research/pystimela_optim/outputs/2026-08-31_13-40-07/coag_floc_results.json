@@ -1,0 +1,63 @@
+{
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "fun": 288535.48,
+  "x_opt": {
+    "coagulation_chemical_dose_mmol": 0.01692,
+    "coagulation_G": 396.0,
+    "coagulation_volume": 26.2,
+    "flocculation_G": 52.0,
+    "flocculation_length": 0.6,
+    "flocculation_surface": 21.3
+  },
+  "derived": {
+    "V_coag_m3": 26.17,
+    "V_floc_m3": 11.76,
+    "V_total_m3": 37.94,
+    "coagulation_chemical_dose": 2.7
+  },
+  "inputs": {
+    "pH_input": 4.2,
+    "DOC_input_mgL": 3.0,
+    "TSS_input_mgL": 20.0
+  },
+  "outputs": {
+    "pH_out": 4.06,
+    "DOC_out_mgL": 1.848,
+    "TSS_out_mgL": 0.32,
+    "M-number_out_mmolL": -0.051,
+    "uv254_out_1m": 0.062,
+    "conductivity_out_mS/m": 300.578,
+    "theta_coag_min": 22.2,
+    "theta_floc_min": 10.0,
+    "TSS_post_coag_mgL": 15.5,
+    "coag_removal_mgL": 4.5,
+    "floc_removal_mgL": 15.18,
+    "coag_target_removal_mgL": 4.5,
+    "coag_removal_pct_of_gap": 30.0,
+    "floc_removal_pct_of_gap": 101.2
+  },
+  "constraints": {
+    "pH_min": 6.5,
+    "pH_max": 7.5,
+    "doc_out_max": 10.0,
+    "tss_out_max": 5,
+    "coag_removal_split": 0.3
+  },
+  "optimal variables": {
+    "chem_dose_mmol": 0.01692,
+    "g10_coag+g10_floc": 448.67,
+    "V_total_m3": 37.94
+  },
+  "costs_breakdown": {
+    "chem_cost_year_eur": 2269.9,
+    "constr_cost_year": 20044.1,
+    "maintenance_cost_year": 15776.0,
+    "tank_cost_year_eur": 35820.1,
+    "energy_kWh_year_coag": 45015.0,
+    "energy_kWh_year_floc": 353.2,
+    "energy_cost_year_eur": 6351.6,
+    "penalty_added_unitless": 244093.846,
+    "obj_fun_value": 288535.5
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "fun": 28913.37,
+  "x_opt": {
+    "dual_filtration_surface": 6.7,
+    "dual_filtration_depth": 1.1,
+    "dual_filtration_depth_b": 0.1,
+    "dual_filtration_grain_size_a": 0.75,
+    "dual_filtration_grain_size_b": 1.09
+  },
+  "derived": {
+    "V_upper_m3": 7.4,
+    "V_lower_m3": 0.94,
+    "V_filter_m3": 8.35
+  },
+  "inputs": {
+    "flow_mean_m3h": 100.0,
+    "TSS_in_mgL": 0.417
+  },
+  "outputs": {
+    "TSS_out_mgL": 1.29534815666283e-16,
+    "Head_loss_upper_m": 0.2155978705102792,
+    "Head_loss_lower_m": 0.0738626021166559,
+    "Head_loss_total_m": 0.2894604726269351,
+    "Accum_solids_upper_kgm3": 0.0011265794241821215,
+    "Accum_solids_lower_kgm3": 2.033071280070923e-14,
+    "theta_min": 5.008111386424393
+  },
+  "constraints": {
+    "tss_out_max_mgL": 1.0,
+    "headloss_max_m": 2.0,
+    "accum1_max_kgm3": 500000.0,
+    "accum2_max_kgm3": 500000.0,
+    "lbed1_range_m": [
+      0.1,
+      10.0
+    ],
+    "lbed2_range_m": [
+      0.08,
+      8.0
+    ],
+    "diam1_range_mm": [
+      0.091,
+      9.1
+    ],
+    "diam2_range_mm": [
+      0.12,
+      12.0
+    ],
+    "theta_min": 5.0,
+    "theta_max": 60.0
+  },
+  "economics": {
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "r_real": 0.018428709990300884,
+    "CRF_n": 0.03555591588715931,
+    "CRF_10": 0.11041326865845502,
+    "construction_cost_eur_per_year": 16702.1,
+    "maintenance_cost_eur_per_year": 11843.2,
+    "materials_cost_eur_per_year": 246.5,
+    "media_cost_upper_eur_per_year": 101.4,
+    "media_cost_lower_eur_per_year": 20.3,
+    "media_cost_total_eur_per_year": 121.6,
+    "penalty_added_unitless": 0.0,
+    "obj_fun_value": 28913.4
+  },
+  "optimal variables": {
+    "surf_m2": 6.67,
+    "lbed1_m": 1.11,
+    "lbed2_m": 0.14,
+    "diam1_mm": 0.75,
+    "diam2_mm": 1.09,
+    "V_filter_m3": 8.35
+  }
+}

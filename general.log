@@ -1,15 +1,776 @@
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-Construction cost parameters not found for technology: Cascade with coagulant dosing with ferric chloride
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=3 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-Construction cost parameters not found for technology: Cascade with coagulant dosing with ferric chloride
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=40 and technologyproperty=nominal dosing flow rate [unit 10^-3 m^3/hour] (id: 17) in construction cost calculation
-Construction cost parameters not found for technology: Coagulant dosing with ferric chloride by dynamic mixing
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=44 and technologyproperty=nominal dosing flow rate [unit 10^-3 m^3/hour] (id: 17) in construction cost calculation
-Construction cost parameters not found for technology: Coagulant dosing with aluminium chloride by dynamic mixing
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=40 and technologyproperty=nominal dosing flow rate [unit 10^-3 m^3/hour] (id: 17) in construction cost calculation
-Construction cost parameters not found for technology: Coagulant dosing with ferric chloride by dynamic mixing
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4098, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3366, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
 Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
 Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
+Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3760, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2815, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3760, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2815, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3760, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2815, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
+Background optimizer execution failed: float division by zero
+Traceback (most recent call last):
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 3760, in _run_optimizer_job
+    run_output_dir = self._run_optimizer_pipeline(
+        workspace_root, on_progress=on_progress,
+    )
+  File "/Users/gkyritsakas/Library/CloudStorage/OneDrive-DelftUniversityofTechnology/To DrinQ project/WP6/Django tests/to-drinq-dst/drinq/views.py", line 2815, in _run_optimizer_pipeline
+    result_payload = optimize_process(
+        process_key,
+        str(proc['config_json']),
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 311, in optimize_process
+    return runner(config, **overrides)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/api.py", line 230, in optimize_gac
+    return module.solve(
+           ~~~~~~~~~~~~^
+        inputs,
+        ^^^^^^^
+    ...<9 lines>...
+        workers=int(_resolve_algo_value(algo, "workers", workers, 1)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 574, in solve
+    result = differential_evolution(
+        objective_wrapper,
+    ...<10 lines>...
+        workers=workers
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 533, in differential_evolution
+    ret = solver.solve()
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1219, in solve
+    self._calculate_population_energies(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.population[self.feasible]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/optimize/_differentialevolution.py", line 1395, in _calculate_population_energies
+    calc_energies = list(
+        self._mapwrapper(self.func, parameters_pop[0:S])
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/_lib/_util.py", line 529, in __call__
+    return self.f(x, *self.args)
+           ~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 568, in objective_wrapper
+    obj_val, _ = objective_scalar(
+                 ~~~~~~~~~~~~~~~~^
+        x, inputs, params, limits, weights, initials, backwash_events
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 463, in objective_scalar
+    sim = stimela_simulate(
+        inputs, params, initials,
+        surf_m2, lbed_m,
+        backwash_events
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela_optim/scripts/gac_optim.py", line 301, in stimela_simulate
+    gac_results = gac_process.simulate(
+        t_eval=timestamps,
+    ...<2 lines>...
+        bw=backwash_schedule
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 139, in simulate
+    solution = self.solve_ode(
+        t_eval=t_eval, initial_state=init_state, bw=bw, in_wp=wq_params
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 120, in solve_ode
+    solution = solve_ivp(
+        lambda t, y: self.model(t, y, bw, in_wp),
+    ...<5 lines>...
+        atol=1e-5,
+    )
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/bdf.py", line 206, in __init__
+    f = self.fun(self.t, self.y)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 121, in <lambda>
+    lambda t, y: self.model(t, y, bw, in_wp),
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/dwtmodels/gacfiltration.py", line 87, in model
+    mat_q1 = create_matrix2(dy=dy, n=num_cel)
+  File "/opt/anaconda3/envs/todrinq_dst_optim/lib/python3.13/site-packages/pystimela/helpers/common.py", line 51, in create_matrix2
+    a1 = 1.0 / dy
+         ~~~~^~~~
+ZeroDivisionError: float division by zero
 Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
-Missing TreatmentPlantTechnologyPropertyValue for technology_id=6 and technologyproperty=area [unit m^2] (id: 97) in construction cost calculation
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.

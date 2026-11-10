@@ -1,0 +1,35 @@
+key,value
+success,True
+message,Optimization terminated successfully.
+fun,550598.89
+x_opt.chlorination_chemical_dose,15.0
+x_opt.chlorination_volume,5.88
+derived.avg_flow_m3h,70.583
+derived.cl2_g_per_h,1058.74
+derived.cl2_kg_per_d,25.41
+derived.cl_solution_kg_per_d,169.4
+derived.crf_used,0.0356
+inputs.flow_mean_m3h,70.583
+inputs.DOC_input_mgL,3.0
+inputs.pH_input,7.0
+inputs.average_ecoli_in,0.0
+outputs.residual_out_mgL,4.928
+outputs.tthms_out_ugL,22.226
+outputs.haas_out_ugL,371.068
+outputs.ecoli_out,0.0
+outputs.ecoli_log_reduction,
+outputs.theta_min,5.0
+constraints.residual_min_mgL,0.4
+constraints.tthms_max_ugL,80.0
+constraints.haas_max_ugL,60.0
+constraints.theta_min_min,5.0
+constraints.theta_max_min,60.0
+constraints.ecoli_log_reduction_min,2.0
+optimal variables.chlorine_dose_mgL,15.0
+optimal variables.volume_m3,5.88
+costs_breakdown.chlorine_cost_year_eur,31533.7
+costs_breakdown.constr_cost_year,115.5
+costs_breakdown.maintenance_cost_year,502.5
+costs_breakdown.tank_cost_year_eur,618.0
+costs_breakdown.penalty_added_unitless,518447.2246143952
+costs_breakdown.obj_fun_value,550598.9

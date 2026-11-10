@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "fun": 8614.38,
+  "x_opt": {
+    "ozonation_chemical_dose": 0.123,
+    "ozonation_height": 3.96,
+    "ozonation_area": 1.49
+  },
+  "derived": {
+    "volume_m3": 5.9,
+    "crf_used": 0.036,
+    "hrt_minutes": 5.01,
+    "diameter_m": 1.38,
+    "aspect_ratio": 2.88
+  },
+  "inputs": {
+    "average_flow_m3h": 70.583,
+    "average_UV254_in_1m": 0.10000000000000002,
+    "average_bromide_in_mgL": 0.04800000000000001,
+    "average_ecoli_in": 0.0
+  },
+  "outputs": {
+    "bromate_out_ugL": 0.114,
+    "AOC_out_ugL": 48.523,
+    "Ecoli_out": 0.0,
+    "ecoli_log_reduction": null,
+    "theta_out_min": 5.0,
+    "aspect_ratio": 2.88
+  },
+  "constraints": {
+    "bromate_max_ugL": 10.0,
+    "aoc_max_ugL": 100.0,
+    "ecoli_log_reduction_min": 2.0,
+    "theta_min_min": 5.0,
+    "theta_max_min": 60.0,
+    "aspect_ratio_min": 1.0,
+    "aspect_ratio_max": 15.0
+  },
+  "optimal variables": {
+    "ozone_dosed_mgL": 0.123,
+    "hreact_m": 3.96,
+    "areact_m2": 1.49,
+    "volume_m3": 5.9
+  },
+  "costs": {
+    "ozone_kg_per_h": 0.009,
+    "kwh_per_h": 0.13,
+    "energy_cost_eur_per_year": 160.4,
+    "constr_cost_year": 3345.3,
+    "maintenance_cost_year": 5108.6,
+    "tank_cost_eur_per_year": 8454.0,
+    "total_cost_eur_per_year_excl_penalties": 8614.4,
+    "penalty_added_unitless": 0.0,
+    "obj_fun_value": 8614.4
+  }
+}

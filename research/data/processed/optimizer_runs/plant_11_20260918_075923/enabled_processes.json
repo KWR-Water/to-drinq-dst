@@ -1,0 +1,6 @@
+{
+  "enabled": [
+    "coagulation-flocculation",
+    "gac"
+  ]
+}

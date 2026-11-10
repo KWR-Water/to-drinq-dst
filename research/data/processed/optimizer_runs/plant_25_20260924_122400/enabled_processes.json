@@ -1,0 +1,8 @@
+{
+  "enabled": [
+    "coagulation-flocculation",
+    "filtration_single",
+    "chlorination",
+    "ozonation"
+  ]
+}

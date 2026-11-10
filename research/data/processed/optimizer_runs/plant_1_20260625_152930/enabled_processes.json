@@ -1,0 +1,7 @@
+{
+  "enabled": [
+    "filtration_single",
+    "gac",
+    "chlorination"
+  ]
+}

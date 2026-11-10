@@ -1,0 +1,99 @@
+{
+  "process": "chlorination",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 70.583,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 12.0,
+        "unit": "degC"
+      },
+      "DOC": {
+        "value": 0.15755,
+        "unit": "mg/liter"
+      },
+      "ammonia": {
+        "value": 0.05,
+        "unit": "mg/L"
+      },
+      "pH": {
+        "value": 7.0,
+        "unit": "-"
+      },
+      "uv254": {
+        "value": 0.1,
+        "unit": "1/m"
+      },
+      "bromide": {
+        "value": 0.02,
+        "unit": "mg/L"
+      },
+      "ecoli": {
+        "value": 0.0,
+        "unit": "cfu/100mL"
+      }
+    }
+  },
+  "limits": {
+    "chlorine_dose_min": 0.15,
+    "chlorine_dose_max": 15.0,
+    "volume_min": 3.5291666666666663,
+    "volume_max": 352.91666666666663,
+    "theta_min": 5.0,
+    "theta_max": 60.0,
+    "residual_min": 0.4,
+    "tthms_max": 80.0,
+    "haas_max": 60.0
+  },
+  "initials": {
+    "reschl_initial": 0.001,
+    "tthms_initial": 0.0,
+    "haas_initial": 0.0
+  },
+  "weights": {
+    "lam_residual": 1000000.0,
+    "lam_tthms": 100000.0,
+    "lam_haas": 100000.0,
+    "lam_theta": 1000000.0
+  },
+  "params": {
+    "baffling_factor": 1.0,
+    "price_per_kg": 0.51,
+    "solution": 0.15,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 300,
+    "popsize": 20,
+    "tol": 0.001
+  },
+  "bounds": [
+    {
+      "name": "chlorine_dose_mgL",
+      "min": 0.15,
+      "max": 15.0,
+      "units": "mg/L"
+    },
+    {
+      "name": "volume_m3",
+      "min": 3.5291666666666663,
+      "max": 352.91666666666663,
+      "units": "m3"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from django_outputs.json",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;doc;ammonia;ph;uv254;bromide",
+    "scaling": "bounds derived using ±10.0— from django base values"
+  }
+}

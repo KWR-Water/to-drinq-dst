@@ -1,0 +1,153 @@
+{
+  "process": "ozonation",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 70.583,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 18,
+        "unit": "degr. Celcius"
+      },
+      "doc": {
+        "value": 1.941,
+        "unit": "mg/liter"
+      },
+      "ozone": {
+        "units": "mg/L",
+        "value": 0.0
+      },
+      "ph": {
+        "value": 4.71,
+        "unit": "-"
+      },
+      "uv254": {
+        "value": 0.065,
+        "unit": "1/m"
+      },
+      "bromide": {
+        "value": 0.048,
+        "unit": "mg/liter"
+      },
+      "bromate": {
+        "value": 0,
+        "unit": " ug/liter"
+      },
+      "ozone_dosed": {
+        "units": "mg/L",
+        "value": 0.0
+      },
+      "ecoli": {
+        "value": 0.0,
+        "unit": "cfu/100mL"
+      },
+      "aoc": {
+        "value": 30.0,
+        "unit": "ug/L"
+      },
+      "gas_flow": {
+        "units": "m3/h",
+        "value": 0.0
+      },
+      "cgo_o3": {
+        "units": "mg/L",
+        "value": 0.0
+      }
+    }
+  },
+  "meetee": true,
+  "limits": {
+    "ozone_dosed_min": 0.1,
+    "ozone_dosed_max": 10.0,
+    "hreact_min": 0.3,
+    "hreact_max": 30.0,
+    "areact_min": 0.5881944444444444,
+    "areact_max": 58.819444444444436,
+    "theta_min": 5.0,
+    "theta_max": 60.0,
+    "aspect_ratio_min": 1.0,
+    "aspect_ratio_max": 15.0,
+    "bromate_max": 10.0,
+    "aoc_max": 100.0
+  },
+  "initials": {
+    "o3_liquid_initial": 0.0,
+    "o3_gas_initial": 0.0,
+    "uv254_initial": 0.0,
+    "bromate_initial": 0.0,
+    "ecoli_initial": 0.0,
+    "ct_ecoli_initial": 0.0
+  },
+  "weights": {
+    "lam_BrO3": 100000.0,
+    "lam_AOC": 100000.0,
+    "lam_Ecoli": 1000000.0,
+    "lam_theta": 1000000.0,
+    "lam_aspect": 100000.0
+  },
+  "params": {
+    "kuv_sel": true,
+    "kuv": 0.5,
+    "y_factor": 0.01,
+    "kafbo3_sel": true,
+    "kafbo3": 0.27164,
+    "factor_klo3": 0.04,
+    "db0": 3.0,
+    "ceuva254_sel": true,
+    "ceuva254": 3.0,
+    "f_bro3init": 2.5,
+    "kct_bro3_sel": true,
+    "ktc_bro3": 3.0,
+    "f_aoc_sel": true,
+    "f_aoc": 50.0,
+    "kec_sel": true,
+    "kec": 300.0,
+    "ct_lagec": 0.01,
+    "numcel": 1,
+    "sec_kwh_per_kg_o3": 15.0,
+    "elec_eur_per_kwh": 0.14,
+    "hours_per_year": 8765,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "meetee": true
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 60,
+    "popsize": 10,
+    "tol": 0.01,
+    "workers": 1
+  },
+  "bounds": [
+    {
+      "name": "ozone_dosed_mgL",
+      "min": 0.1,
+      "max": 10.0,
+      "units": "mg/L"
+    },
+    {
+      "name": "hreact_m",
+      "min": 0.3,
+      "max": 30.0,
+      "units": "m"
+    },
+    {
+      "name": "areact_m2",
+      "min": 0.5881944444444444,
+      "max": 58.819444444444436,
+      "units": "m2"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from CSV configuration",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;doc;ozone;ph;uv254;bromide;bromate;ozone_dosed;ecoli;aoc;gas_flow;cgo_o3",
+    "scaling": "bounds derived using ±10.0× from django base values"
+  }
+}

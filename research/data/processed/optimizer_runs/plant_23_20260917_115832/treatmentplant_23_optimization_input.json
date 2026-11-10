@@ -1,0 +1,243 @@
+{
+  "treatment_plant": {
+    "id": 23,
+    "name": "test 16-09-2026",
+    "slug": "test-16-09-2026-1"
+  },
+  "generated_at": "2026-09-17T11:57:11.660906+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 170,
+      "technologyproperty_name": "baffling factor",
+      "unit": null,
+      "value": 1,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 26,
+      "technologyproperty_name": "chemical dosing solution concentration (w/w%)",
+      "unit": "%",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 18,
+      "technologyproperty_name": "retention time (min)",
+      "unit": "minutes",
+      "value": 30,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 27,
+      "technologyproperty_name": "target residual concentration (mg/l)",
+      "unit": "g/m^3",
+      "value": 0.2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 35.291666666666664,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 97,
+      "technologyproperty_name": "area",
+      "unit": "m^2",
+      "value": 5.881944444444444,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 18,
+      "technologyproperty_name": "retention time (min)",
+      "unit": "minutes",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 19,
+      "technologyproperty_name": "tank height",
+      "unit": "m",
+      "value": 3,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 3,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 17.645833333333332,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 40,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 8,
+      "waterqualityparameter_name": "E. coli",
+      "unit": "CFU/L",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 500,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 18,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 40,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 42,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 17,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 80,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 41,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 35,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 8,
+      "waterqualityparameter_name": "E. coli",
+      "unit": "CFU/L",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 500,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 36,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 9,
+      "waterqualityparameter_name": "UV 254",
+      "unit": "1/m",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3.5,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 38,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 11,
+      "waterqualityparameter_name": "assimilable organic carbon",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 30,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 37,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 10,
+      "waterqualityparameter_name": "bromate",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 53,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 10,
+      "waterqualityparameter_name": "bromate",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 0.114,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 39,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 12,
+      "waterqualityparameter_name": "bromide",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0.048,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "fun": 4331.65,
+  "x_opt": {
+    "chlorine_dose_mgL": 1.22,
+    "volume_m3": 8.33
+  },
+  "derived": {
+    "avg_flow_m3h": 100.0,
+    "cl2_g_per_h": 121.74,
+    "cl2_kg_per_d": 2.92,
+    "cl_solution_kg_per_d": 19.48,
+    "crf_used": 0.0356
+  },
+  "inputs": {
+    "flow_mean_m3h": 100.0,
+    "DOC_input_mgL": 0.15754,
+    "pH_input": 7.2
+  },
+  "outputs": {
+    "residual_out_mgL": 0.4,
+    "tthms_out_ugL": 0.39,
+    "haas_out_ugL": 0.977,
+    "theta_min": 5.0
+  },
+  "constraints": {
+    "residual_min_mgL": 0.4,
+    "tthms_max_ugL": 80.0,
+    "haas_max_ugL": 60.0,
+    "theta_min_min": 5.0,
+    "theta_max_min": 60.0
+  },
+  "optimal variables": {
+    "chlorine_dose_mgL": 1.22,
+    "volume_m3": 8.33
+  },
+  "costs_breakdown": {
+    "chlorine_cost_year_eur": 3625.8,
+    "constr_cost_year": 182.6,
+    "maintenance_cost_year": 523.3,
+    "tank_cost_year_eur": 705.8,
+    "penalty_added_unitless": 0.0,
+    "obj_fun_value": 4331.6
+  }
+}

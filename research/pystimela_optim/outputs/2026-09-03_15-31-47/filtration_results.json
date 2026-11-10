@@ -1,0 +1,58 @@
+{
+  "success": true,
+  "message": "Optimization terminated successfully.",
+  "fun": 25416.16,
+  "x_opt": {
+    "single_filtration_surface": 4.7,
+    "single_filtration_depth": 1.3,
+    "single_filtration_grain_size_a": 0.77
+  },
+  "derived": {
+    "V_filter_m3": 5.95
+  },
+  "inputs": {
+    "flow_mean_m3h": 70.583,
+    "TSS_in_mgL": 0.314
+  },
+  "outputs": {
+    "TSS_out_mgL": 0.158,
+    "Head_loss_m": 0.191,
+    "Accum_solids_kgm3": 0.0,
+    "theta_min": 5.06
+  },
+  "constraints": {
+    "tss_out_max_mgL": 1.0,
+    "headloss_max_m": 1.5,
+    "accum_max_kgm3": 500000.0,
+    "lbed_range_m": [
+      0.12,
+      12.0
+    ],
+    "diam_range_mm": [
+      0.072,
+      7.199999999999999
+    ],
+    "theta_min": 5.0,
+    "theta_max": 60.0
+  },
+  "economics": {
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "r_real": 0.018,
+    "CRF_n": 0.036,
+    "CRF_10": 0.11,
+    "construction_cost_eur_per_year": 14613.2,
+    "maintenance_cost_eur_per_year": 10651.4,
+    "materials_cost_eur_per_year": 69.7,
+    "filters_cost_eur_per_year": 81.8,
+    "penalty_added_unitless": 0.0,
+    "obj_fun_value": 25416.2
+  },
+  "optimal variables": {
+    "surf_m2": 4.71,
+    "lbed_m": 1.26,
+    "diam_mm": 0.77,
+    "V_filter_m3": 5.95,
+    "theta_min": 5.06
+  }
+}

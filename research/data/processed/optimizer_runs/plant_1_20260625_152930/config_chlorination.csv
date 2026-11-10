@@ -1,0 +1,11 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+model_parameters,baffling_factor,1
+model_parameters,chemical_dosing_solution_concentration__w_w,15
+model_parameters,retention_time__min,30
+model_parameters,target_concentration_of_dosing_chemical,2
+model_parameters,target_residual_concentration__mg_l,0.2
+model_parameters,volume,35.291666666666664
+constraints,e__coli,500
+constraints,haloacetic_acids,0
+constraints,trihalomethanes,0

@@ -1,0 +1,39 @@
+key,value
+success,True
+message,Optimization terminated successfully.
+fun,28740.31
+x_opt.surf_m2,6.667
+x_opt.lbed_m,1.259
+x_opt.diam_mm,0.71
+derived.V_filter_m3,8.39
+inputs.flow_mean_m3h,100.0
+inputs.TSS_in_mgL,15.0
+outputs.TSS_out_mgL,7.572
+outputs.Head_loss_m,0.0
+outputs.Accum_solids_kgm3,0.002
+outputs.theta_min,5.04
+constraints.tss_out_max_mgL,15
+constraints.headloss_max_m,1.5
+constraints.accum_max_kgm3,500000.0
+constraints.lbed_range_m[0],0.12
+constraints.lbed_range_m[1],12.0
+constraints.diam_range_mm[0],0.06
+constraints.diam_range_mm[1],6.0
+constraints.theta_min,5.0
+constraints.theta_max,60.0
+economics.r_nom,0.05
+economics.infl,0.031
+economics.r_real,0.018
+economics.CRF_n,0.036
+economics.CRF_10,0.11
+economics.construction_cost_eur_per_year,16684.2
+economics.maintenance_cost_eur_per_year,11843.3
+economics.materials_cost_eur_per_year,98.8
+economics.filters_cost_eur_per_year,114.0
+economics.penalty_added_unitless,0.0
+economics.obj_fun_value,28740.3
+optimal variables.surf_m2,6.67
+optimal variables.lbed_m,1.26
+optimal variables.diam_mm,0.71
+optimal variables.V_filter_m3,8.39
+optimal variables.theta_min,5.04

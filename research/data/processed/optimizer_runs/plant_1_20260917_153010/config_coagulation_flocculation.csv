@@ -1,0 +1,15 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+process_specific,coagulant,fecl3
+decision_variables,coagulation_G,1000.0
+decision_variables,mix_eff__tocheck,80.0
+decision_variables,coagulation_chemical_dose,1.3
+decision_variables,V_coag_m3,2.940972222222222
+constraints,DOC,3
+constraints,DOC,1.941
+constraints,mu,0.00108
+constraints,conductivity,41.4
+constraints,pH,4.71
+constraints,temperature,18
+constraints,temperature,20
+constraints,temperature,0.4

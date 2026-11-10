@@ -1,0 +1,31 @@
+key,value
+success,True
+message,Optimization terminated successfully.
+fun,88013.92
+x_opt.gac_surface,1.4
+x_opt.gac_depth,4.1
+derived.V_filter_m3,5.88
+inputs.flow_mean_m3h,70.583
+inputs.DOC_in_mgL,1.817
+outputs.DOC_out_mgL,0.03851
+outputs.theta_min,5.0
+constraints.doc_out_max_mgL,0.5
+constraints.lbed_range_m[0],0.48600000000000004
+constraints.lbed_range_m[1],48.6
+constraints.surf_range_m2[0],0.8
+constraints.surf_range_m2[1],80.0
+constraints.theta_min[0],5.0
+constraints.theta_min[1],60.0
+economics.r_nom,0.05
+economics.infl,0.031
+economics.r_real,0.018
+economics.CRF_n,0.036
+economics.CRF_10,0.11
+economics.construction_cost_eur_per_year,49597.4
+economics.maintenance_cost_eur_per_year,31637.8
+economics.materials_cost_eur_per_year,6778.7
+economics.penalty_added_unitless,0.0
+economics.obj_fun_value,88013.9
+optimal variables.surf_m2,1.43
+optimal variables.lbed_m,4.1
+optimal variables.V_filter_m3,5.88

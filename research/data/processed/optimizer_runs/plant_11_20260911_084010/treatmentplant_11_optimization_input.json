@@ -1,0 +1,222 @@
+{
+  "treatment_plant": {
+    "id": 11,
+    "name": "str - FeCl3 dm - Chain-scr-ST - CIEX - moving bed - GAC",
+    "slug": "str-fecl3-dm-chain-scr-st-ciex-moving-bed-gac"
+  },
+  "generated_at": "2026-09-11T08:39:22.056462+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 166,
+      "technologyproperty_name": "GAC porosity",
+      "unit": null,
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 169,
+      "technologyproperty_name": "bed height",
+      "unit": "m",
+      "value": 4,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 71,
+      "technologyproperty_name": "empty bed contact time",
+      "unit": "minutes",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 10,
+      "technologyproperty_name": "filter area",
+      "unit": "m^2",
+      "value": 1.1763888888888887,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 105,
+      "technologyproperty_name": "grain diameter",
+      "unit": "mm",
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "technologyproperty_id": 22,
+      "technologyproperty_name": "mass density of chemical",
+      "unit": "g/cm^3",
+      "value": 0.5,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 21,
+      "technologyproperty_name": "mixer velocity gradient",
+      "unit": "s^-1",
+      "value": 1000,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 25,
+      "technologyproperty_name": "power efficiency of mixer(s)",
+      "unit": null,
+      "value": 80,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 20,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 2.940972222222222,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 34,
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 52,
+      "technology_id": 14,
+      "technology_name": "Granular activated carbon (GAC) filtration",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 1,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 23,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 49,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 1,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 5,
+      "waterqualityparameter_name": "dynamic viscosity",
+      "unit": "N*s/m^2",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0.00108,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 30,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 15,
+      "waterqualityparameter_name": "electrical conductivity",
+      "unit": "ms/m",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 41.4,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 21,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 6,
+      "waterqualityparameter_name": "pH",
+      "unit": "",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 7.2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 28,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 1,
+      "waterqualityparameter_name": "temperature",
+      "unit": "degr. Celcius",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 18,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 22,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 20,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 47,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 5,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

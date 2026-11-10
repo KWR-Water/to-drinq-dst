@@ -1,0 +1,117 @@
+{
+  "process": "dual_filtration",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 70.583,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 12.0,
+        "unit": "degC"
+      },
+      "suspended_solids": {
+        "value": 15,
+        "unit": "mg/liter"
+      }
+    }
+  },
+  "limits": {
+    "surf_min_m2": 4.705533333333333,
+    "surf_max_m2": 14.1166,
+    "lbed1_min_m": 0.1,
+    "lbed1_max_m": 10.0,
+    "lbed2_min_m": 0.08,
+    "lbed2_max_m": 8.0,
+    "diam1_min_mm": 0.06,
+    "diam1_max_mm": 6.0,
+    "diam2_min_mm": 0.12,
+    "diam2_max_mm": 12.0,
+    "headloss_max_m": 2.0,
+    "theta_min": 5.0,
+    "theta_max": 60.0,
+    "tss_out_max_mgL": 1.0,
+    "accum1_max_kgm3": 500000.0,
+    "accum2_max_kgm3": 500000.0
+  },
+  "initials": {
+    "suspended_solids_upper_init": 0.0,
+    "accumulation_upper_init": 0.0,
+    "suspended_solids_lower_init": 0.0,
+    "accumulation_lower_init": 0.0
+  },
+  "weights": {
+    "lam_TSS": 200000.0,
+    "lam_HL": 200000.0,
+    "lam_ACC1": 100000.0,
+    "lam_ACC2": 100000.0,
+    "lam_theta": 100000.0
+  },
+  "params": {
+    "lwater": 1.0,
+    "rhod": 30.0,
+    "filporo1": 40.0,
+    "lambda01": 0.003,
+    "n1": 20.0,
+    "numcel1": 6,
+    "filporo2": 38.0,
+    "lambda02": 0.03,
+    "n2": 3.0,
+    "numcel2": 6,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "sand_filter_cost": 80.0,
+    "coal_filter_cost": 232.0
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 100,
+    "popsize": 15,
+    "tol": 0.001,
+    "workers": 1
+  },
+  "backwash_freq_h": 0.0,
+  "bounds": [
+    {
+      "name": "surf_m2",
+      "min": 4.705533333333333,
+      "max": 14.1166,
+      "units": "m²"
+    },
+    {
+      "name": "lbed1_m",
+      "min": 0.1,
+      "max": 10.0,
+      "units": "m"
+    },
+    {
+      "name": "lbed2_m",
+      "min": 0.08,
+      "max": 8.0,
+      "units": "m"
+    },
+    {
+      "name": "diam1_mm",
+      "min": 0.06,
+      "max": 6.0,
+      "units": "mm"
+    },
+    {
+      "name": "diam2_mm",
+      "min": 0.12,
+      "max": 12.0,
+      "units": "mm"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from django_outputs.json",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;suspended_solids",
+    "scaling": "bounds derived using ±10.0× from django base values"
+  }
+}

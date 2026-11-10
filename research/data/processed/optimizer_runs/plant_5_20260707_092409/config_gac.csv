@@ -1,0 +1,9 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+model_parameters,gac_density,0.5
+model_parameters,gac_porosity,0.5
+decision_variables,lbed_max_m,4
+model_parameters,empty_bed_contact_time,15
+model_parameters,filter_area,4
+model_parameters,grain_diameter,0.5
+constraints,dissolved_organic_carbon,3

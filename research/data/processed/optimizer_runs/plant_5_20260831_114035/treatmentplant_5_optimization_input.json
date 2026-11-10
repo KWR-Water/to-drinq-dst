@@ -1,0 +1,204 @@
+{
+  "treatment_plant": {
+    "id": 5,
+    "name": "str - FeCl3 dm - CIEX - sm RSF",
+    "slug": "str-fecl3-dm-ciex-sm-rsf"
+  },
+  "generated_at": "2026-08-31T11:40:07.667514+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "technologyproperty_id": 10,
+      "technologyproperty_name": "filter area",
+      "unit": "m^2",
+      "value": 7.058333333333333,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "technologyproperty_id": 135,
+      "technologyproperty_name": "sand filter bed height",
+      "unit": "m",
+      "value": 0.6,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "technologyproperty_id": 133,
+      "technologyproperty_name": "sand media grain size",
+      "unit": "mm",
+      "value": 0.6,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "technologyproperty_id": 127,
+      "technologyproperty_name": "sand porosity",
+      "unit": null,
+      "value": 0.4,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 21,
+      "technologyproperty_name": "mixer velocity gradient",
+      "unit": "s^-1",
+      "value": 1000,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 25,
+      "technologyproperty_name": "power efficiency of mixer(s)",
+      "unit": null,
+      "value": 80,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 20,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 2.940972222222222,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 32,
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 15,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 50,
+      "technology_id": 18,
+      "technology_name": "Rapid sand filtration, submerged, single medium",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 1,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 23,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 49,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 1,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 5,
+      "waterqualityparameter_name": "dynamic viscosity",
+      "unit": "N*s/m^2",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0.00108,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 30,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 15,
+      "waterqualityparameter_name": "electrical conductivity",
+      "unit": "ms/m",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 41.4,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 21,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 6,
+      "waterqualityparameter_name": "pH",
+      "unit": "",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 4.2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 28,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 1,
+      "waterqualityparameter_name": "temperature",
+      "unit": "degr. Celcius",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 18,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 22,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 20,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 47,
+      "technology_id": 40,
+      "technology_name": "Coagulant dosing with ferric chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 5,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

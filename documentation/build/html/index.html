@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToDrinQ Decision Support Tool (DST) &mdash; todrinq_dst 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="getting-started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            todrinq_dst
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to the DST</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intellectual-property.html">Intellectual Property (IPR)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decision_process.html">Decision process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kpi_evaluation.html">KPI evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="administration.html">Administration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">todrinq_dst</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ToDrinQ Decision Support Tool (DST)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="todrinq-decision-support-tool-dst">
+<h1>ToDrinQ Decision Support Tool (DST)<a class="headerlink" href="#todrinq-decision-support-tool-dst" title="Link to this heading"></a></h1>
+<p>The ToDrinQ DST helps water utilities design drinking water treatment trains.
+A user answers a short series of questions about the source water and the
+treatment technology preferences. The tool then proposes treatment options, calculates
+technical, financial and environmental indicators (KPIs) for each option, and
+lets the user compare the results.</p>
+<p>The tool is a Django web application with a REST API. Optionally, selected
+treatment processes can be optimised with <code class="docutils literal notranslate"><span class="pre">pystimela</span></code> models using the
+<code class="docutils literal notranslate"><span class="pre">pystimela_optim</span></code> package.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#check-the-optimiser-installation">Check the optimiser installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#run-the-tests">Run the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#build-this-documentation">Build this documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to the DST</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#maintenance-availability">Maintenance availability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#roles-and-responsibilities">Roles and responsibilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#discuss-the-work-first">Discuss the work first</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#development-workflow">Development workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#testing-and-documentation">Testing and documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#scientific-models-and-data">Scientific models and data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#intellectual-property-and-licensing">Intellectual Property and Licensing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#pull-request-checklist">Pull request checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#review-and-merging">Review and merging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#public-repository-safeguards">Public repository safeguards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#repository-owner-setup-before-public-release">Repository-owner setup before public release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="intellectual-property.html">Intellectual Property (IPR)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intellectual-property.html#background-intellectual-property">Background Intellectual Property</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intellectual-property.html#foreground-intellectual-property">Foreground Intellectual Property</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intellectual-property.html#ipr-summary">IPR Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intellectual-property.html#attribution-and-acknowledgments">Attribution and Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intellectual-property.html#guidelines-for-contributors">Guidelines for Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-the-dst-can-do">What the DST can do</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#main-pages">Main pages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#design-workflow">Design workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decision_process.html">Decision process</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decision_process.html#building-blocks">Building blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decision_process.html#steps">Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decision_process.html#design-rules">Design rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kpi_evaluation.html">KPI evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#calculation-pipeline">Calculation pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#input-values">Input values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#design-parameters">Design parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#nominal-flow">Nominal flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#technology-kpis">Technology KPIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#plant-kpis">Plant KPIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#costs">Costs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#adaptability">Adaptability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#optimisation">Optimisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kpi_evaluation.html#comparing-designs">Comparing designs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="administration.html">Administration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#access-levels">Access levels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#manage-users">Manage users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#login-and-registration">Login and registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#security-notes">Security notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#manage-content">Manage content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="administration.html#operations">Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#apps-and-modules">Apps and modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#data-model">Data model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#architectural-choices">Architectural choices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#technology-stack">Technology stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#deployment-notes">Deployment notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#accounts">Accounts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#design-parameters">Design parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#license">License</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting-started.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019-2026, KWR Water Research Institute, licensed under the EUPL.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

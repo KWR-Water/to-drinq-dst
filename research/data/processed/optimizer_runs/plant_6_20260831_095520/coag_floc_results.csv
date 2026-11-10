@@ -1,0 +1,48 @@
+key,value
+success,True
+message,Optimization terminated successfully.
+fun,269312.3
+x_opt.coagulation_chemical_dose_mmol,0.01249
+x_opt.coagulation_G,399.0
+x_opt.coagulation_volume,35.1
+x_opt.flocculation_G,26.0
+x_opt.flocculation_length,0.7
+x_opt.flocculation_surface,16.8
+derived.V_coag_m3,35.12
+derived.V_floc_m3,12.07
+derived.V_total_m3,47.19
+derived.coagulation_chemical_dose,2.0
+inputs.pH_input,4.5
+inputs.DOC_input_mgL,3.0
+inputs.TSS_input_mgL,20.0
+outputs.pH_out,4.3
+outputs.DOC_out_mgL,1.883
+outputs.TSS_out_mgL,0.313
+outputs.M-number_out_mmolL,-0.037
+outputs.uv254_out_1m,0.063
+outputs.conductivity_out_mS/m,300.434
+outputs.theta_coag_min,29.9
+outputs.theta_floc_min,10.3
+outputs.TSS_post_coag_mgL,15.514
+outputs.coag_removal_mgL,4.486
+outputs.floc_removal_mgL,15.202
+outputs.coag_target_removal_mgL,4.5
+outputs.coag_removal_pct_of_gap,29.9
+outputs.floc_removal_pct_of_gap,101.3
+constraints.pH_min,6.5
+constraints.pH_max,4.5
+constraints.doc_out_max,10.0
+constraints.tss_out_max,5
+constraints.coag_removal_split,0.3
+optimal variables.chem_dose_mmol,0.01249
+optimal variables.g10_coag+g10_floc,425.19
+optimal variables.V_total_m3,47.19
+costs_breakdown.chem_cost_year_eur,1675.2
+costs_breakdown.constr_cost_year,21754.9
+costs_breakdown.maintenance_cost_year,16815.3
+costs_breakdown.tank_cost_year_eur,38570.2
+costs_breakdown.energy_kWh_year_coag,61203.6
+costs_breakdown.energy_kWh_year_floc,91.0
+costs_breakdown.energy_cost_year_eur,8581.2
+costs_breakdown.penalty_added_unitless,220485.654
+costs_breakdown.obj_fun_value,269312.3

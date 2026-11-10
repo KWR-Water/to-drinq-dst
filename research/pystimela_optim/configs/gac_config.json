@@ -1,0 +1,81 @@
+{
+  "process": "gac-filtration",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 70.583,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 12.0,
+        "unit": "degC"
+      },
+      "doc": {
+        "value": 3,
+        "unit": "mg/liter"
+      }
+    }
+  },
+  "limits": {
+    "surf_min_m2": 0.8,
+    "surf_max_m2": 80.0,
+    "lbed_min_m": 0.4,
+    "lbed_max_m": 40.0,
+    "theta_min": 5.0,
+    "theta_max": 60.0,
+    "doc_out_max": 0.5
+  },
+  "initials": {
+    "doc_initial": 0.0,
+    "accum_initial": 0.0
+  },
+  "weights": {
+    "lam_DOC": 1000000.0,
+    "lam_theta": 1000000.0
+  },
+  "params": {
+    "diam": 2.0,
+    "filporo": 50.0,
+    "rho_k": 500.0,
+    "freund_n": 0.5,
+    "freund_k": 20.0,
+    "mass_tr_coef_k2": 0.006,
+    "numcel": 5,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "gac_replacement_cost": 5000.0
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 100,
+    "popsize": 20,
+    "tol": 0.001,
+    "workers": 1
+  },
+  "backwash_freq_h": 0.0,
+  "bounds": [
+    {
+      "name": "surf_m2",
+      "min": 0.8,
+      "max": 80.0,
+      "units": "m2"
+    },
+    {
+      "name": "lbed_m",
+      "min": 0.4,
+      "max": 40.0,
+      "units": "m"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from django_outputs.json",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;doc",
+    "scaling": "bounds derived using ±10.0× from django base values"
+  }
+}

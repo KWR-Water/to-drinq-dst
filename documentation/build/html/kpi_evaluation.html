@@ -1,0 +1,767 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPI evaluation &mdash; todrinq_dst 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Administration" href="administration.html" />
+    <link rel="prev" title="Decision process" href="decision_process.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            todrinq_dst
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to the DST</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intellectual-property.html">Intellectual Property (IPR)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decision_process.html">Decision process</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">KPI evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#calculation-pipeline">Calculation pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-values">Input values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-parameters">Design parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nominal-flow">Nominal flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#technology-kpis">Technology KPIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plant-kpis">Plant KPIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#costs">Costs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adaptability">Adaptability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimisation">Optimisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#comparing-designs">Comparing designs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="administration.html">Administration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">todrinq_dst</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">KPI evaluation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/kpi_evaluation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kpi-evaluation">
+<h1>KPI evaluation<a class="headerlink" href="#kpi-evaluation" title="Link to this heading"></a></h1>
+<p>The tool evaluates a treatment plant on two levels. First, each technology in
+the train gets its own KPIs. Second, the technology KPIs are combined with the
+design parameters into plant KPIs.</p>
+<section id="calculation-pipeline">
+<h2>Calculation pipeline<a class="headerlink" href="#calculation-pipeline" title="Link to this heading"></a></h2>
+<p>The pipeline is <code class="docutils literal notranslate"><span class="pre">_run_calculation_pipeline</span></code> in <code class="docutils literal notranslate"><span class="pre">drinq/views.py</span></code>. It starts
+when the user presses <em>Calculate</em> on the technology properties page. It reads
+all inputs from the database, so it always uses the values that were just
+saved.</p>
+<pre  class="mermaid">
+        flowchart TD
+    A[Design parameters] --&gt; N[Nominal flow]
+    B[Technology properties&lt;br/&gt;defaults and user values] --&gt; T[Technology KPIs]
+    C[Water quality in and target] --&gt; T
+    D[Chemical prices] --&gt; T
+    N --&gt; T
+    T --&gt; S[Sum over technologies]
+    S --&gt; P[Plant KPIs]
+    N --&gt; P
+    A --&gt; P
+    T --&gt; CC[Construction costs]
+    CC --&gt; P
+    P --&gt; R[Stored plant properties]
+    T --&gt; R2[Stored technology KPI values]
+    </pre></section>
+<section id="input-values">
+<h2>Input values<a class="headerlink" href="#input-values" title="Link to this heading"></a></h2>
+<p>Inputs come from three sources.</p>
+<ol class="arabic simple">
+<li><p><strong>Database defaults.</strong> <code class="docutils literal notranslate"><span class="pre">TechnologyPropertyJunction.default_value</span></code>,
+<code class="docutils literal notranslate"><span class="pre">DesignParameter.defaultvalue</span></code> and the default chemical prices.</p></li>
+<li><p><strong>User input.</strong> Values entered per plant on the parameter and technology
+pages.</p></li>
+<li><p><strong>Calculated values.</strong> Properties flagged <code class="docutils literal notranslate"><span class="pre">is_digested</span></code> are calculated by
+the KPI classes. Values returned by the optimiser are marked as optimised.</p></li>
+</ol>
+<p>Every stored technology property value carries a source: <code class="docutils literal notranslate"><span class="pre">user</span></code>,
+<code class="docutils literal notranslate"><span class="pre">digested</span></code> or <code class="docutils literal notranslate"><span class="pre">optimized</span></code>.</p>
+</section>
+<section id="design-parameters">
+<h2>Design parameters<a class="headerlink" href="#design-parameters" title="Link to this heading"></a></h2>
+<p>The plant-level parameters are stored in <code class="docutils literal notranslate"><span class="pre">DesignParameter</span></code>. The calculation
+uses the following names.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>population persons</p></td>
+<td><p>Drinking water demand</p></td>
+</tr>
+<tr class="row-odd"><td><p>average consumption (lppd)</p></td>
+<td><p>Demand per person per day</p></td>
+</tr>
+<tr class="row-even"><td><p>large-scale consumption (m3/day)</p></td>
+<td><p>Extra demand, for example industry</p></td>
+</tr>
+<tr class="row-odd"><td><p>leakage factor</p></td>
+<td><p>Extra production for network losses</p></td>
+</tr>
+<tr class="row-even"><td><p>peak daily demand factor</p></td>
+<td><p>Design flow relative to average flow</p></td>
+</tr>
+<tr class="row-odd"><td><p>interest rate, depreciation period</p></td>
+<td><p>Capital costs (percent and years)</p></td>
+</tr>
+<tr class="row-even"><td><p>operation and maintenance rate</p></td>
+<td><p>O&amp;M costs as a percentage of construction costs</p></td>
+</tr>
+<tr class="row-odd"><td><p>personnel costs</p></td>
+<td><p>Annual personnel costs</p></td>
+</tr>
+<tr class="row-even"><td><p>energy price</p></td>
+<td><p>Price per kWh</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="nominal-flow">
+<h2>Nominal flow<a class="headerlink" href="#nominal-flow" title="Link to this heading"></a></h2>
+<p>The plant is designed for the nominal flow <span class="math notranslate nohighlight">\(Q\)</span> in m3/h:</p>
+<div class="math notranslate nohighlight">
+\[Q = \left(Q_{pop} + \frac{Q_{large}}{24}\right)
+    (1 + f_{leak}) \, f_{peak}\]</div>
+<p>Here <span class="math notranslate nohighlight">\(Q_{pop}\)</span> is the demand of the population in m3/h, <span class="math notranslate nohighlight">\(Q_{large}\)</span>
+the large-scale demand in m3/day, <span class="math notranslate nohighlight">\(f_{leak}\)</span> the leakage factor and
+<span class="math notranslate nohighlight">\(f_{peak}\)</span> the peak factor.</p>
+</section>
+<section id="technology-kpis">
+<h2>Technology KPIs<a class="headerlink" href="#technology-kpis" title="Link to this heading"></a></h2>
+<p>Each technology is matched on its stage and name to a KPI class in
+<code class="docutils literal notranslate"><span class="pre">drinq/utils/treatmentkpi.py</span></code>. The classes share the base class
+<code class="docutils literal notranslate"><span class="pre">TreatmentKPI</span></code> and calculate the same set of KPIs.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>KPI</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Remark</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>footprint area</p></td>
+<td><p>m2</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>daily energy consumption</p></td>
+<td><p>kWh/day</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>power</p></td>
+<td><p>kW</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>head loss</p></td>
+<td><p>bar</p></td>
+<td><p>Hydraulic loss over the unit.</p></td>
+</tr>
+<tr class="row-even"><td><p>daily mass of chemicals</p></td>
+<td><p>kg/day</p></td>
+<td><p>Per chemical. Used for costs and emissions.</p></td>
+</tr>
+<tr class="row-odd"><td><p>chemical solution concentration</p></td>
+<td><p>mg/L</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CO2 equivalent emissions</p></td>
+<td><p>kg CO2-eq/m3</p></td>
+<td><p>From electricity and chemicals. The code marks the summation as
+work in progress.</p></td>
+</tr>
+<tr class="row-odd"><td><p>daily chemical costs</p></td>
+<td><p>EUR/day</p></td>
+<td><p>Mass per chemical times the chemical price.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The available classes cover these groups. Technologies without a class
+get no technology KPIs.</p>
+<ul class="simple">
+<li><p>Screening: strainer, micro strainer.</p></li>
+<li><p>Coagulation and flocculation: dynamic mixing, inline mixing, cascade mixer,
+flocculation.</p></li>
+<li><p>Floc removal: sludge blanket, chain-scraped sedimentation, flotation,
+lamella clarifier (sloped and horizontal).</p></li>
+<li><p>Filtration: rapid sand (single, dual, pressurised, moving bed), membranes.</p></li>
+<li><p>Advanced treatment: GAC, PAC, UV/H2O2, ozone contactor, ion exchange,
+pellet softening.</p></li>
+<li><p>Disinfection and storage: chlorine, chloramine, UV, clean water storage.</p></li>
+</ul>
+</section>
+<section id="plant-kpis">
+<h2>Plant KPIs<a class="headerlink" href="#plant-kpis" title="Link to this heading"></a></h2>
+<p>The technology KPIs for footprint, energy, power, head loss, CO2 and chemical
+costs are summed over the technologies. The plant KPIs are then derived.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Plant KPI</p></th>
+<th class="head"><p>Definition</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nominal flow rate</p></td>
+<td><p>See above.</p></td>
+</tr>
+<tr class="row-odd"><td><p>footprint area</p></td>
+<td><p>Sum of technology footprints.</p></td>
+</tr>
+<tr class="row-even"><td><p>specific energy consumption</p></td>
+<td><p>Daily energy divided by daily flow, in kWh/m3.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CO2 equivalent emissions</p></td>
+<td><p>Sum of technology emissions, in kg/m3.</p></td>
+</tr>
+<tr class="row-even"><td><p>construction costs</p></td>
+<td><p>See below.</p></td>
+</tr>
+<tr class="row-odd"><td><p>operation and maintenance costs (annual)</p></td>
+<td><p>Construction costs times the O&amp;M rate.</p></td>
+</tr>
+<tr class="row-even"><td><p>investment costs (annual)</p></td>
+<td><p>Total annual costs, see below.</p></td>
+</tr>
+<tr class="row-odd"><td><p>levelized cost of water</p></td>
+<td><p>Total annual costs per m3 produced.</p></td>
+</tr>
+<tr class="row-even"><td><p>levelized chemical costs</p></td>
+<td><p>Annual chemical costs per m3 produced.</p></td>
+</tr>
+<tr class="row-odd"><td><p>adaptability score</p></td>
+<td><p>See below.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="costs">
+<h2>Costs<a class="headerlink" href="#costs" title="Link to this heading"></a></h2>
+<p><strong>Construction costs.</strong> For each technology the cost is a polynomial in one
+technology property <span class="math notranslate nohighlight">\(x_t\)</span> (for example a volume or an area) or one plant
+property <span class="math notranslate nohighlight">\(x_p\)</span> (for example the nominal flow):</p>
+<div class="math notranslate nohighlight">
+\[C_{tech} = a x_t^2 + b x_t + c x_p^2 + d x_p + e\]</div>
+<p>The coefficients are stored per technology in
+<code class="docutils literal notranslate"><span class="pre">TechnologyConstructionCostParameter</span></code>. Unused coefficients are zero. The sum
+over all technologies is multiplied by surcharge factors for construction
+(20%), tail costs (5%) and general facilities (5%). The calculation is
+<code class="docutils literal notranslate"><span class="pre">construction_costs_total</span></code> in <code class="docutils literal notranslate"><span class="pre">drinq/utils/financial_costs.py</span></code>.</p>
+<p><strong>Annual costs.</strong> With construction costs <span class="math notranslate nohighlight">\(C\)</span>, lifespan <span class="math notranslate nohighlight">\(L\)</span>,
+interest rate <span class="math notranslate nohighlight">\(i\)</span> and O&amp;M rate <span class="math notranslate nohighlight">\(p\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[T = \frac{C}{L} + C\,i + C\,p + E + P + K\]</div>
+<p>where <span class="math notranslate nohighlight">\(E\)</span> is the energy costs (daily energy times 365 times the energy
+price), <span class="math notranslate nohighlight">\(P\)</span> the personnel costs and <span class="math notranslate nohighlight">\(K\)</span> the chemical costs (daily
+chemical costs times 365). The depreciation is linear and the interest is
+charged on the full construction costs.</p>
+<p><strong>Levelized cost of water.</strong></p>
+<div class="math notranslate nohighlight">
+\[LCOW = \frac{T}{24 \cdot 365 \cdot Q}\]</div>
+</section>
+<section id="adaptability">
+<h2>Adaptability<a class="headerlink" href="#adaptability" title="Link to this heading"></a></h2>
+<p>Adaptability describes how well a technology copes with change, for example in
+raw water quality. Each technology has a score per <code class="docutils literal notranslate"><span class="pre">AdaptabilityCriterion</span></code>
+in <code class="docutils literal notranslate"><span class="pre">TechnologyAdaptabilityScore</span></code>. The technology score is the mean over its
+criteria. The plant score is the mean over the technologies and is stored as
+the plant property <em>adaptability score</em> (0 to 1). The details are shown at
+<code class="docutils literal notranslate"><span class="pre">/treatmentplant/&lt;id&gt;/adaptability/</span></code>.</p>
+</section>
+<section id="optimisation">
+<h2>Optimisation<a class="headerlink" href="#optimisation" title="Link to this heading"></a></h2>
+<p>For selected processes the user can run an optimisation instead of a plain
+calculation. The processes are coagulation-flocculation, single and dual
+filtration, GAC, chlorination and ozonation.</p>
+<pre  class="mermaid">
+        flowchart LR
+    A[Plant inputs] --&gt; B[Payload and CSV inputs&lt;br/&gt;research/pystimela_optim/inputs]
+    B --&gt; C[Config JSON per process]
+    C --&gt; D[pystimela_optim run]
+    D --&gt; E[results JSON&lt;br/&gt;in outputs]
+    E --&gt; F[Store properties,&lt;br/&gt;water quality and KPIs]
+    F --&gt; G[Recalculate plant KPIs]
+    </pre><ul class="simple">
+<li><p>The mapping between DRINQ properties and optimiser parameters is stored in
+<code class="docutils literal notranslate"><span class="pre">TechnologyPystimelaoptJunction</span></code>, <code class="docutils literal notranslate"><span class="pre">TechnologyPropertyPystimelaoptJunction</span></code>
+and <code class="docutils literal notranslate"><span class="pre">TechnologyWaterqualityParameterPystimelaoptJunction</span></code>. Only properties
+flagged <code class="docutils literal notranslate"><span class="pre">sent_to_optimizer</span></code> are sent.</p></li>
+<li><p>By default the run starts in a background thread (setting
+<code class="docutils literal notranslate"><span class="pre">OPTIMIZER_ASYNC</span></code>). The page polls
+<code class="docutils literal notranslate"><span class="pre">/treatmentplant/&lt;id&gt;/technology/optimizer-status/</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TreatmentPlantTechnologyOptimizationStatus</span></code> records per plant and
+technology whether the result is current. It stores a hash of the inputs.
+When the user changes an input, the hash no longer matches and the stale
+result is dropped.</p></li>
+<li><p><em>Reset optimization</em> clears the flags and recalculates with the user and
+default values.</p></li>
+</ul>
+</section>
+<section id="comparing-designs">
+<h2>Comparing designs<a class="headerlink" href="#comparing-designs" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">/treatmentplant/compare/</span></code> places the plant properties of two designs side
+by side per category. The radar chart scales each property to the larger of
+the two values and shows the mean per category.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="decision_process.html" class="btn btn-neutral float-left" title="Decision process" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="administration.html" class="btn btn-neutral float-right" title="Administration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019-2026, KWR Water Research Institute, licensed under the EUPL.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

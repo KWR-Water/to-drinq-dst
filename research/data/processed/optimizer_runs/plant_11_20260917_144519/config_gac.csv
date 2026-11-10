@@ -1,0 +1,10 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+decision_variables,filporo,0.5
+decision_variables,gac_depth,4.0
+decision_variables,theta,16.0
+decision_variables,gac_surface,1.470486111111111
+decision_variables,diam,0.5
+decision_variables,rho_k,0.5
+constraints,DOC,3
+constraints,DOC,0.04774

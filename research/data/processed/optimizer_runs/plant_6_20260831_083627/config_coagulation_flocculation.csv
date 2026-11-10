@@ -1,0 +1,15 @@
+section,parameter,value
+decision_variables,use_auto_bounds,True
+process_specific,coagulant,fecl3
+model_parameters,mixer_velocity_gradient,1000
+model_parameters,power_efficiency_of_mixer_s,80
+model_parameters,target_concentration_of_dosing_chemical,20
+model_parameters,volume,0
+constraints,dissolved_organic_carbon,3
+constraints,dissolved_organic_carbon,2
+constraints,dynamic_viscosity,0.00108
+constraints,electrical_conductivity,41.4
+constraints,pH_max,7.2
+constraints,temperature,18
+constraints,tss_max,20
+constraints,tss_max,5

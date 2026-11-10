@@ -1,0 +1,154 @@
+{
+  "process": "coagulation-flocculation",
+  "inputs": {
+    "timestamps": [
+      0.0,
+      60.0,
+      120.0
+    ],
+    "wq_parameters": {
+      "flow": {
+        "value": 141.167,
+        "unit": "m3/h"
+      },
+      "temperature": {
+        "value": 18,
+        "unit": "degr. Celcius"
+      },
+      "suspended_solids": {
+        "value": 20,
+        "unit": "mg/liter"
+      },
+      "doc": {
+        "value": 3,
+        "unit": "mg/liter"
+      },
+      "conductivity": {
+        "value": 300.0,
+        "unit": "mS/m"
+      },
+      "ph": {
+        "value": 7.2,
+        "unit": "-"
+      },
+      "mnumber": {
+        "value": 0.0,
+        "unit": "mmol/L"
+      },
+      "uv254": {
+        "value": 0.1,
+        "unit": "1/m"
+      }
+    }
+  },
+  "coagulant": "fecl3",
+  "limits": {
+    "dose_min_mmol": 0.008,
+    "dose_max_mmol": 0.8,
+    "g10_coag_min": 10.0,
+    "g10_coag_max": 1000.0,
+    "g10_floc_min": 10.0,
+    "g10_floc_max": 80.0,
+    "V_coag_min": 1.0,
+    "V_coag_max": 100.0,
+    "length_floc_min_m": 0.4,
+    "length_floc_max_m": 40.0,
+    "surf_min_m2": 2.0,
+    "surf_max_m2": 200.0,
+    "pH_min": 6.5,
+    "pH_max": 7.5,
+    "doc_out_max": 10.0,
+    "tss_out_max": 2.0,
+    "theta_coag_min": 1.0,
+    "theta_coag_max": 30.0,
+    "theta_floc_min": 10.0,
+    "theta_floc_max": 60.0,
+    "coag_removal_split": 0.3
+  },
+  "initials": {
+    "suspended_solids_initial_floc": 0.0
+  },
+  "weights": {
+    "lam_pH": 100000.0,
+    "lam_DOC": 100000.0,
+    "lam_TSS": 100000.0,
+    "lam_G": 10000.0,
+    "lam_theta_coag": 100000.0,
+    "lam_theta_floc": 100000.0,
+    "lam_split": 100000.0
+  },
+  "params": {
+    "a1": 284.0,
+    "a2": 74.2,
+    "a3": 4.91,
+    "ka20": 3.68e-05,
+    "kb20_coag": 7e-09,
+    "kb20_floc": 1.83e-07,
+    "b": 0.147,
+    "k1": -0.075,
+    "k2": 0.56,
+    "numcel": 3,
+    "fecl3_mmol_to_mgL": 162.2,
+    "fecl3_dilution_frac": 0.4,
+    "fecl3_chem_cost_per_kg": 0.535,
+    "al2so43_mmol_to_mgL": 342.18,
+    "al2so43_dilution_frac": 0.48,
+    "al2so43_chem_cost_per_kg": 0.35,
+    "n_years": 40,
+    "r_nom": 0.05,
+    "infl": 0.031,
+    "mu": 0.001,
+    "n_eff": 0.8,
+    "elec_price": 0.14,
+    "coagulant": "fecl3"
+  },
+  "algorithm": {
+    "seed": 42,
+    "maxiter": 100,
+    "popsize": 15,
+    "tol": 0.001
+  },
+  "bounds": [
+    {
+      "name": "dose_mmol",
+      "min": 0.008,
+      "max": 0.8,
+      "units": "mmol/L"
+    },
+    {
+      "name": "g10_coag",
+      "min": 10.0,
+      "max": 1000.0,
+      "units": "1/s"
+    },
+    {
+      "name": "V_coag_m3",
+      "min": 1.0,
+      "max": 100.0,
+      "units": "m3"
+    },
+    {
+      "name": "g10_floc",
+      "min": 10.0,
+      "max": 80.0,
+      "units": "1/s"
+    },
+    {
+      "name": "length_m",
+      "min": 0.4,
+      "max": 40.0,
+      "units": "m"
+    },
+    {
+      "name": "surf_m2",
+      "min": 2.0,
+      "max": 200.0,
+      "units": "m2"
+    }
+  ],
+  "notes": {
+    "source": "auto-generated from django_outputs.json",
+    "wq_csv_format": "semicolon-delimited; headers: timestamp;flow;temperature;conductivity;suspended_solids;uv254;ph;doc",
+    "scaling": "bounds derived using ±10.0× from django base values"
+  }
+}
