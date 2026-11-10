@@ -27,7 +27,13 @@ class AdaptabilityCriterion(models.Model):
 
 
 class Citation(models.Model):
+    """Store a reusable reference without separate bibliographic tables."""
+
     key = models.TextField(unique=True, blank=True, null=True)
+    reference = models.TextField(blank=True, default='')
+    doi = models.CharField(max_length=255, blank=True, default='')
+    url = models.URLField(max_length=500, blank=True, default='')
+    notes = models.TextField(blank=True, default='')
 
     class Meta:
         # managed = False
@@ -567,6 +573,82 @@ class Process(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class RemovalDataset(models.Model):
+    """Record the provenance of a versioned removal-summary source file."""
+
+    key = models.SlugField(max_length=100, unique=True)
+    title = models.TextField()
+    source_file = models.TextField()
+    source_sha256 = models.CharField(max_length=64, unique=True)
+    publication = models.ForeignKey(
+        Citation, on_delete=models.PROTECT,
+        related_name='removal_datasets')
+    sources = models.ManyToManyField(
+        Citation, related_name='source_removal_datasets', blank=True)
+    source_attribution_verified = models.BooleanField(default=False)
+    aggregation_method = models.TextField()
+    provenance_notes = models.TextField(blank=True)
+    imported_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'removal_dataset'
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class CompoundRemovalSummary(models.Model):
+    """Preserve one source summary linked to a CID and treatment process."""
+
+    compound_id: int
+    compound = models.ForeignKey(
+        Compound, on_delete=models.PROTECT, db_column='cid',
+        related_name='removal_summaries')
+    process = models.ForeignKey(
+        Process, on_delete=models.PROTECT, related_name='removal_summaries')
+    dataset = models.ForeignKey(
+        RemovalDataset, on_delete=models.PROTECT, related_name='summaries')
+    source_row_number = models.PositiveIntegerField()
+    source_substance_label = models.TextField()
+    source_treatment_label = models.TextField()
+    mean_percent = models.FloatField()
+    std_percent = models.FloatField(blank=True, null=True)
+    sample_count = models.PositiveIntegerField(
+        blank=True, null=True)
+
+    class Meta:
+        db_table = 'compound_removal_summary'
+        verbose_name_plural = 'compound removal summaries'
+        indexes = [
+            models.Index(
+                fields=['compound', 'process'],
+                name='removal_cid_process_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['dataset', 'source_row_number'],
+                name='unique_removal_dataset_row'),
+            models.CheckConstraint(
+                condition=models.Q(source_row_number__gte=1),
+                name='removal_source_row_positive'),
+            models.CheckConstraint(
+                condition=(models.Q(mean_percent__gte=0)
+                           & models.Q(mean_percent__lte=100)),
+                name='removal_mean_percent_range'),
+            models.CheckConstraint(
+                condition=(models.Q(std_percent__isnull=True)
+                           | models.Q(std_percent__gte=0)),
+                name='removal_std_nonnegative'),
+            models.CheckConstraint(
+                condition=(models.Q(sample_count__isnull=True)
+                           | models.Q(sample_count__gte=1)),
+                name='removal_sample_count_positive'),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.compound_id}: {self.mean_percent}%'
 
 
 class RemovalEfficiency(models.Model):

@@ -71,7 +71,7 @@
   },
   {
     "technology_id": 21,
-    "technology_name": "Rapid sand filtration, pressurized",
+    "technology_name": "Rapid sand filtration,submerged, pressurized",
     "technology_class": "RapidSandPressurizedVesselFiltration",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"
@@ -80,13 +80,6 @@
     "technology_id": 15,
     "technology_name": "Powdered activated carbon (PAC) filtration",
     "technology_class": "PowderedActivatedCarbonFiltration",
-    "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
-    "source_table": "waterqualityparameter_technology"
-  },
-  {
-    "technology_id": 38,
-    "technology_name": "UV/H2O2 Advanced Oxidation Process",
-    "technology_class": "UVAOP",
     "missing_wq_parameter": "<<no waterqualityparameter_technology rows>>",
     "source_table": "waterqualityparameter_technology"
   },

@@ -9,8 +9,7 @@ technology_id,technology_name,technology_class,missing_wq_parameter,source_table
 29,Main stream nanofiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 36,Polymeric ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 37,Ceramic ultrafiltration,MembraneFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-21,"Rapid sand filtration, pressurized",RapidSandPressurizedVesselFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
+21,"Rapid sand filtration,submerged, pressurized",RapidSandPressurizedVesselFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 15,Powdered activated carbon (PAC) filtration,PowderedActivatedCarbonFiltration,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
-38,UV/H2O2 Advanced Oxidation Process,UVAOP,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 32,Low pressure UV for disinfection,UVdisinfection,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology
 43,Clean water storage tank,CleanWaterStorageTank,<<no waterqualityparameter_technology rows>>,waterqualityparameter_technology

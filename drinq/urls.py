@@ -19,12 +19,14 @@ from django.contrib import admin
 import django.contrib.auth.views as auth_views
 from drinq import views
 from drinq.forms import CustomUserAuthForm
+from drinq.removal_views import RemovalRatesView
 from drinq.api_views import DigestDesignParametersAPI
 from accounts.views import UserAPI
 from accounts.api import UserViewSet
 
 urlpatterns = [
     path("", views.index, name='drinq'),
+    path('removal-rates/', RemovalRatesView.as_view(), name='removal_rates'),
     # path('form/', views.dst_form_surfacewater, name='drinq_form'),
     # path('multi_form/', views.MultiStepQuestionnaire.as_view(
     #     [

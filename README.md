@@ -87,6 +87,23 @@ Run only the optimizer unit tests with:
 ### Create a conda environment before first use
 See the first step in the developers section (the optimizer environment).
 
+## Removal Data Attribution
+The CEC removal database extract was provided by Annemarie van Wezel and
+is associated with Fischer et al. (2017),
+[Decision support for water quality management of contaminants of emerging concern](https://doi.org/10.1016/j.jenvman.2017.02.002).
+Its contributing removal records cite Snyder et al. (2007) and two TAPES
+sources. Providing the extract does not establish ownership of all
+underlying measurements or permission to redistribute them. See the
+[removal dataset documentation](research/data/processed/removal/README.md)
+for references, acknowledgement wording, permission qualifications, and
+the CSV import layout. Ownership acknowledgements remain in documentation.
+
+Import the prepared tables with `uv run --no-project --python <environment-python>
+python manage.py import_removal_data` after applying migrations. Add
+`--dry-run` to validate and roll back all writes. Signed-in users can open
+**Menu > Substance removal rates** to browse by CAS/synonym or technology,
+including standard deviations and literature references.
+
 # Building the package
 The package metadata is defined in `pyproject.toml`; `setup.py` is a thin
 shim for tools that still call it. Python 3.13 or newer is required.
