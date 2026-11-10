@@ -3,6 +3,15 @@ import re
 import logging
 from dataclasses import dataclass
 
+from drinq.models import (
+    Technology,
+    TechnologyProperty,
+    TechnologyPropertyJunction,
+    TechnologyPropertyPystimelaoptJunction,
+    TechnologyPystimelaoptJunction,
+    TechnologyWaterqualityParameterPystimelaoptJunction,
+    WaterqualityParameterTechnologyJunction,
+)
 from drinq.utils.treatmentkpi import (
     TECH_KPI_MAPPINGS,
     MicroStrainer,
@@ -89,6 +98,454 @@ KPI_CO2_EMISSIONS_KGPERM3 = 'CO2 equivalent emissions'
 KPI_ADAPTABILITY_INDEX = 'resilience index'
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_optimizer_parameter_name(name: str) -> str:
+    """Normalize free-text parameter names for mapping lookups."""
+    return re.sub(r'[^a-z0-9]+', ' ', name.strip().lower()).strip()
+
+
+OPTIMIZER_CSV_PROCESS_MAPPING: dict[
+    str,
+    dict[str, object],
+] = {
+    'chlorination': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'chlorine dose': ('decision_variables', 'chlorine_dose_max'),
+            'chemical dose': ('decision_variables', 'chlorine_dose_max'),
+            'chlorine dosage': ('decision_variables', 'chlorine_dose_max'),
+            'contact volume': ('decision_variables', 'volume_max'),
+            'contact tank volume': ('decision_variables', 'volume_max'),
+            'residence time': ('constraints', 'theta_max'),
+            'residence time hours': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'doc': ('constraints', 'tthms_max'),
+        },
+    },
+    'coagulation-flocculation': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+            ('process_specific', 'coagulant', 'fecl3'),
+        ],
+        'technology_properties': {
+            'coagulation volume': ('decision_variables', 'v_coag_max'),
+            'coagulant dose': ('decision_variables', 'dose_max_mmol'),
+            'flocculation length': ('decision_variables', 'length_floc_max_m'),
+            'flocculation surface': ('decision_variables', 'surf_max_m2'),
+        },
+        'waterquality_parameters': {
+            'ph': ('constraints', 'pH_max'),
+            'doc': ('constraints', 'doc_max'),
+            'suspended solids': ('constraints', 'tss_max'),
+            'suspended_solids': ('constraints', 'tss_max'),
+            'tss': ('constraints', 'tss_max'),
+            'total suspended solids': ('constraints', 'tss_max'),
+        },
+    },
+    'filtration_single': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'filtration surface': ('decision_variables', 'surf_max_m2'),
+            'filtration depth': ('decision_variables', 'lbed_max_m'),
+            'grain size': ('decision_variables', 'dpm_max_m'),
+        },
+        'waterquality_parameters': {
+            'suspended solids': ('constraints', 'tss_out_max'),
+            'suspended_solids': ('constraints', 'tss_out_max'),
+            'tss': ('constraints', 'tss_out_max'),
+            'total suspended solids': ('constraints', 'tss_out_max'),
+        },
+    },
+    'filtration_dual': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'filtration surface': ('decision_variables', 'surf_max_m2'),
+            'filtration depth': ('decision_variables', 'lbed1_max_m'),
+            'filtration depth b': ('decision_variables', 'lbed2_max_m'),
+            'grain size a': ('decision_variables', 'dpm1_max_m'),
+            'grain size b': ('decision_variables', 'dpm2_max_m'),
+        },
+        'waterquality_parameters': {
+            'suspended solids': ('constraints', 'tss_out_max'),
+            'suspended_solids': ('constraints', 'tss_out_max'),
+            'tss': ('constraints', 'tss_out_max'),
+            'total suspended solids': ('constraints', 'tss_out_max'),
+        },
+    },
+    'gac': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+        ],
+        'technology_properties': {
+            'gac surface': ('decision_variables', 'surf_max_m2'),
+            'gac depth': ('decision_variables', 'lbed_max_m'),
+            'bed height': ('decision_variables', 'lbed_max_m'),
+            'residence time': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'doc': ('constraints', 'doc_max'),
+        },
+    },
+    'ozonation': {
+        'defaults': [
+            ('decision_variables', 'use_auto_bounds', True),
+            ('model_parameters', 'meetee', True),
+        ],
+        'technology_properties': {
+            'ozonation area': ('decision_variables', 'areact_max'),
+            'ozonation height': ('decision_variables', 'hreact_max'),
+            'ozonation chemical dose': ('decision_variables', 'ozone_dosed_max'),
+            'residence time': ('constraints', 'theta_max'),
+        },
+        'waterquality_parameters': {
+            'bromate': ('constraints', 'bromate_max'),
+            'aoc': ('constraints', 'aoc_max'),
+        },
+    },
+}
+
+
+OPTIMIZER_OUTPUT_DB_MAPPING: dict[
+    str,
+    dict[str, dict[str, list[str]]],
+] = {
+    'chlorination': {
+        'properties': {
+            'chlorine_dose_mgL': [
+                'target concentration of dosing chemical',
+                'target residual concentration (mg/l)',
+                'chlorination chemical dose',
+                'chlorine dose',
+            ],
+            'volume_m3': [
+                'volume',
+                'chlorination volume',
+                'contact volume',
+            ],
+        },
+        'kpis': {},
+    },
+    'coagulation-flocculation': {
+        'properties': {
+            'chem_dose_mmol': [
+                'coagulation chemical dose',
+                'coagulant dose',
+            ],
+            'V_coag_m3': ['coagulation volume'],
+            'length_m': ['flocculation length'],
+            'surf_m2': ['flocculation surface'],
+        },
+        'kpis': {},
+    },
+    'filtration_single': {
+        'properties': {
+            'surf_m2': ['single filtration surface', 'filtration surface'],
+            'lbed_m': ['single filtration depth', 'filtration depth'],
+            'diam_mm': ['single filtration grain size a', 'grain size'],
+        },
+        'kpis': {},
+    },
+    'filtration_dual': {
+        'properties': {
+            'surf_m2': ['dual filtration surface', 'filtration surface'],
+            'lbed1_m': ['dual filtration depth'],
+            'lbed2_m': ['dual filtration depth b'],
+            'diam1_mm': ['dual filtration grain size a'],
+            'diam2_mm': ['dual filtration grain size b'],
+        },
+        'kpis': {},
+    },
+    'gac': {
+        'properties': {
+            'surf_m2': ['filter area', 'gac surface'],
+            'lbed_m': ['bed height', 'gac depth'],
+        },
+        'kpis': {},
+    },
+    'ozonation': {
+        'properties': {
+            'ozone_dosed_mgL': ['ozonation chemical dose'],
+            'hreact_m': ['ozonation height'],
+            'areact_m2': ['ozonation area'],
+        },
+        'kpis': {},
+    },
+}
+
+
+OPTIMIZER_OUTPUT_WQ_MAPPING: dict[str, dict[str, list[str]]] = {
+    'chlorination': {
+        'residual_out_mgL': ['residual chlorine'],
+        'tthms_out_ugL': ['tthms'],
+        'haas_out_ugL': ['haas'],
+    },
+    'coagulation-flocculation': {
+        'pH_out': ['ph', 'pH'],
+        'DOC_out_mgL': ['doc'],
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'filtration_single': {
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'filtration_dual': {
+        'TSS_out_mgL': ['suspended solids', 'tss'],
+    },
+    'gac': {
+        'DOC_out_mgL': ['doc'],
+    },
+    'ozonation': {
+        'bromate_out_ugL': ['bromate'],
+        'AOC_out_ugL': ['aoc'],
+        'Ecoli_out': ['ecoli'],
+    },
+}
+
+
+def get_optimizer_csv_defaults(
+    process_key: str,
+) -> list[tuple[str, str, object]]:
+    """Return default sectioned CSV rows for an optimizer process."""
+    process_map = OPTIMIZER_CSV_PROCESS_MAPPING.get(process_key, {})
+    defaults = process_map.get('defaults', [])
+    return list(defaults)
+
+
+# pystim_name values that map to the 'constraints' CSV section even though
+# they originate from a technology property rather than a water-quality
+# parameter (e.g. a residence time bound constrains the process). Every
+# other technology-property pystim_name is a 'decision_variables' bound;
+# water-quality parameters always map to 'constraints'.
+PYSTIM_NAME_CONSTRAINT_OVERRIDES: set[str] = {'theta_max'}
+
+
+def _csv_section_for_pystim_name(source_kind: str, pystim_name: str) -> str:
+    """Return the pystimela_optim CSV section for a pystim parameter name."""
+    if source_kind == 'waterquality_parameters':
+        return 'constraints'
+    if pystim_name in PYSTIM_NAME_CONSTRAINT_OVERRIDES:
+        return 'constraints'
+    return 'decision_variables'
+
+
+def get_technologyproperty_pystim_name(
+    technology: Technology,
+    property_name: str,
+) -> str | None:
+    """Look up the pystimela_optim parameter name for a technology property.
+
+    Scopes the lookup to the given technology via TechnologyPropertyJunction,
+    then resolves the pystim name via TechnologyPropertyPystimelaoptJunction.
+    """
+    return (
+        TechnologyPropertyPystimelaoptJunction.objects
+        .filter(
+            technology_property__technology=technology,
+            technology_property__property__name__iexact=property_name,
+        )
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+
+
+def get_wq_pystim_name(
+    technology: Technology,
+    wq_parameter_name: str,
+) -> str | None:
+    """Look up the pystimela_optim parameter name for a WQ parameter.
+
+    Scopes the lookup to the given technology via
+    WaterqualityParameterTechnologyJunction, then resolves the pystim name
+    via TechnologyWaterqualityParameterPystimelaoptJunction.
+    """
+    return (
+        TechnologyWaterqualityParameterPystimelaoptJunction.objects
+        .filter(
+            wqparameter_technology__technology=technology,
+            wqparameter_technology__waterqualityparameter__name__iexact=(
+                wq_parameter_name
+            ),
+        )
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+
+
+def get_optimizer_output_property_for_technology(
+    technology: Technology,
+    optimizer_output_key: str,
+) -> TechnologyProperty | None:
+    """Resolve a raw optimizer JSON output key to a TechnologyProperty.
+
+    Scopes the match to the given technology via TechnologyPropertyJunction,
+    so the same pystim_name used by different technologies (e.g. 'surf_m2')
+    resolves unambiguously.
+    """
+    junction = (
+        TechnologyPropertyJunction.objects
+        .filter(
+            technology=technology,
+            technologypropertypystimelaoptjunction__pystim_name=(
+                optimizer_output_key
+            ),
+        )
+        .select_related('property')
+        .first()
+    )
+    return junction.property if junction else None
+
+
+def get_optimizer_output_wq_junction_for_technology(
+    technology: Technology,
+    optimizer_output_key: str,
+) -> WaterqualityParameterTechnologyJunction | None:
+    """Resolve a raw optimizer JSON output key to a WQ technology junction."""
+    return (
+        WaterqualityParameterTechnologyJunction.objects
+        .filter(
+            technology=technology,
+            technologywaterqualityparameterpystimelaoptjunction__pystim_name=(  # noqa, E501
+                optimizer_output_key
+            ),
+        )
+        .select_related('waterqualityparameter')
+        .distinct()
+        .first()
+    )
+
+
+def resolve_optimizer_csv_mapping(
+    technology: Technology,
+    process_key: str,
+    source_kind: str,
+    source_name: str,
+) -> tuple[str, str] | None:
+    """Resolve a DRINQ property/water-quality parameter to an optimizer
+    CSV (section, parameter) pair.
+
+    Prefers the pystim junction tables (TechnologyPropertyPystimelaoptJunction
+    / TechnologyWaterqualityParameterPystimelaoptJunction) scoped to
+    `technology`. Falls back to the static OPTIMIZER_CSV_PROCESS_MAPPING
+    table for technologies/parameters that do not yet have a junction row.
+    """
+    pystim_name = None
+    if source_kind == 'technology_properties':
+        pystim_name = get_technologyproperty_pystim_name(
+            technology, source_name)
+    elif source_kind == 'waterquality_parameters':
+        pystim_name = get_wq_pystim_name(technology, source_name)
+
+    if pystim_name:
+        return (
+            _csv_section_for_pystim_name(source_kind, pystim_name),
+            pystim_name,
+        )
+
+    logger.info(
+        "No pystim junction row for technology=%s process=%s %s=%s; "
+        "falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.",
+        technology.name if technology else None,
+        process_key,
+        source_kind,
+        source_name,
+    )
+
+    process_map = OPTIMIZER_CSV_PROCESS_MAPPING.get(process_key, {})
+    source_map = process_map.get(source_kind, {})
+    if not isinstance(source_map, dict):
+        return None
+
+    normalized = normalize_optimizer_parameter_name(source_name)
+    if normalized in source_map:
+        return source_map[normalized]
+    return None
+
+
+def get_optimizer_output_db_candidates(
+    process_key: str,
+    target: str,
+    optimizer_output_key: str,
+) -> list[str]:
+    """Return DB candidate names for an optimizer output key.
+
+    Args:
+        process_key: Optimizer process identifier.
+        target: Either 'properties' or 'kpis'.
+        optimizer_output_key: Raw optimizer key from output JSON.
+
+    Returns:
+        A list of preferred DB field names to try in order.
+    """
+    process_map = OPTIMIZER_OUTPUT_DB_MAPPING.get(process_key, {})
+    target_map = process_map.get(target, {})
+    if not isinstance(target_map, dict):
+        return []
+    return list(target_map.get(optimizer_output_key, []))
+
+
+def get_optimizer_output_wq_candidates(
+    process_key: str,
+    optimizer_output_key: str,
+) -> list[str]:
+    """Return candidate water quality parameter names for an output key."""
+    process_map = OPTIMIZER_OUTPUT_WQ_MAPPING.get(process_key, {})
+    return list(process_map.get(optimizer_output_key, []))
+
+
+# Raw `pystim_name` values stored in TechnologyPystimelaoptJunction, mapped
+# to the process keys pystimela_optim.api.optimize_process expects.
+PYSTIM_NAME_TO_OPTIMIZER_PROCESS_KEY: dict[str, str] = {
+    'coagulation_flocculation': 'coagulation-flocculation',
+    'coagulation-flocculation': 'coagulation-flocculation',
+    'filtration_single': 'filtration_single',
+    'filtration_dual': 'filtration_dual',
+    'gac': 'gac',
+    'chlorination': 'chlorination',
+    'ozonation': 'ozonation',
+}
+
+
+def get_optimizer_process_key_for_technology(
+    technology_name: str,
+) -> str | None:
+    """Map a DRINQ technology name to a pystimela optimizer process key.
+
+    Args:
+        technology_name: Technology display name from the database.
+
+    Returns:
+        The optimizer process key if recognized, otherwise None.
+    """
+    normalized_name = technology_name.strip()
+    if not normalized_name:
+        return None
+
+    pystim_name = (
+        TechnologyPystimelaoptJunction.objects
+        .filter(technology__name__iexact=normalized_name)
+        .values_list('pystim_name', flat=True)
+        .first()
+    )
+    if not pystim_name:
+        return None
+
+    process_key = PYSTIM_NAME_TO_OPTIMIZER_PROCESS_KEY.get(
+        pystim_name.strip().lower()
+    )
+    if process_key is None:
+        logger.warning(
+            "Unrecognized pystimela-optim name '%s' for technology '%s'",
+            pystim_name,
+            technology_name,
+        )
+    return process_key
 
 # ***Calculate daily nominal flow in m3/day***
 # See for variance and standard deviation calculation:
@@ -238,6 +695,7 @@ class TechnologyPerformanceCalculator:
     plant_kpis: dict[str, float | int]  # plant performance indicators
     tech_kpinames: list[str]  # technology performance indicators
     digested_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
+    optimized_tech_parameter_list: dict[str, list[str]]  # technology: [property names]
 
     def __init__(
         self,
@@ -251,6 +709,7 @@ class TechnologyPerformanceCalculator:
         waterquality_parameters: dict[str, dict[str, float | int]] = dict(),
         tech_kpinames: list[str] = None,
         digested_tech_parameter_list: dict[str, list[str]] = None,
+        optimized_tech_parameter_list: dict[str, list[str]] = None,
     ):
         self.treatmentplant_id = treatmentplant_id
         self.tech_parameters = tech_parameters
@@ -266,6 +725,7 @@ class TechnologyPerformanceCalculator:
         self.tech_kpinames = tech_kpinames
         self.tech_kpis = {technology: None for technology in technologies}
         self.digested_tech_parameter_list = digested_tech_parameter_list
+        self.optimized_tech_parameter_list = optimized_tech_parameter_list
         self.summed_kpis = dict()
 
     def _extract_chemical_prices_for_technology(
@@ -438,6 +898,9 @@ class TechnologyPerformanceCalculator:
         for stage in stages:
             for technology in technologies:
                 digest_property_list = self.digested_tech_parameter_list.get(technology, None)  # noqa, E501
+                optimized_property_list = self.optimized_tech_parameter_list.get(technology, None)  # noqa, E501
+                if optimized_property_list is None:
+                    optimized_property_list = []
                 if digest_property_list is None:
                     digest_property_list = []
                 tech_wq_parameters = wq_parameters.get(technology, {})
@@ -452,6 +915,7 @@ class TechnologyPerformanceCalculator:
                         ).keys()
                     ),
                     'digest_parameter_list': digest_property_list,
+                    'optimized_parameter_list': optimized_property_list,
                 }
                 match stage.lower():
                     case 'algae screening':
@@ -462,7 +926,7 @@ class TechnologyPerformanceCalculator:
                                 self.tech_parameters[technology] = microstrainer.parameters  # noqa, E501
 
                     case 'screening':
-                        if 'strainer' in technology.lower():
+                        if 'strainer' in technology.lower() and 'micro' not in technology.lower():
                             strainer = Strainer(**tech_kwargs)
                             self.tech_kpis[technology] = strainer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = strainer.parameters  # noqa, E501
@@ -472,7 +936,7 @@ class TechnologyPerformanceCalculator:
                             coag_dynmixer = CoagulationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_dynmixer.parameters  # noqa, E501         
-                        elif ('inline mixing' in technology.lower()) and ('coagulant dosing' in technology.lower()):
+                        elif ('inline dosing' in technology.lower()):
                             coag_inline = CoagulationInlineMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = coag_inline.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = coag_inline.parameters  # noqa, E501                                             
@@ -482,7 +946,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = cascade_mixer.parameters  # noqa, E501
 
                     case 'flocculation':
-                        if ('dynamic mixing') in technology.lower():
+                        if ('dynamic mixing' in technology.lower()) and ('flocculation' in technology.lower()):  # noqa, E501
                             floc_dynmixer = FlocculationDynamicMixing(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = floc_dynmixer.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = floc_dynmixer.parameters  # noqa, E501
@@ -502,7 +966,7 @@ class TechnologyPerformanceCalculator:
                             sludgeblanket_cl = SludgeBlanketClarifier(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = sludgeblanket_cl.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = sludgeblanket_cl.parameters  # noqa, E501
-                        elif 'chain scraped sedimentation' in technology.lower():  # noqa, E501
+                        elif 'chain-scraped sedimentation' in technology.lower():  # noqa, E501
                             chain_scraped_sed = ChainScrapedSedimentation(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = chain_scraped_sed.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = chain_scraped_sed.parameters  # noqa, E501
@@ -528,7 +992,7 @@ class TechnologyPerformanceCalculator:
                             self.tech_parameters[technology] = rsf.parameters  # noqa, E501
                         elif ('rapid sand filtration' in technology.lower() and
                               'submerged' in technology.lower() and
-                              'double' in technology.lower()):  # noqa, E501
+                              'dual' in technology.lower()):  # noqa, E501
                             rsfd = RapidSandDoubleMediumFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = rsfd.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfd.parameters  # noqa, E501
@@ -538,9 +1002,21 @@ class TechnologyPerformanceCalculator:
                             rsfp = RapidSandPressurizedVesselFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = rsfp.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = rsfp.parameters  # noqa, E501
+                        elif 'moving bed sand filtration' in technology.lower():
+                            rsmb = RapidSandMovingBedFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = rsmb.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = rsmb.parameters  # noqa, E501
+            
+                    case 'microfiltration':
+                        if ('polymeric microfiltration' in technology.lower() or
+                                'ceramic microfiltration' in technology.lower()):
+                            microfiltration = MembraneFiltration(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = microfiltration.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = microfiltration.parameters  # noqa, E501
 
                     case 'omp removal':
-                        if ('nanofiltration') in technology.lower():  # noqa, E501
+                        if ('nanofiltration' in technology.lower() or
+                                'reverse osmosis' in technology.lower()):  # noqa: E501
                             membr_filtration = MembraneFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = membr_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = membr_filtration.parameters  # noqa, E501
@@ -552,17 +1028,21 @@ class TechnologyPerformanceCalculator:
                             pac_filtration = PowderedActivatedCarbonFiltration(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pac_filtration.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pac_filtration.parameters  # noqa, E501
-                        elif ('UV' and 'H2O2') in technology.lower():  # noqa, E501
+                        elif ('uv' in technology.lower()) and ('h2o2' in technology.lower()):  # noqa, E501
                             uv_aop = UVAOP(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = uv_aop.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_aop.parameters  # noqa, E501
-                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                        elif ('ozone' in technology.lower()) and ('baffled' in technology.lower()):  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
 
                     case 'softening':
-                        if ('pellet softening') in technology.lower():
+                        if ('pellet softening') in technology.lower() and ('lime' in technology.lower()):  # noqa, E501
+                            pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
+                            self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
+                            self.tech_parameters[technology] = pellet_softening.parameters  # noqa, E501
+                        if ('pellet softening') in technology.lower() and ('caustic soda' in technology.lower()):  # noqa, E501
                             pellet_softening = PelletSoftening(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = pellet_softening.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = pellet_softening.parameters  # noqa, E501
@@ -580,11 +1060,11 @@ class TechnologyPerformanceCalculator:
                             clm_dis = ChloramineDisinfection(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = clm_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = clm_dis.parameters  # noqa, E501
-                        elif ('UV' and 'disinfection') in technology.lower():  # noqa, E501
+                        elif ('uv' in technology.lower()) and ('disinfection' in technology.lower()):  # noqa, E501
                             uv_dis = UVdisinfection(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = uv_dis.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = uv_dis.parameters  # noqa, E501
-                        elif ('ozone' and 'baffled') in technology.lower():  # noqa, E501
+                        elif ('ozone' in technology.lower()) and ('baffled' in technology.lower()):  # noqa, E501
                             ozone_cont = BaffledOzonationContactor(**tech_kwargs)  # noqa, E501
                             self.tech_kpis[technology] = ozone_cont.get_kpi_dict()  # noqa, E501
                             self.tech_parameters[technology] = ozone_cont.parameters  # noqa, E501
@@ -796,10 +1276,12 @@ class ConstructionCostsKPI(PlantKPI):
         general_facilities_costs_percentage: float = 5,
     ) -> float:
         self.value = construction_costs_total(
-            construction_costs,
-            construction_costs_percentage,
-            tail_costs_percentage,
-            general_facilities_costs_percentage,
+            construction_costs=construction_costs,
+            plc_costs=0.0,
+            construction_costs_percentage=construction_costs_percentage,
+            tail_costs_percentage=tail_costs_percentage,
+            general_facilities_costs_percentage=(
+                general_facilities_costs_percentage),
         )
         return self.value
 

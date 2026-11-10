@@ -1,6 +1,16 @@
-﻿id,name,description,unit
+id,name,description,unit
 1,temperature,temperature of water,degr. Celcius
 2,dissolved organic carbon,dissolved organic carbon,mg/liter
 3,turbidity,turbidity of solution,NTU
-4,total suspended solids,TSS (total suspended solids),
+4,total suspended solids,TSS (total suspended solids),mg/liter
 5,dynamic viscosity,dynamic viscosity (N*s/m2),N*s/m^2
+6,pH,pH of the water,
+7,total hardness,total hardness (mg/liter bicarbonate eq.),mg/liter bicarbonate eq.
+8,E. coli,"number of Escherichia coli bacteria, in colonies per liter",CFU/L
+9,UV 254,uv measured in the source water,1/m
+10,bromate,bromate concentration in the raw water, ug/liter
+11,assimilable organic carbon,"assimilable organic carbon, typically measured in raw water", ug/liter
+12,bromide,bromide concentration in the raw water,mg/liter
+13,trihalomethanes,trihalomethanes (TTHMs) concentration in the raw water, ug/liter
+14,haloacetic acids,haloacetic acids (HAAs)concentration in the raw water, ug/liter
+15,electrical conductivity,electrical conductivity of water,ms/m

@@ -27,7 +27,13 @@ class AdaptabilityCriterion(models.Model):
 
 
 class Citation(models.Model):
+    """Store a reusable reference without separate bibliographic tables."""
+
     key = models.TextField(unique=True, blank=True, null=True)
+    reference = models.TextField(blank=True, default='')
+    doi = models.CharField(max_length=255, blank=True, default='')
+    url = models.URLField(max_length=500, blank=True, default='')
+    notes = models.TextField(blank=True, default='')
 
     class Meta:
         # managed = False
@@ -169,7 +175,8 @@ class MultiStepConfiguration(models.Model):
         db_table = 'form_multistep'
 
     def __str__(self) -> str:
-        return f'{self.name} ({self.user.username})'
+        username = self.user.username if self.user is not None else '-'
+        return f'{self.name} ({username})'
 
 
 class QuestionAnswer(models.Model):
@@ -417,6 +424,15 @@ class TreatmentPlantProperty(models.Model):
 
 
 class TreatmentPlantTechnologyPropertyValue(models.Model):
+    SOURCE_USER = 'user'
+    SOURCE_DIGESTED = 'digested'
+    SOURCE_OPTIMIZED = 'optimized'
+    SOURCE_CHOICES = [
+        (SOURCE_USER, 'User'),
+        (SOURCE_DIGESTED, 'Digested'),
+        (SOURCE_OPTIMIZED, 'Optimized'),
+    ]
+
     id = models.AutoField(primary_key=True, unique=True)
     treatmentplant = models.ForeignKey(
         TreatmentPlant,
@@ -431,6 +447,9 @@ class TreatmentPlantTechnologyPropertyValue(models.Model):
         on_delete=models.CASCADE, blank=True, null=True,
         db_column='technologyproperty')
     value = models.FloatField(blank=True, null=False)
+    source = models.CharField(
+        max_length=16, choices=SOURCE_CHOICES, default=SOURCE_USER,
+        db_column='source')
 
     class Meta:
         # managed = False
@@ -439,6 +458,41 @@ class TreatmentPlantTechnologyPropertyValue(models.Model):
 
     def __str__(self):
         return f"{self.treatmentplant} ({self.technologyproperty}): {self.value}"
+
+
+class TreatmentPlantTechnologyOptimizationStatus(models.Model):
+    """Tracks whether a technology's digested properties for a plant
+    currently reflect a successful optimizer run, and the input state that
+    produced them (used to invalidate stale optimizer results)."""
+    id = models.AutoField(primary_key=True, unique=True)
+    treatmentplant = models.ForeignKey(
+        TreatmentPlant, on_delete=models.CASCADE,
+        db_column='treatmentplant')
+    technology = models.ForeignKey(
+        'Technology', on_delete=models.CASCADE,
+        db_column='technology')
+    is_optimized = models.BooleanField(
+        default=False, db_column='is_optimized')
+    optimized_at = models.DateTimeField(
+        blank=True, null=True, db_column='optimized_at')
+    input_snapshot_hash = models.CharField(
+        max_length=64, blank=True, default='',
+        db_column='input_snapshot_hash')
+
+    class Meta:
+        db_table = 'treatmentplant_technology_optimization_status'
+        verbose_name_plural = (
+            "treatment plant technology optimization statuses")
+        constraints = [
+            models.UniqueConstraint(
+                fields=['treatmentplant', 'technology'],
+                name='unique_plant_technology_optimization_status'),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.treatmentplant} ({self.technology}): "
+            f"optimized={self.is_optimized}")
 
 
 class DesignParameter(models.Model):
@@ -521,6 +575,82 @@ class Process(models.Model):
         return f"{self.name}"
 
 
+class RemovalDataset(models.Model):
+    """Record the provenance of a versioned removal-summary source file."""
+
+    key = models.SlugField(max_length=100, unique=True)
+    title = models.TextField()
+    source_file = models.TextField()
+    source_sha256 = models.CharField(max_length=64, unique=True)
+    publication = models.ForeignKey(
+        Citation, on_delete=models.PROTECT,
+        related_name='removal_datasets')
+    sources = models.ManyToManyField(
+        Citation, related_name='source_removal_datasets', blank=True)
+    source_attribution_verified = models.BooleanField(default=False)
+    aggregation_method = models.TextField()
+    provenance_notes = models.TextField(blank=True)
+    imported_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'removal_dataset'
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class CompoundRemovalSummary(models.Model):
+    """Preserve one source summary linked to a CID and treatment process."""
+
+    compound_id: int
+    compound = models.ForeignKey(
+        Compound, on_delete=models.PROTECT, db_column='cid',
+        related_name='removal_summaries')
+    process = models.ForeignKey(
+        Process, on_delete=models.PROTECT, related_name='removal_summaries')
+    dataset = models.ForeignKey(
+        RemovalDataset, on_delete=models.PROTECT, related_name='summaries')
+    source_row_number = models.PositiveIntegerField()
+    source_substance_label = models.TextField()
+    source_treatment_label = models.TextField()
+    mean_percent = models.FloatField()
+    std_percent = models.FloatField(blank=True, null=True)
+    sample_count = models.PositiveIntegerField(
+        blank=True, null=True)
+
+    class Meta:
+        db_table = 'compound_removal_summary'
+        verbose_name_plural = 'compound removal summaries'
+        indexes = [
+            models.Index(
+                fields=['compound', 'process'],
+                name='removal_cid_process_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['dataset', 'source_row_number'],
+                name='unique_removal_dataset_row'),
+            models.CheckConstraint(
+                condition=models.Q(source_row_number__gte=1),
+                name='removal_source_row_positive'),
+            models.CheckConstraint(
+                condition=(models.Q(mean_percent__gte=0)
+                           & models.Q(mean_percent__lte=100)),
+                name='removal_mean_percent_range'),
+            models.CheckConstraint(
+                condition=(models.Q(std_percent__isnull=True)
+                           | models.Q(std_percent__gte=0)),
+                name='removal_std_nonnegative'),
+            models.CheckConstraint(
+                condition=(models.Q(sample_count__isnull=True)
+                           | models.Q(sample_count__gte=1)),
+                name='removal_sample_count_positive'),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.compound_id}: {self.mean_percent}%'
+
+
 class RemovalEfficiency(models.Model):
     cid = models.ForeignKey(Compound, models.DO_NOTHING,
                             db_column='cid', blank=True, null=True)
@@ -559,10 +689,16 @@ class StageStage(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     stage_current = models.ForeignKey(
         Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_current',
         related_name='current')
     stage_next = models.ForeignKey(
         Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_next',
         related_name='next')
+    stage_previous = models.ForeignKey(
+        Stage, on_delete=models.CASCADE, blank=True, null=True,
+        db_column='stage_previous',
+        related_name='previous')
 
     class Meta:
         # managed = False
@@ -652,6 +788,9 @@ class TechnologyPropertyJunction(models.Model):
     is_digested = models.BooleanField(
         default=0, null=False,
         db_column='is_digested')
+    sent_to_optimizer = models.BooleanField(
+        default=0, null=False,
+        db_column='sent_to_optimizer')
 
     class Meta:
         # managed = False
@@ -792,9 +931,7 @@ class StageTechnologies(models.Model):
         db_table = 'stage_technologies'
 
     def __str__(self) -> str:
-        stage_name = Stage.objects.get(pk=self.stage).name
-        tech_name = Technology.objects.get(pk=self.technology).name
-        return f"Stage: {stage_name}, technology: {tech_name}"
+        return f"Stage: {self.stage}, technology: {self.technology}"
 
 
 class TechnologyRelatedtechnology(models.Model):
@@ -805,6 +942,15 @@ class TechnologyRelatedtechnology(models.Model):
     related_technology = models.ForeignKey(
         Technology, on_delete=models.CASCADE, blank=True, null=True,
         db_column='relatedtechnology', related_name='related_tech')
+    relatedtechnology_is_nextstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_nextstep')
+    relatedtechnology_is_previousstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_previousstep')
+    relatedtechnology_is_currentstep = models.BooleanField(
+        null=True, default=False,
+        db_column='relatedtech_is_currentstep')
 
     class Meta:
         # managed = False
@@ -830,9 +976,41 @@ class TechnologyChemicalagentJunction(models.Model):
         db_table = 'technology_chemicalagent'
 
     def __str__(self) -> str:
-        tech_name = Technology.objects.get(pk=self.technology).name
-        chemical_agent = ChemicalAgent.objects.get(pk=self.chemical_agent).name
-        return f"Technology: {tech_name}, chemical agent: {chemical_agent}"
+        return (
+            f"Technology: {self.technology}, "
+            f"chemical agent: {self.chemical_agent}")
+
+
+class TechnologyPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology = models.ForeignKey(
+        Technology, on_delete=models.CASCADE,
+        db_column='technology')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_pystimelaopt'
+        verbose_name_plural = "technology pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.technology}: {self.pystim_name}"
+
+
+class TechnologyPropertyPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    technology_property = models.ForeignKey(
+        TechnologyPropertyJunction, on_delete=models.CASCADE,
+        db_column='technology_property')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_property_pystimelaopt'
+        verbose_name_plural = "technology property pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.technology_property}: {self.pystim_name}"
 
 
 class Watercompany(models.Model):
@@ -877,6 +1055,9 @@ class WaterqualityParameterTechnologyJunction(models.Model):
     is_targetparameter = models.BooleanField(
         default=0, null=False,
         db_column='is_targetparameter')
+    sent_to_optimizer = models.BooleanField(
+        default=0, null=False,
+        db_column='sent_to_optimizer')
     default_value = models.FloatField(blank=True, null=True)
 
     class Meta:
@@ -885,9 +1066,10 @@ class WaterqualityParameterTechnologyJunction(models.Model):
         verbose_name_plural = "water quality parameter technology junctions"
 
     def __str__(self) -> str:
-        wqp = WaterqualityParameter.objects.get(pk=self.waterqualityparameter)
-        tech = Technology.objects.get(pk=self.technology)
-        return f"Water quality parameter: {wqp.name}, technology: {tech.name}, default value: {self.default_value}"  # noqa: E501
+        return (
+            f"Water quality parameter: {self.waterqualityparameter.name}, "
+            f"technology: {self.technology.name}, "
+            f"default value: {self.default_value}")
 
 
 class TreatmentPlantWaterQualityParameterValue(models.Model):
@@ -912,3 +1094,19 @@ class TreatmentPlantWaterQualityParameterValue(models.Model):
         wqp = WaterqualityParameter.objects.get(
             pk=self.wq_tech_parameter.waterqualityparameter.id)
         return f"Treatment plant: {self.treatmentplant}, WQ parameter: {wqp.name}, value: {self.value}"  # noqa: E501
+
+
+class TechnologyWaterqualityParameterPystimelaoptJunction(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    wqparameter_technology = models.ForeignKey(
+        WaterqualityParameterTechnologyJunction, on_delete=models.CASCADE,
+        db_column='wqparameter_technology')
+    pystim_name = models.TextField(null=False, db_column='pystim_name')
+
+    class Meta:
+        # managed = False
+        db_table = 'technology_wqpar_pystimelaopt'
+        verbose_name_plural = "technology water quality parameter pystimelaopt names"
+
+    def __str__(self) -> str:
+        return f"{self.wqparameter_technology}: {self.pystim_name}"

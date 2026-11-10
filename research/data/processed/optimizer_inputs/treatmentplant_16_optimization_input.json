@@ -1,0 +1,126 @@
+{
+  "treatment_plant": {
+    "id": 16,
+    "name": "strainer_inlinefecl3_chain-scraped_pellet_movingbed_uvh2o2_chlorine_cleantank",
+    "slug": "strainer_inlinefecl3_chain-scraped_pellet_movingbed_uvh2o2_chlorine_cleantank"
+  },
+  "generated_at": "2026-09-14T14:46:52.745805+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 170,
+      "technologyproperty_name": "baffling factor",
+      "unit": null,
+      "value": 1,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 26,
+      "technologyproperty_name": "chemical dosing solution concentration (w/w%)",
+      "unit": "%",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 18,
+      "technologyproperty_name": "retention time (min)",
+      "unit": "minutes",
+      "value": 30,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 27,
+      "technologyproperty_name": "target residual concentration (mg/l)",
+      "unit": "g/m^3",
+      "value": 0.2,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 1,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 40,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 8,
+      "waterqualityparameter_name": "E. coli",
+      "unit": "CFU/L",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 500,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 18,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 40,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 42,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 14,
+      "waterqualityparameter_name": "haloacetic acids",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 17,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 80,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 41,
+      "technology_id": 27,
+      "technology_name": "Chlorination",
+      "waterqualityparameter_id": 13,
+      "waterqualityparameter_name": "trihalomethanes",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 from rest_framework import status, viewsets
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.decorators import (
     api_view, permission_classes, renderer_classes,
     )
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
@@ -57,13 +58,19 @@ from accounts.models import CustomUser
 #         return Response(profile_serializer.data)
 
 class UserAPI(APIView):
+    """Return a user; users can only read themselves, staff can read all."""
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         user = get_object_or_404(CustomUser, pk=kwargs['user_id'])
+        if user.pk != request.user.pk and not request.user.is_staff:
+            raise NotFound()
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def register_user(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)

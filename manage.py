@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) KWR Water Research Institute
+# Licensed under the EUPL
 """Django's command-line utility for administrative tasks."""
 import os
 import sys

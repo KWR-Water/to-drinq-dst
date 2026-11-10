@@ -1,3 +1,5 @@
+# Copyright (c) KWR Water Research Institute
+# Licensed under the EUPL
 import sphinx_rtd_theme
 # Configuration file for the Sphinx documentation builder.
 #
@@ -13,6 +15,7 @@ import sphinx_rtd_theme
 #
 import os
 import sys
+import tomllib
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -20,11 +23,12 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'todrinq_dst'
-copyright = '2019, KWR Water Research Institute'
+copyright = '2019-2026, KWR Water Research Institute, licensed under the EUPL'
 author = 'Martin Korevaar, Martin van der Schans, Erwin Vonk'
 
-# The full version, including alpha/beta/rc tags
-release = '0.1'
+# The full version, including alpha/beta/rc tags; single source is pyproject.toml
+with open(os.path.abspath('../../pyproject.toml'), 'rb') as _pyproject:
+    release = tomllib.load(_pyproject)['project']['version']
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,7 +43,8 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
-    'sphinx_rtd_theme'
+    'sphinx_rtd_theme',
+    'sphinxcontrib.mermaid',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

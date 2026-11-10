@@ -1,5 +1,0 @@
-compound
-compound_synonym
-compound_cas
-technology
-treatment_stage

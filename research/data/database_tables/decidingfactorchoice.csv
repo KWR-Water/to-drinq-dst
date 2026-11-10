@@ -1,4 +1,4 @@
-﻿id,name,text,question,designtree
+id,name,text,question,designtree
 0,dummy_entry,no description,,
 1,source_surfacewater,the source water is surface water,1,1
 2,source_groundwater,the source is groundwater,1,2
@@ -25,12 +25,12 @@
 102,hardness_low__notmfuf,Hardness is less than threshold value,10,
 111,filtration__notmfuf_highhardness,Remove particles by granular media filtration,,
 112,filtration__notmfuf_lowhardness,Remove particles by granular media filtration,,
-121,omp_high__notmfuf__ozonation,Micropollutant concentrations are higher than threshold value,11,
-122,omp_low__notmfuf__notozonation,Micropollutant concentrations are lower than threshold value,11,
+121,omp_high__ozonation,Micropollutant concentrations are higher than threshold value,11,
+122,omp_low__notozonation,Micropollutant concentrations are lower than threshold value,11,
 131,disinfection__ozonation_required,Disinfection with ozonation is required,12,
 132,disinfection__ozonation_notrequired,Disinfection with ozonation is not required,12,
-141,disinfection__notozonation_required,Disinfection with ozonation is required,13,
-142,disinfection__notozonation_notrequired,Disinfection with ozonation is not required,13,
+141,disinfection__notozonation_required,"Disinfection is required, but ozonation is excluded",13,
+142,disinfection__notozonation_notrequired,Disinfection is not required,13,
 151,cleanwaterstorage_required,Clean water storage required,14,
 152,cleanwaterstorage_notrequired,Clean water storage not required,14,
 1000,Child Deciding Factor,Child deciding factor for a unit test,100000,3

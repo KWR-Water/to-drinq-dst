@@ -1849,7 +1849,10 @@ class TestRSFSingle(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 100.0,
         }
-        self.wq_parameters = {}
+        self.wq_parameters = {
+            'total suspended solids': {
+                'input_parameter': 15.0, 'target_parameter': 5.0}
+                }
         self.kpi_results = {
             'footprint area': 17.0,
             'footprint area for chemicals': 0.0,
@@ -1877,6 +1880,7 @@ class TestRSFSingle(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         kpi_results = rsf_single.get_kpi_dict()
@@ -1885,7 +1889,6 @@ class TestRSFSingle(unittest.TestCase):
         self.assertIn('daily energy consumption', kpi_results)
         self.assertIn('CO2 equivalent emissions', kpi_results)
 
-    
     def test_footprint_area(self):
         rsf_single = RapidSandSingleMediumFiltration(
             parameters=self.parameters,
@@ -2079,10 +2082,10 @@ class TestGAC(unittest.TestCase):
         self.parameters = {
             TPN['units_per_lane']: 2,
             TPN['filtration_rate']: 60,
-            TPN['sand_porosity']: 0.4,
-            TPN['gac_porosity']: 2800,
-            TPN['empty_bed_contact_time']:0.45,
-            TPN['grain_diameter']:0.5
+            TPN['gac_porosity']: 0.4,
+            TPN['gac_density']: 2800,
+            TPN['empty_bed_contact_time']: 0.45,
+            TPN['grain_diameter']: 0.5
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -2091,7 +2094,7 @@ class TestGAC(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 100.0,
         }
-        self.wq_parameters = {}
+        self.wq_parameters = {'dissolved organic carbon': {'input_parameter': 15.0}}
 
     def test_init(self):
         gac = GranularActivatedCarbonFiltration(

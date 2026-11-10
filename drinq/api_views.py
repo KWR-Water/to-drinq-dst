@@ -1,4 +1,7 @@
 from rest_framework.views import APIView
+from rest_framework.authentication import (
+    SessionAuthentication, TokenAuthentication)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import QuerySet
@@ -24,6 +27,7 @@ from drinq.serializers import (
     TreatmentPlantPropertyValueSerializer,
 )
 from drinq.api_calculation import TreatmentPlantPerformanceCalculator
+from drinq.access import user_can_access_plant
 import json
 
 with open("drinq/utils/treatmentplantpropertyname.json", "r") as file:
@@ -188,7 +192,12 @@ def get_constrcost_parameters(
 class DigestDesignParametersAPI(APIView):
     """
     API endpoint to digest design parameters for a TreatmentPlant.
+
+    Accepts a token or a browser session. The caller must own the plant.
     """
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         serializer = DesignParameterInputSerializer(data=request.data)
         if not serializer.is_valid():
@@ -203,6 +212,11 @@ class DigestDesignParametersAPI(APIView):
                 id=plant_id,
                 configuration_id=config_id)
         except TreatmentPlant.DoesNotExist:
+            return Response(
+                {'error': 'TreatmentPlant not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if not user_can_access_plant(request.user, plant):
             return Response(
                 {'error': 'TreatmentPlant not found.'},
                 status=status.HTTP_404_NOT_FOUND

@@ -28,16 +28,16 @@
 <body class="container">
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">
-            <img src="{% static 'logo-todrinq.png' %}" height="34">
+        <a class="navbar-brand" href="{% url 'index' %}">
+            <img src="{% static 'favicon.ico' %}" height="34" alt="ToDrinQ DST">
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <div class="container-fluid">
-                <ul class="navbar-nav mr-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'index' %}">Home</a>
                     </li>
@@ -54,18 +54,31 @@
                                     Start a new design
                                 </a>
                             </li>
-                            <a class="dropdown-item" href="{% url 'session_select' %}">
-                                Load a stored configuration session
-                            </a>
-                            <a class="dropdown-item" href="{% url 'configuration_manage' %}">
-                                Manage stored configurations
-                            </a>
-                            <a class="dropdown-item" href="{% url 'treatmentplant_compare' %}">
-                                Compare treatment KPIs
-                            </a>
-                            <a class="dropdown-item" href="{% url 'technology_parameter_overview_select' %}">
-                                Technology parameters overview
-                            </a>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'session_select' %}">
+                                    Load a stored configuration session
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'configuration_manage' %}">
+                                    Manage stored configurations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'treatmentplant_compare' %}">
+                                    Compare treatment KPIs
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'technology_parameter_overview_select' %}">
+                                    Technology parameters overview
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'removal_rates' %}">
+                                    Substance removal rates
+                                </a>
+                            </li>
                             {% comment %} <li>
                                 <a class="dropdown-item" href="{% url 'design_parameter_input' %}">
                                     Design parameters

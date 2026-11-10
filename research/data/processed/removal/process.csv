@@ -1,0 +1,8 @@
+name;description
+O3;Ozonation
+O3 + H2O2;Ozonation with hydrogen peroxide
+PAC;Powdered activated carbon adsorption
+UV;UV treatment
+UV + H2O2;UV with hydrogen peroxide
+Nanofiltration;Nanofiltration
+Ultrafiltration;Ultrafiltration
