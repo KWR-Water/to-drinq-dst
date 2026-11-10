@@ -250,8 +250,7 @@ details before sharing sensitive information.
 
 Repository-owner setup before public release
 --------------------------------------------
-The following are maintainer setup tasks, not features enabled by this
-guide. Repository owners should:
+The following are maintainer setup tasks. Repository owners should:
 
 * Designate the main developers responsible for reviews and merges, and
   identify domain reviewers for scientific changes.
