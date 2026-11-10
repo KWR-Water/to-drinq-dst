@@ -105,6 +105,12 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Where @login_required / LoginRequiredMixin redirect unauthenticated users.
+# Overrides Django's default of '/accounts/login/', which routes to the
+# custom accounts.views.user_login view — that view has no working GET
+# handler and returns None (crashing DRF) on a plain browser visit.
+LOGIN_URL = '/login/'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

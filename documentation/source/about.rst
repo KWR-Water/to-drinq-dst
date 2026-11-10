@@ -3,7 +3,10 @@ About
 ========
 
 
+The ToDrinQ DST was developed by KWR Water Research Institute.
+
 License
 -------
-This package is ??? licensed. See `License File <https://github.com/KWR-Water/todrinq_dst/blob/master/LICENSE/>`_ .
+This package is licensed under the European Union Public Licence (EUPL)
+v. 1.2. See the ``LICENSE`` file in the project root.
 

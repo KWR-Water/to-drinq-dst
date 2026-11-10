@@ -1,5 +1,5 @@
--r ../requirements.txt
 sphinx
 sphinx_rtd_theme
-# matplotlib
+sphinxcontrib-mermaid
+matplotlib
 ipykernel

@@ -1,0 +1,261 @@
+{
+  "treatment_plant": {
+    "id": 24,
+    "name": "test membrane 16-09-2026",
+    "slug": "test-membrane-16-09-2026"
+  },
+  "generated_at": "2026-09-16T16:40:58.436107+00:00",
+  "technology_properties": [
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 97,
+      "technologyproperty_name": "area",
+      "unit": "m^2",
+      "value": 0,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 18,
+      "technologyproperty_name": "retention time (min)",
+      "unit": "minutes",
+      "value": 15,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 19,
+      "technologyproperty_name": "tank height",
+      "unit": "m",
+      "value": 3,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 3,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 0,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "technologyproperty_id": 21,
+      "technologyproperty_name": "mixer velocity gradient",
+      "unit": "s^-1",
+      "value": 1000,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "technologyproperty_id": 25,
+      "technologyproperty_name": "power efficiency of mixer(s)",
+      "unit": null,
+      "value": 80,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "technologyproperty_id": 15,
+      "technologyproperty_name": "target concentration of dosing chemical",
+      "unit": "g/m^3",
+      "value": 20,
+      "source_table": "technology_property"
+    },
+    {
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "technologyproperty_id": 1,
+      "technologyproperty_name": "volume",
+      "unit": "m^3",
+      "value": 0,
+      "source_table": "technology_property"
+    }
+  ],
+  "waterquality_parameters": [
+    {
+      "junction_id": 35,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 8,
+      "waterqualityparameter_name": "E. coli",
+      "unit": "CFU/L",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 500,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 36,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 9,
+      "waterqualityparameter_name": "UV 254",
+      "unit": "1/m",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3.5,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 38,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 11,
+      "waterqualityparameter_name": "assimilable organic carbon",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 30,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 37,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 10,
+      "waterqualityparameter_name": "bromate",
+      "unit": " ug/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 53,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 10,
+      "waterqualityparameter_name": "bromate",
+      "unit": " ug/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 10,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 39,
+      "technology_id": 31,
+      "technology_name": "Baffled ozone contact reactor",
+      "waterqualityparameter_id": 12,
+      "waterqualityparameter_name": "bromide",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0.048,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 26,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 3,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 48,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 2,
+      "waterqualityparameter_name": "dissolved organic carbon",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 2,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 5,
+      "waterqualityparameter_name": "dynamic viscosity",
+      "unit": "N*s/m^2",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 0.00108,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 31,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 15,
+      "waterqualityparameter_name": "electrical conductivity",
+      "unit": "ms/m",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 41.4,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 24,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 6,
+      "waterqualityparameter_name": "pH",
+      "unit": "",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 7.2,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 29,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 1,
+      "waterqualityparameter_name": "temperature",
+      "unit": "degr. Celcius",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 18,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 25,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": true,
+      "is_targetparameter": false,
+      "value": 20,
+      "source_table": "waterqualityparameter_technology"
+    },
+    {
+      "junction_id": 46,
+      "technology_id": 44,
+      "technology_name": "Coagulant dosing with aluminium chloride by dynamic mixing",
+      "waterqualityparameter_id": 4,
+      "waterqualityparameter_name": "total suspended solids",
+      "unit": "mg/liter",
+      "is_inputparameter": false,
+      "is_targetparameter": true,
+      "value": 5,
+      "source_table": "waterqualityparameter_technology"
+    }
+  ]
+}

@@ -87,13 +87,13 @@ id,name,unit,description,category,parent_property
 86,upper bound NF flow recovery rate,126,upper bound NF flow recovery rate,1,116
 87,lower bound RO flow recovery rate,,lower bound RO flow recovery rate,1,116
 88,upper bound RO flow recovery rate,,upper bound RO flow recovery rate,1,116
-89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,89
+89,membrane flux,L/m2/h,"nominal design flux for membrane systems. Typically for nanofiltration: between 15 and 30, for reverse osmosis: between 10 and 20 LMH.",1,
 90,another dummy parameter,,another dummy parameter,1,
 91,membrane resistance coefficient,1/m,total membrane resistance coefficient (1/m),1,
 92,lower bound of membranes per vessel,,lower bound of membranes per vessel,1,113
 93,upper bound of membranes per vessel,,upper bound of membranes per vessel,1,113
 94,operating pressure (bar),bar,pressure head required for membrane filtration,1,114
-95,membrane dummy parameter,,dummy parameter,1,
+95,operating membrane area,m^2,dummy parameter,1,
 96,retention time (hr),hr,"retention time of water, in hours",1,
 97,area,m^2,area of the asset,1,
 98,energy emission factor,ton/kWh,emission factor for carbon dioxide emissions when energy is consumed,5,
@@ -117,7 +117,7 @@ id,name,unit,description,category,parent_property
 116,membrane recovery rate,,membrane recovery rate,1,
 117,irradiated area (projected),m^2,irradiated area (projected),1,
 118,bar width,m,width of bar screen or grid screen,1,
-119,pressure vessel orientation,,"orientation of pressure vessels (0: vertical, 1: horizontal)",1,
+119,vessel footprint,m^2,required area per membrane vessel,1,
 120,number of cascade stages,,number of cascade stages,1,
 121,weir height,m,weir height (m),1,
 122,weir coefficient,,weir coefficient,1,
@@ -127,8 +127,8 @@ id,name,unit,description,category,parent_property
 126,filtration rate,m^3/m^2/hour,"filtration rate, or hydraulic loading rate",1,
 127,sand porosity,,porosity of sand media,1,
 128,anthracite porosity,,porosity of anthracite media,1,
-129,sand density,kg/m^3,density of sand,1,
-130,anthracite density,kg/m^3,density of anthracite,1,
+129,sand density,g/cm^3,density of sand,1,
+130,anthracite density,g/cm^3,density of anthracite,1,
 131,backwash duration,minutes,backwash duration (min.),1,
 132,backwash filtration rate,m^3/m^2/hour,backwash filtration rate (m3/m2/h),1,
 133,sand media grain size,mm,sand media grain size,1,
@@ -138,7 +138,7 @@ id,name,unit,description,category,parent_property
 137,energy consumption per kg ozone,kWh/kg,energy consumption per kg of product (ozone) produced,3,
 138,power density,W/m3,power per unit volume (m3),3,
 139,PAC porosity,,porosity of powdered activated carbon,4,
-140,mass density of pellets,kg/m^3,mass density of pellets for softening (g/cm3),4,
+140,mass density of pellets,g/cm^3,mass density of pellets for softening (g/cm3),4,
 141,mass density of air,g/cm^3,mass density of air (g/cm3),1,
 142,mass density of TSS,g/cm^3,mass density of total suspended solids (g/cm3),1,
 143,chemical dosage factor,%,percentage of chemical required per kg of a parameter,1,
@@ -168,3 +168,10 @@ id,name,unit,description,category,parent_property
 167,sludge tank height,m,height of the sludge thickener,1,
 168,air pressure difference,kPa,air pressure difference for DAF,1,
 169,bed height,m,bed height,1,
+170,baffling factor,,efficiency factor of the disinfection basin,2,
+171,minimum baffling factor,,lower value of baffling factor,2,170
+172,maximum baffling factor,,upper value of baffling factor,2,170
+173,unit length ,m,length of unit tank,1,
+174,gac regeneration interval,days,days between regeneration of GAC,3,
+175,regeneration energy per kg of gac,kWh/kg,energy consumption per kg of regenerated GAC  ,3,
+176,energy per mg/L of DOC removed,kWh/m^3 per mg/L,marginal UV/AOP energy per mg/L of DOC-equivalent oxidant demand addressed,2,

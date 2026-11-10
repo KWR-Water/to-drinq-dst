@@ -4,11 +4,63 @@ from django.shortcuts import render, redirect, get_object_or_404
 from collections import OrderedDict, defaultdict
 import json
 import csv
+import hashlib
+import subprocess
+import shutil
+import os
+import threading
+import uuid
+from pathlib import Path
+from datetime import datetime
 
 import logging
 import numpy as np
+import pystimela
+from pystimela_optim.scripts import run_all_optimizations
+from pystimela_optim.api import optimize_process
+from pystimela_optim.scripts.coag_floc_prepare_config import (
+    generate_config_from_csv as prepare_coag_floc_config,
+)
+from pystimela_optim.scripts.filtration_prepare_config import (
+    generate_config_from_csv as prepare_filtration_config,
+)
+from pystimela_optim.scripts.dual_filtration_prepare_config import (
+    generate_config_from_csv as prepare_dual_filtration_config,
+)
+from pystimela_optim.scripts.gac_prepare_config import (
+    generate_config_from_csv as prepare_gac_config,
+)
+from pystimela_optim.scripts.chlorination_prepare_config import (
+    generate_config_from_csv as prepare_chlorination_config,
+)
+from pystimela_optim.scripts.ozonation_prepare_config import (
+    generate_config_from_csv as prepare_ozonation_config,
+)
+from pystimela_optim.scripts.coag_floc_optim_update import (
+    update_wq_from_results as update_coag_floc_wq,
+)
+from pystimela_optim.scripts.filtration_optim_update import (
+    update_wq_from_results as update_filtration_wq,
+)
+from pystimela_optim.scripts.dual_filtration_optim_update import (
+    update_wq_from_results as update_dual_filtration_wq,
+)
+from pystimela_optim.scripts.gac_optim_update import (
+    update_wq_from_results as update_gac_wq,
+)
+from pystimela_optim.scripts.chlorination_optim_update import (
+    update_wq_from_results as update_chlorination_wq,
+)
+from pystimela_optim.scripts.ozonation_optim_update import (
+    update_wq_from_results as update_ozonation_wq,
+)
 from warnings import warn
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.conf import settings
+from django.utils import timezone
+from django.core.cache import cache
 
 from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse,
@@ -17,7 +69,12 @@ from django.views import generic
 from django.forms import ValidationError, modelformset_factory
 from django.urls import reverse
 from django.db.models import Avg, Count
-from django.db import IntegrityError, transaction, connection
+from django.db import (
+    IntegrityError,
+    transaction,
+    connection,
+    close_old_connections,
+)
 from django.db.utils import OperationalError
 
 from drinq.models import (
@@ -44,6 +101,7 @@ from drinq.models import (
     TreatmentPlantPropertyValue,
     TreatmentPlantProperty,
     TreatmentPlantTechnologyPropertyValue,
+    TreatmentPlantTechnologyOptimizationStatus,
     TreatmentPlantWaterQualityParameterValue,
     TechnologyConstructionCostParameter,
     TechnologyChemicalagentJunction,
@@ -67,6 +125,7 @@ from drinq.forms import (
     build_technology_property_initials,
     )
 from drinq.chemistry_tools import smiles_to_svg
+from drinq.access import user_can_access_plant
 import drinq.decision_tree as dst
 import drinq.api_calculation as dac
 
@@ -123,6 +182,47 @@ DB_PLANTKPI_MAPPING = {
 # }
 
 logger = logging.getLogger(__name__)
+
+
+class TreatmentPlantAccessMixin(LoginRequiredMixin):
+    """Limit a plant page to the owner of its configuration and staff.
+
+    The plant is resolved from the ``plant_id`` or ``slug`` URL kwarg. Other
+    users get a 404, so the existence of a plant is not disclosed.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if 'plant_id' in kwargs:
+            plant = get_object_or_404(TreatmentPlant, pk=kwargs['plant_id'])
+        else:
+            plant = get_object_or_404(TreatmentPlant, slug=kwargs['slug'])
+        if not user_can_access_plant(request.user, plant):
+            raise Http404('Treatment plant does not exist.')
+        return super().dispatch(request, *args, **kwargs)
+
+
+def _optimizer_status_cache_key(plant_id, user_id):
+    return f'optimizer_status:plant:{plant_id}:user:{user_id}'
+
+
+@login_required
+def optimizer_status(request, plant_id):
+    plant = get_object_or_404(TreatmentPlant, pk=plant_id)
+    if not user_can_access_plant(request.user, plant):
+        raise Http404('Treatment plant does not exist.')
+    user_id = getattr(request.user, 'id', 0)
+    cache_key = _optimizer_status_cache_key(plant_id, user_id)
+    status = cache.get(cache_key) or {
+        'state': 'idle',
+        'message': '',
+        'updated_rows': [],
+        'progress': {},
+        'completed_processes': [],
+        'action': '',
+    }
+    return JsonResponse(status)
 
 
 def get_adaptability_scores_for_technologies(technologies):
@@ -220,7 +320,7 @@ class PasswordChangeOk(generic.TemplateView):
     template_name = "drinq/password_change_ok.html"
 
 
-class SessionSelectView(generic.edit.FormView):
+class SessionSelectView(LoginRequiredMixin, generic.edit.FormView):
     template_name = 'drinq/session_select.html'
     form_class = SessionSelectForm
 
@@ -502,6 +602,69 @@ def get_watersource(request):
     return water_source
 
 
+def _dedupe_ids(technology_ids: list[int]) -> list[int]:
+    deduped: list[int] = []
+    for technology_id in technology_ids:
+        if technology_id not in deduped:
+            deduped.append(technology_id)
+    return deduped
+
+
+def _build_choice_buckets(technology_ids: tuple[int, ...]) -> list[list[int]]:
+    """Build the stage buckets contributed by a single deciding-factor
+    choice: an optional previous-step bucket, the current stage's
+    technology alternatives (all kept together in one bucket), and an
+    optional next-step bucket.
+    """
+    tech_related_objs = TechnologyRelatedtechnology.objects
+    previous_ids: list[int] = []
+    next_ids: list[int] = []
+    for technology_id in technology_ids:
+        related_tech_previous = tech_related_objs.filter(
+            technology_id=technology_id,
+            relatedtechnology_is_previousstep=True,
+        ).first()
+        if related_tech_previous is not None:
+            related_id = related_tech_previous.related_technology_id
+            if related_id not in previous_ids:
+                previous_ids.append(related_id)
+
+        related_tech_next = tech_related_objs.filter(
+            technology_id=technology_id,
+            relatedtechnology_is_nextstep=True,
+        ).first()
+        if related_tech_next is not None:
+            related_id = related_tech_next.related_technology_id
+            if related_id not in next_ids:
+                next_ids.append(related_id)
+
+    choice_buckets: list[list[int]] = []
+    if previous_ids:
+        choice_buckets.append(previous_ids)
+    choice_buckets.append(_dedupe_ids(list(technology_ids)))
+    if next_ids:
+        choice_buckets.append(next_ids)
+    return choice_buckets
+
+
+def _append_stage_buckets(
+    stage_buckets: list[list[int]],
+    choice_buckets: list[list[int]],
+) -> list[list[int]]:
+    """Append a choice's buckets to the running, in-order stage sequence.
+
+    A bucket that exactly repeats the immediately preceding one is
+    skipped (e.g. a next-step bucket already introduced by an earlier
+    choice's current or previous bucket). Genuine repeats that occur
+    later in the sequence are preserved as their own buckets.
+    """
+    for bucket in choice_buckets:
+        if stage_buckets and stage_buckets[-1] == bucket:
+            continue
+        stage_buckets.append(bucket)
+    return stage_buckets
+
+
 class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
     template_name = "drinq/multi_form.html"
     success_url = 'form_multistep'
@@ -614,7 +777,7 @@ class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
             return None, None, False
 
 
-class QuestionsCompleteView(generic.TemplateView):
+class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
     template_name = "drinq/form_complete.html"
 
     def _get_configuration_or_404(
@@ -711,19 +874,25 @@ class QuestionsCompleteView(generic.TemplateView):
         }
         if results is not None and configuration is not None:
             choices = results.values_list('answer', flat=True)
+            stage_buckets: list[list[int]] = []
             for choice in choices:
                 if choice is not None:
                     choice_description = dst.get_choice_description(
                         choice=choice, query_set=None)
                     if choice_description is not None:
                         context['choices'].update({choice: choice_description})
-                    technology = dst.get_technology_of_choice(choice=choice)
-                    if technology:
-                        technologies += [technology]
+                    technology_ids = dst.get_technology_of_choice(
+                        choice=choice)
+                    if technology_ids:
+                        stage_buckets = _append_stage_buckets(
+                            stage_buckets,
+                            _build_choice_buckets(technology_ids),
+                        )
 
-            context['technologies'] = technologies
+            technologies = stage_buckets
+            context['technologies'] = [tuple(bucket) for bucket in technologies]
             treatment_options, treatment_maps = dst.get_treatment_trains(
-                technology_tuples=technologies)
+                technology_tuples=context['technologies'])
 
             # Build available technologies and stage names per step
             num_stages = len(technologies)
@@ -800,7 +969,7 @@ class QuestionsCompleteView(generic.TemplateView):
         return context
 
 
-class NamedDesignCreateView(generic.CreateView):
+class NamedDesignCreateView(LoginRequiredMixin, generic.CreateView):
     model = TreatmentPlant
     form_class = TreatmentDesignSelectionForm
     template_name = 'drinq/form_complete.html'
@@ -820,8 +989,8 @@ class NamedDesignCreateView(generic.CreateView):
                 )
 
         # Create DesignOption and TreatmentPlantLayout
-        configuration = MultiStepConfiguration.objects.get(
-            id=configuration_id)
+        configuration = get_object_or_404(
+            MultiStepConfiguration, id=configuration_id, user=request.user)
         treatment_plant, created = TreatmentPlant.objects.get_or_create(
             name=name,
             description=f"{name} for option {option}",
@@ -875,7 +1044,7 @@ class NamedDesignCreateView(generic.CreateView):
             )
 
 
-class NamedDesignUpdateView(generic.UpdateView):
+class NamedDesignUpdateView(TreatmentPlantAccessMixin, generic.UpdateView):
     model = TreatmentPlant
     form_class = TreatmentDesignSelectionForm
     template_name = 'drinq/form_edit-treatment-design-name.html'
@@ -926,7 +1095,7 @@ class NamedDesignUpdateView(generic.UpdateView):
         return self.form_invalid(form)
 
 
-class TreatmentDesignDetailView(generic.DetailView):
+class TreatmentDesignDetailView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlantLayout
     template_name = 'drinq/treatmentdesign_details.html'
 
@@ -1007,7 +1176,7 @@ class TreatmentDesignDetailView(generic.DetailView):
         return context
 
 
-class DesignParameterInputView(generic.FormView):
+class DesignParameterInputView(TreatmentPlantAccessMixin, generic.FormView):
     template_name = 'drinq/form_design-parameter-input.html'
     form_class = DesignParameterValueFormSet
 
@@ -1121,7 +1290,7 @@ class DesignParameterInputView(generic.FormView):
         return self.form_invalid(formset)
 
 
-class DesignParameterResultsView(generic.DetailView):
+class DesignParameterResultsView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/treatmentplant_property_results.html'
     pk_url_kwarg = 'plant_id'
@@ -1149,29 +1318,41 @@ class DesignParameterResultsView(generic.DetailView):
             treatmentplant=self.object
         ).select_related('technology', 'kpi')
 
-        # Group by technology
-        tech_kpis = defaultdict(list)
+        # Group by technology id so the display can follow the treatment
+        # layout order while still showing the same KPI set per technology.
+        tech_kpis_by_id = defaultdict(list)
         for kpi_value in tech_kpi_qs:
-            tech_kpis[kpi_value.technology].append(kpi_value)
+            tech_kpis_by_id[kpi_value.technology_id].append(kpi_value)
 
         # Get the ordered list of technologies by step from
-        # TreatmentPlantLayout
+        # TreatmentPlantLayout.
         layout_qs = TreatmentPlantLayout.objects.filter(
             treatmentplant=self.object
         ).select_related('technology').order_by('step')
-        ordered_techs = [
-            layout.technology for layout in layout_qs
-            if layout.technology is not None]
-        adaptability_data = get_adaptability_scores_for_technologies(
-            ordered_techs)
+        ordered_layouts = [layout for layout in layout_qs if layout.technology]
+
+        ordered_techs = []
+        seen_technology_ids = set()
+        for layout in ordered_layouts:
+            tech_id = layout.technology_id
+            if tech_id in seen_technology_ids:
+                continue
+            ordered_techs.append(layout.technology)
+            seen_technology_ids.add(tech_id)
+
+        adaptability_data = get_adaptability_scores_for_technologies(ordered_techs)
 
         # Build an ordered list of technology KPI blocks.
         technology_kpis_ordered = []
-        for tech in ordered_techs:
-            if tech in tech_kpis:
+        for layout in ordered_layouts:
+            tech = layout.technology
+            tech_kpis = tech_kpis_by_id.get(layout.technology_id, [])
+            if tech_kpis:
                 technology_kpis_ordered.append({
+                    'step': layout.step,
                     'technology': tech,
-                    'kpis': tech_kpis[tech],
+                    'kpis': tech_kpis,
+                    'kpi_count': len(tech_kpis),
                     'adaptability_score': adaptability_data[
                         'technology_scores'].get(tech.id),
                     'criteria_count': adaptability_data[
@@ -1202,7 +1383,7 @@ class DesignParameterResultsView(generic.DetailView):
         return context
 
 
-class DesignParameterResultsExportCsvView(generic.View):
+class DesignParameterResultsExportCsvView(TreatmentPlantAccessMixin, generic.View):
     """Export treatment plant KPI results to CSV."""
 
     def get(self, request, *args, **kwargs):
@@ -1453,7 +1634,9 @@ class TreatmentPlantComparisonView(LoginRequiredMixin, generic.FormView):
         return context
 
 
-class TechnologyParameterOverviewSelectionView(generic.TemplateView):
+class TechnologyParameterOverviewSelectionView(
+    LoginRequiredMixin, generic.TemplateView
+):
     """Show treatment designs that can be opened in the technology overview."""
 
     template_name = 'drinq/technology_parameter_overview_select.html'
@@ -1471,7 +1654,9 @@ class TechnologyParameterOverviewSelectionView(generic.TemplateView):
         return context
 
 
-class TechnologyParameterOverviewView(generic.DetailView):
+class TechnologyParameterOverviewView(
+    TreatmentPlantAccessMixin, generic.DetailView
+):
     """Read-only overview of technology properties and water quality values."""
 
     model = TreatmentPlant
@@ -1777,7 +1962,9 @@ class TechnologyParameterOverviewView(generic.DetailView):
         return context
 
 
-class DesignParameterOverviewView(generic.DetailView):
+class DesignParameterOverviewView(
+    TreatmentPlantAccessMixin, generic.DetailView
+):
     """Read-only overview of plant-wide design parameter values."""
 
     model = TreatmentPlant
@@ -1830,7 +2017,7 @@ class DesignParameterOverviewView(generic.DetailView):
         return context
 
 
-class AdaptabilityDetailView(generic.DetailView):
+class AdaptabilityDetailView(TreatmentPlantAccessMixin, generic.DetailView):
     model = TreatmentPlant
     template_name = 'drinq/adaptability_details.html'
     pk_url_kwarg = 'plant_id'
@@ -1892,7 +2079,7 @@ def index(request: HttpResponse):
     return render(request, 'drinq/index.html')
 
 
-class TechnologyPropertiesView(generic.FormView):
+class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
     """Collect technology-level property values (those flagged as
     design parameters). Persist them, run the performance calculator and
     redirect to the results page.
@@ -1900,145 +2087,1223 @@ class TechnologyPropertiesView(generic.FormView):
     template_name = 'drinq/form_technology-properties.html'
     form_class = TreatmentPlantTechPropertyValueFormSet
 
-    def get_treatment_plant(self):
-        return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
+    def _get_treatment_plant_technology_ids(self, treatment_plant):
+        return list(
+            TreatmentPlantLayout.objects.filter(
+                treatmentplant=treatment_plant
+            ).values_list('technology', flat=True)
+        )
 
-    def get_form(self, form_class=None):
-        treatment_plant = self.get_treatment_plant()
-        tech_ids = TreatmentPlantLayout.objects.filter(
-            treatmentplant=treatment_plant).values_list(
-                'technology', flat=True)
+    def _has_optimizer_targets(self, treatment_plant):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        if not tech_ids:
+            return False
+        return (
+            TechnologyPropertyJunction.objects.filter(
+                technology__in=tech_ids,
+                sent_to_optimizer=True,
+            ).exists()
+            or WaterqualityParameterTechnologyJunction.objects.filter(
+                technology__in=tech_ids,
+                sent_to_optimizer=True,
+            ).exists()
+        )
 
-        # Persist rows for required (technology-level) design parameters so
-        # unchanged default values are still present during calculations.
-        required_defaults = TechnologyPropertyJunction.objects.filter(
-            technology__in=tech_ids,
-            is_designparameter=True,
-            is_digested=False,
-        ).select_related('technology', 'property')
-        for junction in required_defaults:
-            TreatmentPlantTechnologyPropertyValue.objects.get_or_create(
+    def _build_optimizer_payload(self, treatment_plant):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        flagged_tech_props = list(
+            TechnologyPropertyJunction.objects
+            .filter(technology__in=tech_ids, sent_to_optimizer=True)
+            .select_related('technology', 'property')
+            .order_by('technology_id', 'property__name')
+        )
+        flagged_wq_junctions = list(
+            WaterqualityParameterTechnologyJunction.objects
+            .filter(technology__in=tech_ids, sent_to_optimizer=True)
+            .select_related('technology', 'waterqualityparameter')
+            .order_by('technology_id', 'waterqualityparameter__name')
+        )
+
+        tech_prop_values = {
+            (row.technology_id, row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
                 treatmentplant=treatment_plant,
-                technology=junction.technology,
-                technologyproperty=junction.property,
-                defaults={'value': junction.default_value},
+                technology_id__in=tech_ids,
             )
+        }
+        wq_values = {
+            row.wq_tech_parameter_id: row.value
+            for row in TreatmentPlantWaterQualityParameterValue.objects.filter(
+                treatmentplant=treatment_plant,
+                wq_tech_parameter_id__in=[j.id for j in flagged_wq_junctions],
+            )
+        }
 
-        non_digested_prop_ids = required_defaults.values_list(
-            'property', flat=True)
-        queryset = TreatmentPlantTechnologyPropertyValue.objects.filter(
-            treatmentplant=treatment_plant,
-            technologyproperty_id__in=non_digested_prop_ids
+        payload = {
+            'treatment_plant': {
+                'id': treatment_plant.id,
+                'name': treatment_plant.name,
+                'slug': treatment_plant.slug,
+            },
+            'generated_at': timezone.now().isoformat(),
+            'technology_properties': [],
+            'waterquality_parameters': [],
+        }
+
+        for junction in flagged_tech_props:
+            payload['technology_properties'].append({
+                'technology_id': junction.technology_id,
+                'technology_name': junction.technology.name,
+                'technologyproperty_id': junction.property_id,
+                'technologyproperty_name': junction.property.name,
+                'unit': junction.property.unit,
+                'value': tech_prop_values.get(
+                    (junction.technology_id, junction.property_id),
+                    junction.default_value,
+                ),
+                'source_table': 'technology_property',
+            })
+
+        for junction in flagged_wq_junctions:
+            wq_parameter = junction.waterqualityparameter
+            payload['waterquality_parameters'].append({
+                'junction_id': junction.id,
+                'technology_id': junction.technology_id,
+                'technology_name': junction.technology.name,
+                'waterqualityparameter_id': wq_parameter.id,
+                'waterqualityparameter_name': wq_parameter.name,
+                'unit': wq_parameter.unit,
+                'is_inputparameter': junction.is_inputparameter,
+                'is_targetparameter': junction.is_targetparameter,
+                'value': wq_values.get(junction.id, junction.default_value),
+                'source_table': 'waterqualityparameter_technology',
+            })
+
+        return payload
+
+    def _write_optimizer_payload(self, treatment_plant, payload=None):
+        output_dir = (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'data'
+            / 'processed'
+            / 'optimizer_inputs'
         )
-        initial = []
-        if not queryset.exists():
-            # Build initial data for new forms, but do NOT include 'id'
-            initial = build_technology_property_initials(treatment_plant)
-
-        prefix = "techprop"
-        if self.request.method == 'POST':
-            total_forms = int(self.request.POST.get(f'{prefix}-TOTAL_FORMS', '0'))
-            DynamicFormSet = modelformset_factory(
-                TreatmentPlantTechnologyPropertyValue,
-                form=TreatmentTechPropertyValueForm,
-                extra=total_forms,
-            )
-            formset = DynamicFormSet(
-                self.request.POST,
-                queryset=queryset,
-                initial=initial,
-                prefix=prefix)
-            return formset
-        # For GET: if queryset is empty and initial is non-empty, set extra
-        if not queryset.exists() and initial:
-            DynamicFormSet = modelformset_factory(
-                TreatmentPlantTechnologyPropertyValue,
-                form=TreatmentTechPropertyValueForm,
-                extra=len(initial),
-            )
-            return DynamicFormSet(
-                queryset=queryset, initial=initial, prefix=prefix)
-        return TreatmentPlantTechPropertyValueFormSet(
-            queryset=queryset, initial=initial, prefix=prefix)
-
-    def get_waterquality_formset(self):
-        """Return a formset for water quality parameter values for this plant."""
-        treatment_plant = self.get_treatment_plant()
-        tech_ids = TreatmentPlantLayout.objects.filter(
-            treatmentplant=treatment_plant).values_list('technology', flat=True)
-        wqtech_junctions = WaterqualityParameterTechnologyJunction.objects.filter(
-            technology__in=tech_ids
-        ).select_related('waterqualityparameter')
-        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
-            treatmentplant=treatment_plant,
-            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = (
+            output_dir
+            / f'treatmentplant_{treatment_plant.id}_optimization_input.json'
         )
-        existing_ids = set(
-            qs.values_list('wq_tech_parameter_id', flat=True))
-        for junction in wqtech_junctions:
-            if junction.id not in existing_ids:
-                TreatmentPlantWaterQualityParameterValue.objects.create(
-                    treatmentplant=treatment_plant,
-                    wq_tech_parameter=junction,
-                    value=junction.default_value
+
+        if payload is None:
+            payload = self._build_optimizer_payload(treatment_plant)
+        with output_path.open('w', encoding='utf-8') as fp:
+            json.dump(payload, fp, indent=2)
+
+        return output_path
+
+    def _optimizer_workspace_root(self):
+        return (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'pystimela_optim'
+        )
+
+    def _optimizer_required_script_stems(self):
+        return [
+            'coag_floc_prepare_config',
+            'coag_floc_optim',
+            'coag_floc_optim_update',
+            'filtration_prepare_config',
+            'filtration_optim',
+            'filtration_optim_update',
+            'dual_filtration_prepare_config',
+            'dual_filtration_optim',
+            'dual_filtration_optim_update',
+            'gac_prepare_config',
+            'gac_optim',
+            'gac_optim_update',
+            'chlorination_prepare_config',
+            'chlorination_optim',
+            'chlorination_optim_update',
+            'ozonation_prepare_config',
+            'ozonation_optim',
+            'ozonation_optim_update',
+            'run_all_optimizations',
+        ]
+
+    def _ensure_optimizer_script_wrappers(self, workspace_root):
+        scripts_dir = workspace_root / 'scripts'
+        scripts_dir.mkdir(parents=True, exist_ok=True)
+        init_path = scripts_dir / '__init__.py'
+        if not init_path.exists():
+            init_path.write_text('', encoding='utf-8')
+
+        for stem in self._optimizer_required_script_stems():
+            target = scripts_dir / f'{stem}.py'
+            wrapper_code = (
+                'import runpy\n\n'
+                'if __name__ == "__main__":\n'
+                '    runpy.run_module('
+                f'"pystimela_optim.scripts.{stem}", run_name="__main__")\n'
+            )
+            if target.exists():
+                existing = target.read_text(encoding='utf-8')
+                if existing == wrapper_code:
+                    continue
+            target.write_text(wrapper_code, encoding='utf-8')
+
+    def _optimizer_status_key(self, treatment_plant_id):
+        user_id = getattr(self.request.user, 'id', 0)
+        return _optimizer_status_cache_key(treatment_plant_id, user_id)
+
+    def _set_optimizer_status(self, treatment_plant_id, payload):
+        cache.set(
+            self._optimizer_status_key(treatment_plant_id),
+            payload,
+            timeout=60 * 60 * 6,
+        )
+
+    def _get_optimizer_status(self, treatment_plant_id):
+        status = cache.get(self._optimizer_status_key(treatment_plant_id))
+        if status is None:
+            return {
+                'state': 'idle',
+                'message': '',
+                'updated_rows': [],
+                'progress': {},
+                'completed_processes': [],
+                'action': '',
+            }
+        return status
+
+    def _mark_optimizer_status_seen(self, treatment_plant_id):
+        status = self._get_optimizer_status(treatment_plant_id)
+        if status.get('state') == 'done' and not status.get('seen', False):
+            status['seen'] = True
+            self._set_optimizer_status(treatment_plant_id, status)
+
+    def _sanitize_optimizer_key(self, value):
+        if value is None:
+            return ''
+        return ''.join(
+            c.lower() if c.isalnum() else '_'
+            for c in str(value)
+        ).strip('_')
+
+    def _infer_enabled_optimizer_processes(self, payload):
+        tech_names = {
+            row.get('technology_name', '')
+            for row in payload.get('technology_properties', [])
+        }
+        tech_names.update(
+            row.get('technology_name', '')
+            for row in payload.get('waterquality_parameters', [])
+        )
+
+        process_order = [
+            'coagulation-flocculation',
+            'filtration_single',
+            'filtration_dual',
+            'gac',
+            'chlorination',
+            'ozonation',
+        ]
+        enabled = set()
+        for technology_name in tech_names:
+            process_key = dac.get_optimizer_process_key_for_technology(
+                technology_name
+            )
+            if process_key:
+                enabled.add(process_key)
+
+        return [proc for proc in process_order if proc in enabled]
+
+    def _write_optimizer_csv_inputs(self, treatment_plant, payload):
+        workspace_root = self._optimizer_workspace_root()
+        inputs_dir = workspace_root / 'inputs'
+        outputs_dir = workspace_root / 'outputs'
+        configs_dir = workspace_root / 'configs'
+        inputs_dir.mkdir(parents=True, exist_ok=True)
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        configs_dir.mkdir(parents=True, exist_ok=True)
+
+        enabled_processes = self._infer_enabled_optimizer_processes(payload)
+        enabled_path = outputs_dir / 'enabled_processes.json'
+        with enabled_path.open('w', encoding='utf-8') as fp:
+            json.dump({'enabled': enabled_processes}, fp, indent=2)
+
+        canonical_wq_keys = {
+            'flow': ('flow', 'm3/h', 100.0),
+            'temperature': ('temperature', 'degC', 12.0),
+            'doc': ('DOC', 'mg/L', 3.0),
+            'ammonia': ('ammonia', 'mg/L', 0.05),
+            'ph': ('pH', '-', 7.0),
+            'uv254': ('uv254', '1/m', 0.1),
+            'bromide': ('bromide', 'mg/L', 0.02),
+            'suspended_solids': ('suspended_solids', 'mg/L', 5.0),
+            'conductivity': ('conductivity', 'mS/m', 300.0),
+            'm_number': ('m-number', 'mmol/L', 0.0),
+            'bromate': ('bromate', 'ug/L', 1.0),
+            'ecoli': ('ecoli', 'cfu/100mL', 0.0),
+            'aoc': ('AOC', 'ug/L', 30.0),
+        }
+        input_wq = {
+            canonical: {'value': default_value, 'unit': default_unit}
+            for _, (canonical, default_unit, default_value) in (
+                canonical_wq_keys.items()
+            )
+        }
+
+        wq_aliases = {
+            'doc': 'doc',
+            'dissolved organic carbon': 'doc',
+            'ph': 'ph',
+            'p_h': 'ph',
+            'tss': 'suspended_solids',
+            'total suspended solids': 'suspended_solids',
+            'm number': 'm_number',
+            'm-number': 'm_number',
+            'mnumber': 'm_number',
+            'suspended solids': 'suspended_solids',
+            'suspended_solids': 'suspended_solids',
+        }
+
+        def _normalize_wq_name(name):
+            normalized = ''.join(
+                c.lower() if c.isalnum() else ' '
+                for c in str(name)
+            )
+            normalized = ' '.join(normalized.split())
+            if normalized in wq_aliases:
+                normalized = wq_aliases[normalized]
+            return normalized
+
+        process_input_wq = {
+            process_key: {}
+            for process_key in enabled_processes
+        }
+        fallback_input_wq = {}
+
+        for row in payload.get('waterquality_parameters', []):
+            if not row.get('is_inputparameter', False):
+                continue
+            name = row.get('waterqualityparameter_name')
+            if not name:
+                continue
+            normalized_name = _normalize_wq_name(name)
+            canonical_tuple = canonical_wq_keys.get(normalized_name)
+            if canonical_tuple is None:
+                continue
+            canonical_name, default_unit, _ = canonical_tuple
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            input_payload = {
+                'value': row.get('value'),
+                'unit': row.get('unit') or default_unit,
+            }
+            if process_key in process_input_wq:
+                process_input_wq[process_key][canonical_name] = input_payload
+            fallback_input_wq.setdefault(canonical_name, input_payload)
+
+        selected_input_keys = set()
+        if enabled_processes:
+            first_process = enabled_processes[0]
+            for canonical_name, input_payload in process_input_wq.get(
+                first_process, {}
+            ).items():
+                input_wq[canonical_name] = input_payload
+                selected_input_keys.add(canonical_name)
+
+        for canonical_name, input_payload in fallback_input_wq.items():
+            if canonical_name in selected_input_keys:
+                continue
+            input_wq[canonical_name] = input_payload
+
+        nominal_flow = (
+            TreatmentPlantPropertyValue.objects
+            .filter(
+                treatmentplant=treatment_plant,
+                property__name__iexact=KPI_NOMINAL_FLOW_M3PERH,
+            )
+            .values_list('value', flat=True)
+            .first()
+        )
+        if nominal_flow is not None:
+            input_wq['flow'] = {
+                'value': float(nominal_flow),
+                'unit': canonical_wq_keys['flow'][1],
+            }
+
+        in_wq_path = configs_dir / 'in_wq_params.json'
+        in_wq_payload = {
+            'treatment_plant_id': treatment_plant.id,
+            'timestamps': [0.0, 60.0, 120.0],
+            'WQ_parameters': input_wq,
+            'wq_parameters': input_wq,
+        }
+        with in_wq_path.open('w', encoding='utf-8') as fp:
+            json.dump(in_wq_payload, fp, indent=2)
+
+        process_csv_map = {
+            'coagulation-flocculation': (
+                inputs_dir / 'config_coagulation_flocculation.csv'
+            ),
+            'filtration_single': inputs_dir / 'config_filtration_single.csv',
+            'filtration_dual': inputs_dir / 'config_filtration_dual.csv',
+            'gac': inputs_dir / 'config_gac.csv',
+            'chlorination': inputs_dir / 'config_chlorination.csv',
+            'ozonation': inputs_dir / 'config_ozonation.csv',
+        }
+
+        process_rows = {proc: [] for proc in enabled_processes}
+        for process_key in enabled_processes:
+            for section, parameter, value in dac.get_optimizer_csv_defaults(
+                process_key
+            ):
+                process_rows[process_key].append(
+                    {
+                        'section': section,
+                        'parameter': parameter,
+                        'value': value,
+                    }
                 )
-        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
-            treatmentplant=treatment_plant,
-            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
-        )
-        prefix = "waterquality"
+
+        for row in payload.get('technology_properties', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            if process_key not in process_rows:
+                continue
+            technology = Technology.objects.filter(
+                name__iexact=row.get('technology_name', '')
+            ).first()
+            prop_name = row.get('technologyproperty_name', '')
+            mapping = dac.resolve_optimizer_csv_mapping(
+                technology=technology,
+                process_key=process_key,
+                source_kind='technology_properties',
+                source_name=prop_name,
+            )
+            if mapping is None:
+                logger.info(
+                    'No optimizer CSV mapping for process=%s property=%s; '
+                    'falling back to model_parameters.',
+                    process_key,
+                    prop_name,
+                )
+                mapping = (
+                    'model_parameters',
+                    self._sanitize_optimizer_key(prop_name),
+                )
+            if not mapping[1]:
+                continue
+            process_rows[process_key].append(
+                {
+                    'section': mapping[0],
+                    'parameter': mapping[1],
+                    'value': row.get('value'),
+                }
+            )
+
+        for row in payload.get('waterquality_parameters', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            if process_key not in process_rows:
+                continue
+            technology = Technology.objects.filter(
+                name__iexact=row.get('technology_name', '')
+            ).first()
+            wq_name = row.get('waterqualityparameter_name', '')
+            mapping = dac.resolve_optimizer_csv_mapping(
+                technology=technology,
+                process_key=process_key,
+                source_kind='waterquality_parameters',
+                source_name=wq_name,
+            )
+            if mapping is None:
+                logger.info(
+                    'No optimizer CSV mapping for process=%s wq=%s; '
+                    'falling back to constraints.',
+                    process_key,
+                    wq_name,
+                )
+                mapping = (
+                    'constraints',
+                    self._sanitize_optimizer_key(wq_name),
+                )
+            if not mapping[1]:
+                continue
+            process_rows[process_key].append(
+                {
+                    'section': mapping[0],
+                    'parameter': mapping[1],
+                    'value': row.get('value'),
+                }
+            )
+
+        for process_key, csv_path in process_csv_map.items():
+            if process_key not in enabled_processes:
+                continue
+            rows = process_rows.get(process_key, [])
+            if not rows:
+                rows = [
+                    {
+                        'section': 'metadata',
+                        'parameter': 'treatment_plant_id',
+                        'value': treatment_plant.id,
+                    }
+                ]
+            with csv_path.open('w', encoding='utf-8', newline='') as fp:
+                writer = csv.writer(fp)
+                writer.writerow(['section', 'parameter', 'value'])
+                for csv_row in rows:
+                    writer.writerow(
+                        [
+                            csv_row['section'],
+                            csv_row['parameter'],
+                            csv_row['value'],
+                        ]
+                    )
+
+        # Prepare shared baseline/support files expected by prepare scripts.
+        timestamps_dir = inputs_dir / 'timestamps'
+        timestamps_dir.mkdir(parents=True, exist_ok=True)
+        timestamp_files = [
+            'coagulation_flocculation.csv',
+            'filtration_single.csv',
+            'filtration_dual.csv',
+            'gac.csv',
+            'chlorination.csv',
+            'ozonation.csv',
+        ]
+        for filename in timestamp_files:
+            t_path = timestamps_dir / filename
+            if not t_path.exists():
+                with t_path.open('w', encoding='utf-8', newline='') as fp:
+                    writer = csv.writer(fp)
+                    writer.writerow(['time_s'])
+                    writer.writerow([0])
+                    writer.writerow([60])
+                    writer.writerow([120])
+
+        plant_design_path = inputs_dir / 'django_plant_design.csv'
+        with plant_design_path.open('w', encoding='utf-8', newline='') as fp:
+            writer = csv.writer(fp, delimiter=';')
+            writer.writerow(['parameters', 'value'])
+            writer.writerow(['n_years', 40])
+            writer.writerow(['r_nom', 0.05])
+            writer.writerow(['infl', 0.031])
+
+        baseline_defaults = {
+            'chlorination_volume': 10.0,
+            'chlorination_chemical_dose': 1.5,
+            'single_filtration_surface': 10.0,
+            'single_filtration_depth': 1.2,
+            'single_filtration_grain_size_a': 0.7,
+            'dual_filtration_surface': 12.0,
+            'dual_filtration_depth': 1.0,
+            'dual_filtration_depth_b': 0.8,
+            'dual_filtration_grain_size_a': 0.9,
+            'dual_filtration_grain_size_b': 1.2,
+            'gac_surface': 8.0,
+            'gac_depth': 1.5,
+            'coagulation_volume': 10.0,
+            'coagulation_chemical_dose': 0.08,
+            'flocculation_surface': 20.0,
+            'flocculation_length': 4.0,
+            'ozonation_area': 8.0,
+            'ozonation_height': 3.0,
+            'ozonation_chemical_dose': 1.0,
+        }
+
+        for row in payload.get('technology_properties', []):
+            process_key = dac.get_optimizer_process_key_for_technology(
+                row.get('technology_name', '')
+            )
+            value = row.get('value')
+            if not isinstance(value, (int, float)):
+                continue
+            prop_name = self._sanitize_optimizer_key(
+                row.get('technologyproperty_name', '')
+            )
+            if process_key == 'chlorination':
+                if 'volume' in prop_name:
+                    baseline_defaults['chlorination_volume'] = float(value)
+                if 'dose' in prop_name:
+                    baseline_defaults['chlorination_chemical_dose'] = (
+                        float(value)
+                    )
+            if process_key == 'filtration_single':
+                if 'surface' in prop_name:
+                    baseline_defaults['single_filtration_surface'] = float(
+                        value
+                    )
+                if 'depth' in prop_name:
+                    baseline_defaults['single_filtration_depth'] = float(value)
+                if 'grain' in prop_name:
+                    baseline_defaults['single_filtration_grain_size_a'] = (
+                        float(value)
+                    )
+                if 'diam' in prop_name:
+                    baseline_defaults['single_filtration_grain_size_a'] = (
+                        float(value)
+                    )
+            if process_key == 'filtration_dual':
+                if 'surface' in prop_name:
+                    baseline_defaults['dual_filtration_surface'] = float(value)
+                if 'depth' in prop_name:
+                    if 'depth_b' in prop_name or prop_name.endswith('_b'):
+                        baseline_defaults['dual_filtration_depth_b'] = float(
+                            value
+                        )
+                    else:
+                        baseline_defaults['dual_filtration_depth'] = float(
+                            value
+                        )
+                if 'grain' in prop_name or 'diam' in prop_name:
+                    if (
+                        'grain_size_b' in prop_name
+                        or 'diam_b' in prop_name
+                        or prop_name.endswith('_b')
+                    ):
+                        baseline_defaults['dual_filtration_grain_size_b'] = (
+                            float(value)
+                        )
+                    else:
+                        baseline_defaults['dual_filtration_grain_size_a'] = (
+                            float(value)
+                        )
+            if process_key == 'gac':
+                if 'surface' in prop_name:
+                    baseline_defaults['gac_surface'] = float(value)
+                if 'depth' in prop_name or 'bed_height' in prop_name:
+                    baseline_defaults['gac_depth'] = float(value)
+            if process_key == 'coagulation-flocculation':
+                if 'coag' in prop_name and 'volume' in prop_name:
+                    baseline_defaults['coagulation_volume'] = float(value)
+                if (
+                    ('coag' in prop_name or 'coagulant' in prop_name)
+                    and 'dose' in prop_name
+                ):
+                    baseline_defaults['coagulation_chemical_dose'] = float(
+                        value
+                    )
+                if 'floc' in prop_name and 'surface' in prop_name:
+                    baseline_defaults['flocculation_surface'] = float(value)
+                if 'floc' in prop_name and 'length' in prop_name:
+                    baseline_defaults['flocculation_length'] = float(value)
+            if process_key == 'ozonation':
+                if 'area' in prop_name:
+                    baseline_defaults['ozonation_area'] = float(value)
+                if 'height' in prop_name:
+                    baseline_defaults['ozonation_height'] = float(value)
+                if 'dose' in prop_name:
+                    baseline_defaults['ozonation_chemical_dose'] = float(
+                        value
+                    )
+
+        django_outputs_path = configs_dir / 'django_outputs.json'
+        process_outputs = {
+            key: {'value': val}
+            for key, val in baseline_defaults.items()
+        }
+        with django_outputs_path.open('w', encoding='utf-8') as fp:
+            json.dump({'Process_outputs': process_outputs}, fp, indent=2)
+
+        return {
+            'workspace_root': workspace_root,
+            'enabled_processes': enabled_processes,
+            'enabled_path': enabled_path,
+            'in_wq_path': in_wq_path,
+        }
+
+    def _run_optimizer_pipeline(self, workspace_root, on_progress=None):
+        _ = run_all_optimizations.__name__
+        _ = pystimela.__name__
+
+        enabled_path = workspace_root / 'outputs' / 'enabled_processes.json'
+        in_wq_path = workspace_root / 'configs' / 'in_wq_params.json'
+        if not enabled_path.exists():
+            raise FileNotFoundError(
+                f'Missing {enabled_path}. Enable processes first.'
+            )
+        if not in_wq_path.exists():
+            raise FileNotFoundError(
+                f'Missing {in_wq_path}. Provide optimizer inlet WQ config.'
+            )
+
+        with enabled_path.open('r', encoding='utf-8') as fp:
+            enabled_processes = json.load(fp).get('enabled', [])
+
+        outputs_dir = workspace_root / 'outputs'
+        run_dir = outputs_dir / datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        process_config = {
+            'coagulation-flocculation': {
+                'csv': workspace_root / 'inputs' / 'config_coagulation_flocculation.csv',
+                'config_json': workspace_root / 'configs' / 'coagulation-flocculation_config.json',
+                'result_name': 'coag_floc_results.json',
+                'prepare': prepare_coag_floc_config,
+                'update': update_coag_floc_wq,
+            },
+            'filtration_single': {
+                'csv': workspace_root / 'inputs' / 'config_filtration_single.csv',
+                'config_json': workspace_root / 'configs' / 'filtration_config.json',
+                'result_name': 'filtration_results.json',
+                'prepare': prepare_filtration_config,
+                'update': update_filtration_wq,
+            },
+            'filtration_dual': {
+                'csv': workspace_root / 'inputs' / 'config_filtration_dual.csv',
+                'config_json': workspace_root / 'configs' / 'dual_filtration_config.json',
+                'result_name': 'dual_filtration_results.json',
+                'prepare': prepare_dual_filtration_config,
+                'update': update_dual_filtration_wq,
+            },
+            'gac': {
+                'csv': workspace_root / 'inputs' / 'config_gac.csv',
+                'config_json': workspace_root / 'configs' / 'gac_config.json',
+                'result_name': 'gac_results.json',
+                'prepare': prepare_gac_config,
+                'update': update_gac_wq,
+            },
+            'chlorination': {
+                'csv': workspace_root / 'inputs' / 'config_chlorination.csv',
+                'config_json': workspace_root / 'configs' / 'chlorination_config.json',
+                'result_name': 'chlorination_results.json',
+                'prepare': prepare_chlorination_config,
+                'update': update_chlorination_wq,
+            },
+            'ozonation': {
+                'csv': workspace_root / 'inputs' / 'config_ozonation.csv',
+                'config_json': workspace_root / 'configs' / 'ozonation_config.json',
+                'result_name': 'ozonation_results.json',
+                'prepare': prepare_ozonation_config,
+                'update': update_ozonation_wq,
+            },
+        }
+
+        current_wq_path = in_wq_path
+        previous_cwd = Path.cwd()
+        total_processes = len(enabled_processes)
         try:
-            if self.request.method == 'POST':
-                return WaterQualityParameterValueFormSet(
-                    self.request.POST, queryset=qs, prefix=prefix)
-            return WaterQualityParameterValueFormSet(
-                queryset=qs, prefix=prefix)
-        except Exception as e:
-            logger.error("Exception in get_waterquality_formset: %s", e, exc_info=True)
-            raise
+            os.chdir(workspace_root)
+            for index, process_key in enumerate(enabled_processes, start=1):
+                proc = process_config.get(process_key)
+                if proc is None:
+                    logger.warning(
+                        "Unknown optimizer process '%s' - skipping",
+                        process_key,
+                    )
+                    continue
+                if not proc['csv'].exists():
+                    logger.warning(
+                        "Optimizer CSV config not found for '%s': %s",
+                        process_key,
+                        proc['csv'],
+                    )
+                    continue
 
-    def form_valid(self, formset):
-        treatment_plant = self.get_treatment_plant()
-        waterquality_formset = self.get_waterquality_formset()
-        valid_tech = formset.is_valid()
-        valid_wq = waterquality_formset.is_valid()
-        if not (valid_tech and valid_wq):
-            logger.warning(
-                "Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
-            return self.form_invalid(formset)
+                if on_progress is not None:
+                    on_progress(process_key, 'started', index, total_processes)
 
-        # Step 1: Save all form data
-        saved = []
-        for form in formset.forms:
-            if getattr(form, 'cleaned_data', None) is None:
-                form.full_clean()
-            if not form.cleaned_data or form.cleaned_data.get('DELETE', False):
+                proc['prepare'](str(proc['csv']), str(current_wq_path))
+                result_payload = optimize_process(
+                    process_key,
+                    str(proc['config_json']),
+                )
+
+                result_path = run_dir / proc['result_name']
+                with result_path.open('w', encoding='utf-8') as fp:
+                    json.dump(result_payload, fp, indent=2)
+
+                proc['update'](
+                    str(current_wq_path),
+                    str(result_path),
+                    str(current_wq_path),
+                )
+
+                if on_progress is not None:
+                    on_progress(process_key, 'done', index, total_processes)
+        finally:
+            os.chdir(previous_cwd)
+
+        shutil.copy(
+            current_wq_path,
+            run_dir / 'final_wq_params.json',
+        )
+
+        return run_dir
+
+    def _format_optimizer_exception(self, exc):
+        if isinstance(exc, subprocess.CalledProcessError):
+            stderr = (exc.stderr or '').strip()
+            stdout = (exc.stdout or '').strip()
+            if stderr:
+                last_line = stderr.splitlines()[-1]
+                return (
+                    'Optimizer subprocess failed. '
+                    f'{last_line}'
+                )
+            if stdout:
+                last_line = stdout.splitlines()[-1]
+                return (
+                    'Optimizer subprocess failed. '
+                    f'{last_line}'
+                )
+        return str(exc)
+
+    def _flatten_json(self, data, prefix=''):
+        rows = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                next_prefix = f'{prefix}.{key}' if prefix else str(key)
+                rows.extend(self._flatten_json(value, prefix=next_prefix))
+            return rows
+        if isinstance(data, list):
+            for index, value in enumerate(data):
+                next_prefix = f'{prefix}[{index}]'
+                rows.extend(self._flatten_json(value, prefix=next_prefix))
+            return rows
+        rows.append((prefix, data))
+        return rows
+
+    def _write_json_as_csv(self, input_json_path, output_csv_path):
+        with input_json_path.open('r', encoding='utf-8') as fp:
+            payload = json.load(fp)
+        flattened_rows = self._flatten_json(payload)
+        with output_csv_path.open('w', encoding='utf-8', newline='') as fp:
+            writer = csv.writer(fp)
+            writer.writerow(['key', 'value'])
+            for key, value in flattened_rows:
+                writer.writerow([key, value])
+
+    def _export_optimizer_results_to_processed(
+        self,
+        treatment_plant,
+        payload_path,
+        workspace_root,
+        run_output_dir,
+    ):
+        processed_root = (
+            Path(settings.BASE_DIR)
+            / 'research'
+            / 'data'
+            / 'processed'
+            / 'optimizer_runs'
+        )
+        run_id = timezone.now().strftime('%Y%m%d_%H%M%S')
+        processed_dir = (
+            processed_root / f'plant_{treatment_plant.id}_{run_id}'
+        )
+        processed_dir.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy(payload_path, processed_dir / payload_path.name)
+
+        inputs_dir = workspace_root / 'inputs'
+        configs_dir = workspace_root / 'configs'
+        outputs_dir = workspace_root / 'outputs'
+        if (outputs_dir / 'enabled_processes.json').exists():
+            shutil.copy(
+                outputs_dir / 'enabled_processes.json',
+                processed_dir / 'enabled_processes.json',
+            )
+        if (configs_dir / 'in_wq_params.json').exists():
+            shutil.copy(
+                configs_dir / 'in_wq_params.json',
+                processed_dir / 'in_wq_params.json',
+            )
+        for csv_input in inputs_dir.glob('config_*.csv'):
+            shutil.copy(csv_input, processed_dir / csv_input.name)
+
+        for result_json in run_output_dir.glob('*.json'):
+            csv_path = processed_dir / f'{result_json.stem}.csv'
+            self._write_json_as_csv(result_json, csv_path)
+            shutil.copy(result_json, processed_dir / result_json.name)
+
+        return processed_dir
+
+    def _get_process_from_result_filename(self, filename):
+        process_map = {
+            'chlorination_results.json': 'chlorination',
+            'coag_floc_results.json': 'coagulation-flocculation',
+            'filtration_results.json': 'filtration_single',
+            'dual_filtration_results.json': 'filtration_dual',
+            'gac_results.json': 'gac',
+            'ozonation_results.json': 'ozonation',
+        }
+        return process_map.get(filename)
+
+    def _get_technology_for_process(self, treatment_plant, process_key):
+        tech_ids = self._get_treatment_plant_technology_ids(treatment_plant)
+        if not tech_ids:
+            return None
+        technologies = list(Technology.objects.filter(id__in=tech_ids))
+        for tech in technologies:
+            mapped = dac.get_optimizer_process_key_for_technology(tech.name)
+            if mapped == process_key:
+                return tech
+        return None
+
+    def _iter_numeric_result_values(self, report):
+        sections = [
+            'optimal variables',
+            'outputs',
+            'costs',
+            'costs_breakdown',
+            'economics',
+            'derived',
+        ]
+        numeric_values = {}
+        for section in sections:
+            data = report.get(section, {})
+            if not isinstance(data, dict):
                 continue
-            instance = form.save(commit=False)
-            if getattr(instance, 'treatmentplant', None) is None:
-                instance.treatmentplant = treatment_plant
-            instance.save()
-            saved.append(instance)
-        # Save water quality parameter values
-        for form in waterquality_formset.forms:
-            if getattr(form, 'cleaned_data', None) is None:
-                form.full_clean()
-            if not form.cleaned_data:
+            for key, value in data.items():
+                if isinstance(value, (int, float)):
+                    numeric_values[key] = float(value)
+        return numeric_values
+
+    def _build_update_row(
+        self,
+        technology,
+        row_type,
+        name,
+        value,
+        unit=''
+    ):
+        return {
+            'technology_id': technology.id,
+            'technology_name': technology.name,
+            'row_type': row_type,
+            'name': name,
+            'value': value,
+            'unit': unit or '',
+        }
+
+    def _merge_updated_rows(self, *row_lists):
+        """Merge updated-row lists, later lists overriding earlier ones."""
+        merged = OrderedDict()
+        for rows in row_lists:
+            for row in rows:
+                key = (row['technology_id'], row['row_type'], row['name'])
+                merged[key] = row
+        return list(merged.values())
+
+    def _sort_updated_rows(self, rows, tech_order_index):
+        row_type_order = {
+            'property': 0,
+            'waterquality': 1,
+            'kpi': 2,
+        }
+        return sorted(
+            rows,
+            key=lambda row: (
+                tech_order_index.get(
+                    row.get('technology_id'),
+                    len(tech_order_index),
+                ),
+                row_type_order.get(row.get('row_type'), len(row_type_order)),
+                str(row.get('name') or ''),
+            ),
+        )
+
+    def _compute_technology_input_hash(self, treatment_plant, technology):
+        """Hash the inputs that determine a technology's optimized result.
+
+        Covers plant-wide design parameters plus the technology's
+        non-digested property values and water-quality parameters. Any
+        change to these inputs should invalidate a prior optimizer result
+        for this technology.
+        """
+        design_values = {
+            dp.designparameter.name: dp.value
+            for dp in TreatmentplantDesignParameter.objects.filter(
+                treatmentplant=treatment_plant)
+        }
+        non_digested_ids = list(
+            TechnologyPropertyJunction.objects.filter(
+                technology=technology, is_digested=False,
+            ).values_list('property_id', flat=True)
+        )
+        property_values = {
+            str(row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=treatment_plant,
+                technology=technology,
+                technologyproperty_id__in=non_digested_ids,
+            )
+        }
+        wq_values = {
+            str(row.wq_tech_parameter_id): row.value
+            for row in TreatmentPlantWaterQualityParameterValue.objects.filter(  # noqa, E501
+                treatmentplant=treatment_plant,
+                wq_tech_parameter__technology=technology,
+            )
+        }
+        payload = json.dumps(
+            {
+                'design': design_values,
+                'properties': property_values,
+                'wq': wq_values,
+            },
+            sort_keys=True,
+            default=str,
+        )
+        return hashlib.sha256(payload.encode('utf-8')).hexdigest()
+
+    def _mark_technology_optimized(self, treatment_plant, technology):
+        """Record that `technology` now holds a fresh optimizer result."""
+        input_hash = self._compute_technology_input_hash(
+            treatment_plant, technology)
+        TreatmentPlantTechnologyOptimizationStatus.objects.update_or_create(
+            treatmentplant=treatment_plant,
+            technology=technology,
+            defaults={
+                'is_optimized': True,
+                'optimized_at': timezone.now(),
+                'input_snapshot_hash': input_hash,
+            },
+        )
+
+    def _invalidate_stale_optimized_technologies(self, treatment_plant):
+        """Clear is_optimized for technologies whose inputs changed since
+        their last optimizer run, so the calculation pipeline stops
+        reusing stale optimizer values for them."""
+        statuses = (
+            TreatmentPlantTechnologyOptimizationStatus.objects
+            .filter(treatmentplant=treatment_plant, is_optimized=True)
+            .select_related('technology')
+        )
+        for status in statuses:
+            current_hash = self._compute_technology_input_hash(
+                treatment_plant, status.technology)
+            if current_hash != status.input_snapshot_hash:
+                status.is_optimized = False
+                status.save(update_fields=['is_optimized'])
+
+    def _persist_optimizer_results_to_db(
+        self,
+        treatment_plant,
+        run_output_dir,
+    ):
+        persisted_properties = 0
+        persisted_kpis = 0
+        persisted_wq = 0
+        updated_rows = []
+
+        for result_path in run_output_dir.glob('*_results.json'):
+            process_key = self._get_process_from_result_filename(
+                result_path.name
+            )
+            if process_key is None:
                 continue
-            instance = form.save(commit=False)
-            if getattr(instance, 'treatmentplant', None) is None:
-                instance.treatmentplant = treatment_plant
-            instance.save()
-            saved.append(instance)
 
-        # Step 2: Calculate technology-specific and plant-wide KPIs
-        # - gather technologies and stages
-        # - build design parameter dict
-        # - run TreatmentPlantPerformanceCalculator and
-        #   TechnologyPerformanceCalculator
-        # - save calculated values to the DB
+            technology = self._get_technology_for_process(
+                treatment_plant,
+                process_key,
+            )
+            if technology is None:
+                logger.warning(
+                    'No technology found for optimizer process %s in plant %s',
+                    process_key,
+                    treatment_plant.id,
+                )
+                continue
 
-        # Run performance calculations after tech properties saved
+            with result_path.open('r', encoding='utf-8') as fp:
+                report = json.load(fp)
+
+            numeric_values = self._iter_numeric_result_values(report)
+            technology_properties_persisted = 0
+
+            for optimizer_key, numeric_value in numeric_values.items():
+                prop_obj = dac.get_optimizer_output_property_for_technology(
+                    technology, optimizer_key,
+                )
+                if prop_obj is None:
+                    property_candidates = (
+                        dac.get_optimizer_output_db_candidates(
+                            process_key,
+                            'properties',
+                            optimizer_key,
+                        )
+                    )
+                    if optimizer_key not in property_candidates:
+                        property_candidates.append(
+                            optimizer_key.replace('_', ' '))
+                    for property_name in property_candidates:
+                        prop_obj = TechnologyProperty.objects.filter(
+                            name__iexact=property_name
+                        ).first()
+                        if prop_obj is not None:
+                            break
+
+                if prop_obj is not None:
+                    (
+                        TreatmentPlantTechnologyPropertyValue.objects
+                        .update_or_create(
+                            treatmentplant=treatment_plant,
+                            technology=technology,
+                            technologyproperty=prop_obj,
+                            defaults={
+                                'value': numeric_value,
+                                'source': (
+                                    TreatmentPlantTechnologyPropertyValue
+                                    .SOURCE_OPTIMIZED
+                                ),
+                            },
+                        )
+                    )
+                    persisted_properties += 1
+                    technology_properties_persisted += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='property',
+                            name=prop_obj.name,
+                            value=numeric_value,
+                            unit=prop_obj.unit,
+                        )
+                    )
+
+                junction = (
+                    dac.get_optimizer_output_wq_junction_for_technology(
+                        technology, optimizer_key,
+                    )
+                )
+                if junction is None:
+                    wq_candidates = []
+                    if hasattr(dac, 'get_optimizer_output_wq_candidates'):
+                        wq_candidates = dac.get_optimizer_output_wq_candidates(
+                            process_key,
+                            optimizer_key,
+                        )
+                    if optimizer_key not in wq_candidates:
+                        wq_candidates.append(optimizer_key.replace('_', ' '))
+
+                    for wq_name in wq_candidates:
+                        junction = (
+                            WaterqualityParameterTechnologyJunction.objects
+                            .filter(
+                                technology=technology,
+                                waterqualityparameter__name__iexact=wq_name,
+                            )
+                            .select_related('waterqualityparameter')
+                            .first()
+                        )
+                        if junction is not None:
+                            break
+
+                if junction is not None:
+                    (
+                        TreatmentPlantWaterQualityParameterValue.objects
+                        .update_or_create(
+                            treatmentplant=treatment_plant,
+                            wq_tech_parameter=junction,
+                            defaults={'value': numeric_value},
+                        )
+                    )
+                    persisted_wq += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='waterquality',
+                            name=junction.waterqualityparameter.name,
+                            value=numeric_value,
+                            unit=junction.waterqualityparameter.unit,
+                        )
+                    )
+
+                kpi_candidates = dac.get_optimizer_output_db_candidates(
+                    process_key,
+                    'kpis',
+                    optimizer_key,
+                )
+                if optimizer_key not in kpi_candidates:
+                    kpi_candidates.append(optimizer_key.replace('_', ' '))
+
+                for kpi_name in kpi_candidates:
+                    kpi_obj = TechnologyKPI.objects.filter(
+                        name__iexact=kpi_name
+                    ).first()
+                    if kpi_obj is None:
+                        continue
+                    TreatmentPlantTechnologyKPIValue.objects.update_or_create(
+                        treatmentplant=treatment_plant,
+                        technology=technology,
+                        kpi=kpi_obj,
+                        defaults={'value': numeric_value},
+                    )
+                    persisted_kpis += 1
+                    updated_rows.append(
+                        self._build_update_row(
+                            technology=technology,
+                            row_type='kpi',
+                            name=kpi_obj.name,
+                            value=numeric_value,
+                            unit=kpi_obj.unit,
+                        )
+                    )
+                    break
+
+            if technology_properties_persisted > 0:
+                self._mark_technology_optimized(treatment_plant, technology)
+
+        return {
+            'properties': persisted_properties,
+            'waterquality': persisted_wq,
+            'kpis': persisted_kpis,
+            'updated_rows': updated_rows,
+        }
+
+    def _optimizer_process_display_name(self, treatment_plant, process_key):
+        technology = self._get_technology_for_process(
+            treatment_plant, process_key,
+        )
+        return technology.name if technology else process_key
+
+    def _report_optimizer_progress(
+        self, treatment_plant, process_key, phase, index, total,
+    ):
+        label = self._optimizer_process_display_name(
+            treatment_plant, process_key,
+        )
+        status = self._get_optimizer_status(treatment_plant.id)
+        status['state'] = 'running'
+        status['progress'] = {
+            'index': index,
+            'total': total,
+            'process': label,
+            'phase': phase,
+        }
+        completed = status.setdefault('completed_processes', [])
+        if phase == 'started':
+            status['message'] = (
+                f'Optimizing {label} ({index} of {total})...'
+            )
+        elif phase == 'done':
+            if label not in completed:
+                completed.append(label)
+            status['message'] = (
+                f'Finished optimizing {label} ({index} of {total}).'
+            )
+        self._set_optimizer_status(treatment_plant.id, status)
+
+    def _run_calculation_pipeline(self, treatment_plant):
+        """Recompute technology digestion, tech KPIs, and plant KPIs.
+
+        Reads all inputs from the database (design parameters, saved
+        technology property values, water quality junctions), runs the
+        performance/digestion calculators, persists the results, and
+        returns the list of updated-row dicts (digested properties and
+        technology KPIs) for display, in the same shape as optimizer
+        updated rows.
+        """
         # gather technologies and stages
         tech_ids = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).values_list(
@@ -2087,7 +3352,7 @@ class TechnologyPropertiesView(generic.FormView):
             chemicalagent_parameters=chemicalagent_parameters
         )
         # Step 2a: set the nominal flow
-        # -----------------------------------------------------     
+        # -----------------------------------------------------
         if dwtp.nominal_flow_m3perhr.value is None:
             dwtp.update_nominal_flow_m3perhr()
             dwtp.update_plant_kpis()  # to set nominal flow KPI
@@ -2101,12 +3366,14 @@ class TechnologyPropertiesView(generic.FormView):
         tech_properties = {}
         defaultval_tech_props = {}
         digested_tech_prop_names = {}
+        optimized_tech_prop_names = {}
         all_tech_properties = TechnologyProperty.objects.all()
         for tech_id in tech_ids:
             technology = Technology.objects.get(id=tech_id)
             tech_properties[technology.name] = {}
             wq_parameters[technology.name] = {}
             digested_tech_prop_names[technology.name] = []
+            optimized_tech_prop_names[technology.name] = []
             defaultval_tech_props[technology.name] = {}
             for wq_input in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
@@ -2116,7 +3383,7 @@ class TechnologyPropertiesView(generic.FormView):
                     name=wq_input.waterqualityparameter.name,
                     input_label=INPUT_WQPARAMETER_KEY,
                     input_value=wq_input.default_value)
-                wq_parameters[technology.name] = wq_p.to_dict()
+                wq_parameters[technology.name].update(wq_p.to_dict())
             for wq_target in WaterqualityParameterTechnologyJunction.objects.filter(  # noqa, E501
                         technology=technology,
                         is_inputparameter=False,
@@ -2148,6 +3415,20 @@ class TechnologyPropertiesView(generic.FormView):
             for isdigested_tp in TechnologyPropertyJunction.objects.filter(
                         technology=technology, is_digested=True):
                 digested_tech_prop_names[technology.name] += [isdigested_tp.property.name]  # noqa, E501
+            is_technology_optimized = (
+                TreatmentPlantTechnologyOptimizationStatus.objects
+                .filter(
+                    treatmentplant=treatment_plant,
+                    technology=technology,
+                    is_optimized=True,
+                ).exists()
+            )
+            if is_technology_optimized:
+                for optimized_tp in TechnologyPropertyJunction.objects.filter(
+                            technology=technology, is_digested=True,
+                            sent_to_optimizer=True):
+                    optimized_tech_prop_names[technology.name] += [
+                        optimized_tp.property.name]
             for tp in TreatmentPlantTechnologyPropertyValue.objects.filter(
                         treatmentplant=treatment_plant,
                         technology=Technology.objects.get(id=tech_id)
@@ -2175,10 +3456,11 @@ class TechnologyPropertiesView(generic.FormView):
             plant_kpis=dwtp.plant_kpis,
             tech_kpinames=technology_kpis,
             digested_tech_parameter_list=digested_tech_prop_names,
+            optimized_tech_parameter_list=optimized_tech_prop_names,
         )
         kpi_calculator.calculate_kpi()
         kpi_calculator.sum_kpis()
-        
+
         # Assign the summed technology KPIs to the plant calculator
         summed_kpis = kpi_calculator.summed_kpis
         dwtp.energyconsumption_kwhrperday.value = summed_kpis.get(  # noqa, E501
@@ -2192,17 +3474,36 @@ class TechnologyPropertiesView(generic.FormView):
             TECHKPI_FOOTPRINT_AREA_M2, None)
 
         # Save the digested technology properties back to the database
+        calculation_updated_rows = []
         for tech_name in technology_names:
             for prop_name in kpi_calculator.digested_tech_parameter_list[tech_name]:  # noqa, E501
                 try:
                     prop_value = kpi_calculator.tech_parameters[tech_name][prop_name]  # noqa, E501
                     tech = Technology.objects.get(name=tech_name)
                     prop_obj = TechnologyProperty.objects.get(name=prop_name)
+                    is_optimized_value = (
+                        prop_name in optimized_tech_prop_names[tech_name])
                     TreatmentPlantTechnologyPropertyValue.objects.update_or_create(  # noqa, E501
                         treatmentplant=treatment_plant,
                         technology=tech,
                         technologyproperty=prop_obj,
-                        defaults={'value': str(prop_value)}
+                        defaults={
+                            'value': str(prop_value),
+                            'source': (
+                                TreatmentPlantTechnologyPropertyValue.SOURCE_OPTIMIZED  # noqa, E501
+                                if is_optimized_value
+                                else TreatmentPlantTechnologyPropertyValue.SOURCE_DIGESTED  # noqa, E501
+                            ),
+                        }
+                    )
+                    calculation_updated_rows.append(
+                        self._build_update_row(
+                            technology=tech,
+                            row_type='property',
+                            name=prop_obj.name,
+                            value=prop_value,
+                            unit=prop_obj.unit,
+                        )
                     )
                 except TechnologyProperty.DoesNotExist:
                     continue
@@ -2222,6 +3523,15 @@ class TechnologyPropertiesView(generic.FormView):
                         kpi=kpi,
                         defaults={'value': str(kpi_value)}
                         )
+                    calculation_updated_rows.append(
+                        self._build_update_row(
+                            technology=tech,
+                            row_type='kpi',
+                            name=kpi.name,
+                            value=kpi_value,
+                            unit=kpi.unit,
+                        )
+                    )
                 except TechnologyKPI.DoesNotExist:
                     continue
 
@@ -2233,10 +3543,12 @@ class TechnologyPropertiesView(generic.FormView):
         for tech_id in tech_ids:
             related_tech_id = None
             try:
-                related_technology = TechnologyRelatedtechnology.objects.get(technology_id=tech_id)
-                related_tech_id = related_technology.id
+                related_tech = TechnologyRelatedtechnology.objects.filter(
+                    relatedtechnology_is_currentstep=True).get(
+                        technology_id=tech_id)
+                related_tech_id = related_tech.id
             except TechnologyRelatedtechnology.DoesNotExist:
-                related_technology = None
+                related_tech = None
             try:
                 tccp = TechnologyConstructionCostParameter.objects.filter(
                     technology_id=tech_id).first()
@@ -2418,6 +3730,395 @@ class TechnologyPropertiesView(generic.FormView):
                 property=prop_obj,
                 defaults={'value': str(value)}
             )
+        return calculation_updated_rows
+
+    def _run_optimizer_job(
+        self,
+        treatment_plant,
+        payload_path,
+        workspace_root,
+    ):
+        close_old_connections()
+        status = self._get_optimizer_status(treatment_plant.id)
+        status.update(
+            {
+                'state': 'running',
+                'message': 'Optimization is running in the background.',
+                'progress': {},
+                'completed_processes': [],
+                'action': 'optimize',
+            }
+        )
+        self._set_optimizer_status(treatment_plant.id, status)
+
+        def on_progress(process_key, phase, index, total):
+            self._report_optimizer_progress(
+                treatment_plant, process_key, phase, index, total,
+            )
+
+        try:
+            run_output_dir = self._run_optimizer_pipeline(
+                workspace_root, on_progress=on_progress,
+            )
+            persisted = self._persist_optimizer_results_to_db(
+                treatment_plant=treatment_plant,
+                run_output_dir=run_output_dir,
+            )
+            calculation_rows = self._run_calculation_pipeline(
+                treatment_plant)
+            processed_dir = self._export_optimizer_results_to_processed(
+                treatment_plant=treatment_plant,
+                payload_path=payload_path,
+                workspace_root=workspace_root,
+                run_output_dir=run_output_dir,
+            )
+            done_payload = {
+                'state': 'done',
+                'seen': False,
+                'action': 'optimize',
+                'message': (
+                    'Optimization finished. '
+                    f"Updated {persisted['properties']} properties, "
+                    f"{persisted['waterquality']} water quality values, and "
+                    f"{persisted['kpis']} KPI values. "
+                    f'Recalculated {len(calculation_rows)} digested '
+                    'properties and technology KPI values.'
+                ),
+                'updated_rows': self._merge_updated_rows(
+                    persisted.get('updated_rows', []), calculation_rows,
+                ),
+                'processed_dir': str(processed_dir),
+            }
+            self._set_optimizer_status(treatment_plant.id, done_payload)
+        except Exception as exc:
+            logger.exception('Background optimizer execution failed: %s', exc)
+            error_message = self._format_optimizer_exception(exc)
+            current_status = self._get_optimizer_status(treatment_plant.id)
+            failed_process = (
+                current_status.get('progress') or {}
+            ).get('process')
+            message = 'Optimizer failed. '
+            if failed_process:
+                message += f'Failed while optimizing {failed_process}. '
+            message += error_message
+            self._set_optimizer_status(
+                treatment_plant.id,
+                {
+                    'state': 'failed',
+                    'seen': False,
+                    'action': 'optimize',
+                    'message': message,
+                    'updated_rows': [],
+                    'progress': current_status.get('progress', {}),
+                    'completed_processes': current_status.get(
+                        'completed_processes', [],
+                    ),
+                },
+            )
+        finally:
+            close_old_connections()
+
+    def get_treatment_plant(self):
+        return get_object_or_404(TreatmentPlant, pk=self.kwargs['plant_id'])
+
+    def _apply_optimizer_field_locking(self, formset, treatment_plant):
+        """Highlight optimizer-managed non-digested fields without locking edits."""
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant
+        ).values_list('technology', flat=True)
+        locked_pairs = {
+            (junction.technology_id, junction.property_id)
+            for junction in TechnologyPropertyJunction.objects.filter(
+                technology__in=tech_ids,
+                is_digested=False,
+                sent_to_optimizer=True,
+            )
+        }
+
+        if not locked_pairs:
+            return formset
+
+        for form in formset.forms:
+            tech_id = None
+            prop_id = None
+            if getattr(form.instance, 'technology_id', None):
+                tech_id = form.instance.technology_id
+            else:
+                tech_id = form.initial.get('technology')
+            if getattr(form.instance, 'technologyproperty_id', None):
+                prop_id = form.instance.technologyproperty_id
+            else:
+                prop_id = form.initial.get('technologyproperty')
+
+            if (tech_id, prop_id) not in locked_pairs:
+                continue
+
+            if 'value' in form.fields:
+                css_class = form.fields['value'].widget.attrs.get('class', '')
+                css_class = (css_class + ' optimizer-managed-input').strip()
+                form.fields['value'].widget.attrs['class'] = css_class
+                form.fields['value'].widget.attrs['title'] = (
+                    'This value is sent to the optimizer, but you can still '
+                    'edit it before calculating or optimizing.'
+                )
+
+        return formset
+
+    def get_form(self, form_class=None):
+        treatment_plant = self.get_treatment_plant()
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).values_list(
+                'technology', flat=True)
+
+        # Persist rows for required (technology-level) design parameters so
+        # unchanged default values are still present during calculations.
+        required_defaults = TechnologyPropertyJunction.objects.filter(
+            technology__in=tech_ids,
+            is_designparameter=True,
+            is_digested=False,
+        ).select_related('technology', 'property')
+        for junction in required_defaults:
+            TreatmentPlantTechnologyPropertyValue.objects.get_or_create(
+                treatmentplant=treatment_plant,
+                technology=junction.technology,
+                technologyproperty=junction.property,
+                defaults={'value': junction.default_value},
+            )
+
+        non_digested_prop_ids = required_defaults.values_list(
+            'property', flat=True)
+        queryset = TreatmentPlantTechnologyPropertyValue.objects.filter(
+            treatmentplant=treatment_plant,
+            technologyproperty_id__in=non_digested_prop_ids
+        )
+        initial = []
+        if not queryset.exists():
+            # Build initial data for new forms, but do NOT include 'id'
+            initial = build_technology_property_initials(treatment_plant)
+
+        prefix = "techprop"
+        if self.request.method == 'POST':
+            total_forms = int(self.request.POST.get(f'{prefix}-TOTAL_FORMS', '0'))
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=total_forms,
+            )
+            formset = DynamicFormSet(
+                self.request.POST,
+                queryset=queryset,
+                initial=initial,
+                prefix=prefix)
+            return self._apply_optimizer_field_locking(
+                formset,
+                treatment_plant,
+            )
+        # For GET: if queryset is empty and initial is non-empty, set extra
+        if not queryset.exists() and initial:
+            DynamicFormSet = modelformset_factory(
+                TreatmentPlantTechnologyPropertyValue,
+                form=TreatmentTechPropertyValueForm,
+                extra=len(initial),
+            )
+            formset = DynamicFormSet(
+                queryset=queryset, initial=initial, prefix=prefix)
+            return self._apply_optimizer_field_locking(
+                formset,
+                treatment_plant,
+            )
+        formset = TreatmentPlantTechPropertyValueFormSet(
+            queryset=queryset, initial=initial, prefix=prefix)
+        return self._apply_optimizer_field_locking(
+            formset,
+            treatment_plant,
+        )
+
+    def get_waterquality_formset(self):
+        """Return a formset for water quality parameter values for this plant."""
+        treatment_plant = self.get_treatment_plant()
+        tech_ids = TreatmentPlantLayout.objects.filter(
+            treatmentplant=treatment_plant).values_list('technology', flat=True)
+        wqtech_junctions = WaterqualityParameterTechnologyJunction.objects.filter(
+            technology__in=tech_ids
+        ).select_related('waterqualityparameter')
+        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
+            treatmentplant=treatment_plant,
+            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
+        )
+        existing_ids = set(
+            qs.values_list('wq_tech_parameter_id', flat=True))
+        for junction in wqtech_junctions:
+            if junction.id not in existing_ids:
+                TreatmentPlantWaterQualityParameterValue.objects.create(
+                    treatmentplant=treatment_plant,
+                    wq_tech_parameter=junction,
+                    value=junction.default_value
+                )
+        qs = TreatmentPlantWaterQualityParameterValue.objects.filter(
+            treatmentplant=treatment_plant,
+            wq_tech_parameter_id__in=[j.id for j in wqtech_junctions]
+        )
+        prefix = "waterquality"
+        try:
+            if self.request.method == 'POST':
+                return WaterQualityParameterValueFormSet(
+                    self.request.POST, queryset=qs, prefix=prefix)
+            return WaterQualityParameterValueFormSet(
+                queryset=qs, prefix=prefix)
+        except Exception as e:
+            logger.error("Exception in get_waterquality_formset: %s", e, exc_info=True)
+            raise
+
+    def form_valid(self, formset):
+        treatment_plant = self.get_treatment_plant()
+        action = self.request.POST.get('action', 'calculate')
+        waterquality_formset = self.get_waterquality_formset()
+        valid_tech = formset.is_valid()
+        valid_wq = waterquality_formset.is_valid()
+        if not (valid_tech and valid_wq):
+            logger.warning(
+                "Formset or waterquality_formset invalid. formset errors: %s, waterquality_formset errors: %s", formset.errors, waterquality_formset.errors)
+            return self.form_invalid(formset)
+
+        # Step 1: Save all form data
+        saved = []
+        for form in formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data or form.cleaned_data.get('DELETE', False):
+                continue
+            instance = form.save(commit=False)
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
+            instance.save()
+            saved.append(instance)
+        # Save water quality parameter values
+        for form in waterquality_formset.forms:
+            if getattr(form, 'cleaned_data', None) is None:
+                form.full_clean()
+            if not form.cleaned_data:
+                continue
+            instance = form.save(commit=False)
+            if getattr(instance, 'treatmentplant', None) is None:
+                instance.treatmentplant = treatment_plant
+            instance.save()
+            saved.append(instance)
+
+        # Any edited inputs may invalidate a technology's prior optimizer
+        # result; recompute this before deciding what to (re)calculate.
+        self._invalidate_stale_optimized_technologies(treatment_plant)
+
+        if action == 'reset_optimization':
+            TreatmentPlantTechnologyOptimizationStatus.objects.filter(
+                treatmentplant=treatment_plant,
+            ).update(is_optimized=False)
+            calculation_updated_rows = self._run_calculation_pipeline(
+                treatment_plant)
+            self._set_optimizer_status(
+                treatment_plant.id,
+                {
+                    'state': 'done',
+                    'seen': False,
+                    'action': 'calculate',
+                    'message': (
+                        'Optimized values cleared. Recalculated '
+                        f'{len(calculation_updated_rows)} properties and '
+                        'KPI values using default/user-specified inputs.'
+                    ),
+                    'updated_rows': calculation_updated_rows,
+                    'progress': {},
+                    'completed_processes': [],
+                },
+            )
+            return redirect(
+                'technology_properties', plant_id=treatment_plant.id)
+
+        if action == 'optimize':
+            payload = self._build_optimizer_payload(treatment_plant)
+            output_path = self._write_optimizer_payload(
+                treatment_plant,
+                payload=payload,
+            )
+            csv_info = self._write_optimizer_csv_inputs(
+                treatment_plant,
+                payload,
+            )
+            run_async = getattr(settings, 'OPTIMIZER_ASYNC', True)
+            if run_async:
+                task_id = str(uuid.uuid4())
+                self._set_optimizer_status(
+                    treatment_plant.id,
+                    {
+                        'state': 'running',
+                        'seen': False,
+                        'action': 'optimize',
+                        'task_id': task_id,
+                        'message': (
+                            'Optimization started. '
+                            'Showing updated results can take a while.'
+                        ),
+                        'updated_rows': [],
+                        'progress': {},
+                        'completed_processes': [],
+                    },
+                )
+                worker = threading.Thread(
+                    target=self._run_optimizer_job,
+                    kwargs={
+                        'treatment_plant': treatment_plant,
+                        'payload_path': output_path,
+                        'workspace_root': csv_info['workspace_root'],
+                    },
+                    daemon=True,
+                )
+                worker.start()
+                messages.info(
+                    self.request,
+                    'Optimization started in the background. '
+                    'Updated values will appear after completion.'
+                )
+            else:
+                try:
+                    run_output_dir = self._run_optimizer_pipeline(
+                        csv_info['workspace_root']
+                    )
+                    persisted = self._persist_optimizer_results_to_db(
+                        treatment_plant=treatment_plant,
+                        run_output_dir=run_output_dir,
+                    )
+                    calculation_rows = self._run_calculation_pipeline(
+                        treatment_plant)
+                    processed_dir = self._export_optimizer_results_to_processed(
+                        treatment_plant=treatment_plant,
+                        payload_path=output_path,
+                        workspace_root=csv_info['workspace_root'],
+                        run_output_dir=run_output_dir,
+                    )
+                    messages.success(
+                        self.request,
+                        'Optimization completed. Persisted '
+                        f"{persisted['properties']} properties, "
+                        f"{persisted['waterquality']} water quality values, "
+                        f"and {persisted['kpis']} KPI values. Recalculated "
+                        f"{len(calculation_rows)} digested properties and "
+                        'technology KPI values. '
+                        f'Results exported to {processed_dir}'
+                    )
+                except Exception as exc:
+                    logger.exception('Optimizer execution failed: %s', exc)
+                    messages.error(
+                        self.request,
+                        'Optimizer inputs were written, but running '
+                        f'pystimela_optim failed: {exc}'
+                    )
+            return redirect(
+                'technology_properties',
+                plant_id=treatment_plant.id,
+            )
+
+        # Step 2: Calculate technology-specific and plant-wide KPIs
+        calculation_updated_rows = self._run_calculation_pipeline(
+            treatment_plant)
 
         # Step 3: Prepare and POST to the API
         tech_props = []
@@ -2433,9 +4134,33 @@ class TechnologyPropertiesView(generic.FormView):
                 'value': instance.value,
             })
 
+        digested_count = sum(
+            1 for row in calculation_updated_rows
+            if row['row_type'] == 'property'
+        )
+        kpi_count = sum(
+            1 for row in calculation_updated_rows
+            if row['row_type'] == 'kpi'
+        )
+        self._set_optimizer_status(
+            treatment_plant.id,
+            {
+                'state': 'done',
+                'seen': False,
+                'action': 'calculate',
+                'message': (
+                    'Calculation finished. '
+                    f'Updated {digested_count} digested properties and '
+                    f'{kpi_count} technology KPI values.'
+                ),
+                'updated_rows': calculation_updated_rows,
+                'progress': {},
+                'completed_processes': [],
+            },
+        )
         return redirect(
-            'design_parameter_results', plant_id=treatment_plant.id)
-        
+            'technology_properties', plant_id=treatment_plant.id)
+
         # payload = {
         #     'treatmentplant_id': treatment_plant.id,
         #     'configuration_id': getattr(treatment_plant, 'configuration_id', None),
@@ -2484,14 +4209,53 @@ class TechnologyPropertiesView(generic.FormView):
         layouts = TreatmentPlantLayout.objects.filter(
             treatmentplant=treatment_plant).order_by('step').select_related('technology')
         tech_order = [lay.technology for lay in layouts]
+        tech_order_index = {}
+        for index, tech in enumerate(tech_order):
+            tech_order_index.setdefault(tech.id, index)
 
         # Map tech id to Technology instance
         tech_map = {tech.id: tech for tech in tech_order}
+
+        value_map = {
+            (row.technology_id, row.technologyproperty_id): row.value
+            for row in TreatmentPlantTechnologyPropertyValue.objects.filter(
+                treatmentplant=treatment_plant,
+                technology_id__in=[tech.id for tech in tech_order],
+            )
+        }
+        junction_map = {
+            (junction.technology_id, junction.property_id): junction
+            for junction in TechnologyPropertyJunction.objects.filter(
+                technology__in=[tech.id for tech in tech_order],
+            ).select_related('property')
+        }
 
         # Group forms by technology id preserving order
         forms_by_tech = OrderedDict()
         for tech in tech_order:
             forms_by_tech[tech] = []
+
+        digested_properties_by_tech = OrderedDict((tech.id, []) for tech in tech_order)
+        for tech in tech_order:
+            for junction in (
+                j for (tech_id, _), j in junction_map.items()
+                if tech_id == tech.id and j.is_digested
+            ):
+                # Only show digested properties once a calculation or
+                # optimization has actually produced a persisted value.
+                value_key = (junction.technology_id, junction.property_id)
+                if value_key not in value_map:
+                    continue
+                digested_properties_by_tech[tech.id].append({
+                    'name': junction.property.name,
+                    'value': value_map[value_key],
+                    'unit': junction.property.unit,
+                    'description': junction.property.description,
+                    'sent_to_optimizer': junction.sent_to_optimizer,
+                })
+            digested_properties_by_tech[tech.id].sort(
+                key=lambda row: row['name'] or ''
+            )
 
         # For each form in the formset, determine its technology and attach
         # the form along with the human-readable property name
@@ -2518,12 +4282,18 @@ class TechnologyPropertiesView(generic.FormView):
                     prop_help = prop.description
                 except TechnologyProperty.DoesNotExist:
                     prop_name = str(prop_id)
+            junction = junction_map.get((tech_id, prop_id))
             if tech is not None:
                 forms_by_tech[tech].append({
                     'form': form,
                     'prop_name': prop_name,
                     'prop_unit': prop_unit,
                     'prop_help': prop_help,
+                    'is_optimizer_managed': bool(
+                        junction
+                        and junction.sent_to_optimizer
+                        and not junction.is_digested
+                    ),
                 })
 
         # Group water quality parameter forms by technology
@@ -2549,6 +4319,7 @@ class TechnologyPropertiesView(generic.FormView):
         context['formset'] = formset
         context['waterquality_formset'] = waterquality_formset
         context['waterquality_forms_by_tech'] = waterquality_forms_by_tech
+        context['digested_properties_by_tech'] = digested_properties_by_tech
 
         # --- Build waterquality_params_by_tech for new table rendering ---
         # Use technology id as key for grouping, then map back to tech 
@@ -2597,6 +4368,79 @@ class TechnologyPropertiesView(generic.FormView):
             waterquality_params_by_tech[tech] = wq_params_by_techid.get(
                 tech.id, [])
         context['waterquality_params_by_tech'] = waterquality_params_by_tech
+
+        optimizer_status = self._get_optimizer_status(treatment_plant.id)
+        updated_rows = optimizer_status.get('updated_rows', [])
+
+        updated_properties_by_tech = defaultdict(set)
+        updated_wq_by_tech = defaultdict(set)
+        for row in updated_rows:
+            tech_id = row.get('technology_id')
+            row_type = row.get('row_type')
+            name = row.get('name')
+            if not tech_id or not name:
+                continue
+            if row_type == 'property':
+                updated_properties_by_tech[tech_id].add(name)
+            if row_type == 'waterquality':
+                updated_wq_by_tech[tech_id].add(name)
+
+        context['optimizer_status'] = optimizer_status
+        # KPI values are shown on the KPI results page, not this summary.
+        context['optimizer_updated_rows'] = self._sort_updated_rows(
+            [row for row in updated_rows if row.get('row_type') != 'kpi'],
+            tech_order_index,
+        )
+        context['optimizer_updated_properties_by_tech'] = {
+            key: sorted(list(value))
+            for key, value in updated_properties_by_tech.items()
+        }
+        context['optimizer_updated_wq_by_tech'] = {
+            key: sorted(list(value))
+            for key, value in updated_wq_by_tech.items()
+        }
+
+        self._mark_optimizer_status_seen(treatment_plant.id)
+
+        optimization_statuses = {
+            status.technology_id: status
+            for status in TreatmentPlantTechnologyOptimizationStatus.objects.filter(  # noqa, E501
+                treatmentplant=treatment_plant,
+                technology_id__in=[tech.id for tech in tech_order],
+            )
+        }
+        technology_optimization_status = {
+            tech.id: {
+                'is_optimized': (
+                    optimization_statuses[tech.id].is_optimized
+                    if tech.id in optimization_statuses else False
+                ),
+                'optimized_at': (
+                    optimization_statuses[tech.id].optimized_at
+                    if tech.id in optimization_statuses else None
+                ),
+            }
+            for tech in tech_order
+        }
+        context['technology_optimization_status'] = (
+            technology_optimization_status)
+        optimized_technologies = []
+        seen_optimized_technology_ids = set()
+        for tech in tech_order:
+            if tech.id in seen_optimized_technology_ids:
+                continue
+            if not technology_optimization_status[tech.id]['is_optimized']:
+                continue
+            optimized_technologies.append(tech)
+            seen_optimized_technology_ids.add(tech.id)
+        context['optimized_technologies'] = optimized_technologies
+        context['any_technology_optimized'] = any(
+            status['is_optimized']
+            for status in technology_optimization_status.values()
+        )
+
+        context['show_optimize_button'] = self._has_optimizer_targets(
+            treatment_plant)
         # --- End new context variable ---
         return context
 

@@ -1,8 +1,8 @@
 import csv
 import json
 
-csv_path = r"c:\Users\vriesdi\Code\to-drinq-dst\research\data\database_tables\technologyproperty.csv"
-json_path = r"c:\Users\vriesdi\Code\to-drinq-dst\drinq\utils\treatmentpropertyname.json"
+csv_path = "research/data/database_tables/technologyproperty.csv"
+json_path = "drinq/utils/treatmentpropertyname.json"
 
 dict_out = {}
 with open(csv_path, encoding="utf-8") as f:

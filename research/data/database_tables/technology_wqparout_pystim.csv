@@ -1,0 +1,13 @@
+id, technology_id, wqparout_id, pystim_name
+1,44,4,ss_final, #TOCHECK!!
+5,44,2,doc_final,#TOCHECK!!
+10,40,4,ss_final,#TOCHECK!!
+11,40,2,doc_final,#TOCHECK!!
+14,31,8,ecoli_final,#TOCHECK!!
+16,31,10,bromate_final,#TOCHECK!!
+19,27,8,ecoli_final,#TOCHECK!!
+20,27,13,tthms_final,#TOCHECK!!
+21,27,14,haas_final,#TOCHECK!!
+22,19,4,ss_final,#TOCHECK!!
+23,18,4,ss_final,#TOCHECK!!
+24,14,2,doc_final,#TOCHECK!!

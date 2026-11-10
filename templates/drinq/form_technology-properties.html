@@ -2,12 +2,124 @@
 {% load i18n %}
 {% load dict_extras %}
 {% load unit_format %}
+{% load kpi_format %}
 
 {% block content %}
 <div class="container mt-4">
+  <style>
+    .optimizer-updated-row {
+      background-color: #fff6db;
+      border-left: 4px solid #ffb703;
+    }
+    .optimizer-updated-badge {
+      font-size: 0.72rem;
+      margin-left: 0.4rem;
+      background: #ffb703;
+      color: #1d1d1d;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.35rem;
+      font-weight: 600;
+    }
+    .optimizer-managed-input {
+      background-color: #eef6ff;
+      border-color: #8ab6e6;
+    }
+    .optimizer-managed-badge {
+      font-size: 0.72rem;
+      margin-left: 0.4rem;
+      background: #1976d2;
+      color: #ffffff;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.35rem;
+      font-weight: 600;
+    }
+    .technology-optimized-badge {
+      font-size: 0.72rem;
+      margin-left: 0.5rem;
+      background: #2e7d32;
+      color: #ffffff;
+      border-radius: 0.25rem;
+      padding: 0.15rem 0.4rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  </style>
   <div class="card shadow-sm p-3 bg-white">
     <h1 class="mb-3">Technology properties</h1>
     <p class="lead">Set required technology-level design parameters for <strong>{{ treatment_plant.name }}</strong>. Complete values for each technology (ordered by treatment step) and click <strong>Calculate results</strong> at the bottom of this page.</p>
+
+    {% if optimizer_status.state == 'running' %}
+      <div class="alert alert-info" role="alert" id="optimizer-running-alert">
+        <div id="optimizer-progress-message">{{ optimizer_status.message }}</div>
+        <ul id="optimizer-progress-list" class="mb-0 mt-2 small">
+          {% for name in optimizer_status.completed_processes %}
+            <li>&#10003; {{ name }} optimized</li>
+          {% endfor %}
+          {% if optimizer_status.progress.phase == 'started' %}
+            <li class="text-muted">&hellip; optimizing {{ optimizer_status.progress.process }}&hellip;</li>
+          {% endif %}
+        </ul>
+      </div>
+    {% elif optimizer_status.state == 'done' and optimizer_updated_rows %}
+      <div class="alert alert-success" role="alert">
+        {{ optimizer_status.message }}
+        <a href="{% url 'design_parameter_results' treatment_plant.id %}" class="btn btn-primary mt-2">
+          View Treatment plant KPI results &rarr;
+        </a>
+      </div>
+    {% elif optimizer_status.state == 'failed' %}
+      <div class="alert alert-danger" role="alert">
+        {{ optimizer_status.message }}
+      </div>
+    {% endif %}
+
+    {% if any_technology_optimized %}
+      <div class="alert alert-success d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+        <div>
+          <strong>Optimized values are in place</strong> for:
+          {% for tech in optimized_technologies %}
+            {{ tech.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+          . <strong>Calculate results</strong> keeps these values; editing any of their inputs
+          clears optimization for that technology automatically.
+        </div>
+      </div>
+    {% endif %}
+
+    {% if optimizer_updated_rows %}
+      <div class="card border-warning mb-3">
+        <div class="card-header bg-warning text-dark">
+          {% if optimizer_status.action == 'optimize' %}Updated rows{% else %}Calculated values{% endif %}
+        </div>
+        <div class="card-body p-2">
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>Technology</th>
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Updated value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in optimizer_updated_rows %}
+                  <tr>
+                    <td>{{ row.technology_name }}</td>
+                    <td>{{ row.row_type }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>
+                      <strong>{{ row.value|format_decimals }}</strong>
+                      {% if row.unit %}{{ row.unit|superscript_exponents|safe }}{% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {% endif %}
 
     <div class="card shadow-sm p-3 bg-white">
       <form method="post">
@@ -29,140 +141,381 @@
         {% endif %}
 
 
-        {% for tech, items in forms_by_tech.items %}
-        <div class="mb-4">
-          <h4 class="mb-2">Step {{ forloop.counter }} — {{ tech.name }}</h4>
-          <h5 class="mb-2">Operational conditions</h5>
-          {% comment %} <div class="alert alert-info small">DEBUG: {{ items|length }} items for this technology.<br>Items: {{ items|safe }}</div> {% endcomment %}
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm">
-              <thead class="thead-light">
-                <tr>
-                  <th style="width:25%">Property</th>
-                  <th style="width:10%">Value</th>
-                  <th style="width:10%">Unit</th>
-                  <th style="width:55%">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for item in items %}
-                  {{ item.form.technology }}
-                  {{ item.form.technologyproperty }}
-                    {% if item.form.id.value %}
-                      {{ item.form.id }}
-                    {% endif %}
-                  {% if not item.is_digested %}
-                  <tr>
-                    <td class="align-top">{{ item.prop_name }}</td>
-                    <td>
-                      {{ item.form.value }}
-                      {% if item.form.value.errors %}
-                        <div class="text-danger small">{{ item.form.value.errors }}</div>
-                    {% endif %}
-                    {% for hidden in item.form.hidden_fields %}
-                      {% if hidden.name != 'id' %}{{ hidden }}{% endif %}
-                    {% endfor %}
-                  </td>
-                  <td class="align-top">
-                    <div class="form-text text-muted small mt-1">
-                      {% if item.prop_unit %}{{ item.prop_unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
-                    </div>
-                  </td>
-                  <td class="align-top text-muted small mt-1">
-                    {% if item.prop_help %}{{ item.prop_help }}{% endif %}
-                  </td>
-                </tr>
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="technology-properties-expand-all">Expand all</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="technology-properties-collapse-all">Collapse all</button>
         </div>
 
-        {# Per-technology water quality parameter table using grouped forms #}
-        {% with wq_forms=waterquality_forms_by_tech|dict_get:tech %}
-          {% if wq_forms and wq_forms|length > 0 %}
-            <div class="mb-4">
-              <h5 class="mb-2">Water quality parameters</h5>
+        {% for tech, items in forms_by_tech.items %}
+        <div class="card shadow-sm bg-white mb-3">
+          <div class="card-header bg-white">
+            <button
+              type="button"
+              class="btn btn-link text-decoration-none w-100 p-0 border-0 shadow-none text-start technology-properties-toggle"
+              data-technology-properties-target="#technology-properties-collapse-{{ forloop.counter }}"
+              aria-expanded="false"
+              aria-controls="technology-properties-collapse-{{ forloop.counter }}"
+            >
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <div class="h4 mb-1">
+                    Step {{ forloop.counter }} — {{ tech.name }}
+                    {% with tech_status=technology_optimization_status|dict_get:tech.id %}
+                      {% if tech_status.is_optimized %}
+                        <span class="technology-optimized-badge">Optimized{% if tech_status.optimized_at %} on {{ tech_status.optimized_at|date:"Y-m-d H:i" }}{% endif %}</span>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                  <div class="small text-muted">Open to edit the default values for this technology.</div>
+                </div>
+                <div class="text-end small text-muted flex-shrink-0">
+                  <div>{{ items|length }} propert{{ items|pluralize:"y,ies" }}</div>
+                </div>
+              </div>
+            </button>
+          </div>
+          <div id="technology-properties-collapse-{{ forloop.counter }}" class="collapse technology-properties-collapse">
+            <div class="card-body">
+              <h5 class="mb-2">Operational conditions</h5>
+              {% comment %} <div class="alert alert-info small">DEBUG: {{ items|length }} items for this technology.<br>Items: {{ items|safe }}</div> {% endcomment %}
               <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm">
+                <table class="table table-bordered table-striped table-sm mb-4">
                   <thead class="thead-light">
                     <tr>
-                      <th style="width:25%">Parameter</th>
-                      <th style="width:10%">Value (untreated water)</th>
-                      <th style="width:10%">Value (target quality)</th>
+                      <th style="width:25%">Property</th>
+                      <th style="width:10%">Value</th>
                       <th style="width:10%">Unit</th>
-                      <th style="width:45%">Description</th>
+                      <th style="width:55%">Description</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for form in wq_forms %}
-                      <tr>
+                    {% for item in items %}
+                      {{ item.form.technology }}
+                      {{ item.form.technologyproperty }}
+                        {% if item.form.id.value %}
+                          {{ item.form.id }}
+                        {% endif %}
+                      {% with updated_props=optimizer_updated_properties_by_tech|dict_get:tech.id %}
+                      <tr class="{% if updated_props and item.prop_name in updated_props %}optimizer-updated-row{% endif %}">
+                        <td class="align-top">{{ item.prop_name }}</td>
                         <td>
-                          {% if form.id %}
-                            {{ form.id }}
+                          {{ item.form.value }}
+                          {% if updated_props and item.prop_name in updated_props %}
+                            <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
                           {% endif %}
-                          {{ form.wq_tech_parameter }}
-                          {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
-                          {% if form.wq_tech_parameter.errors %}
-                            <div class="text-danger small">{{ form.wq_tech_parameter.errors }}</div>
+                          {% if item.is_optimizer_managed %}
+                            <span class="optimizer-managed-badge">used by optimizer</span>
                           {% endif %}
-                          {% if form.non_field_errors %}
-                            <div class="text-danger small">{{ form.non_field_errors }}</div>
+                          {% if item.form.value.errors %}
+                            <div class="text-danger small">{{ item.form.value.errors }}</div>
                           {% endif %}
-                        </td>
-                        <td>
-                          <div class="form-text text-muted small mt-1">
-                          {% if form.instance.wq_tech_parameter.is_inputparameter %}
-                            {{ form.value }}
-                            {% if form.value.errors %}
-                              <div class="text-danger small">{{ form.value.errors }}</div>
-                            {% endif %}
-                          {% else %}
-                            &mdash;
-                          {% endif %}
-                          </div>
-                        </td>
-                        <td>
-                          <div class="form-text text-muted small mt-1">
-                            {% if form.instance.wq_tech_parameter.is_targetparameter %}
-                              {{ form.value }}
-                              {% if form.value.errors %}
-                                <div class="text-danger small">{{ form.value.errors }}</div>
-                              {% endif %}
-                            {% else %}
-                              &mdash;
-                            {% endif %}
-                          </div>
                         </td>
                         <td class="align-top">
                           <div class="form-text text-muted small mt-1">
-                            {{ form.instance.wq_tech_parameter.waterqualityparameter.unit|superscript_exponents|safe }}
+                            {% if item.prop_unit %}{{ item.prop_unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
                           </div>
                         </td>
-                        <td class="align-top">
-                          <div class="form-text text-muted small mt-1">
-                            {{ form.instance.wq_tech_parameter.waterqualityparameter.description }}
-                          </div>
+                        <td class="align-top text-muted small mt-1">
+                          {% if item.prop_help %}{{ item.prop_help }}{% endif %}
                         </td>
                       </tr>
+                      {% endwith %}
                     {% endfor %}
                   </tbody>
                 </table>
               </div>
+
+              {% with digested_items=digested_properties_by_tech|dict_get:tech.id %}
+                {% if digested_items and digested_items|length > 0 %}
+                  <div class="mb-4">
+                    <h5 class="mb-2">Digested properties</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-striped table-sm mb-0">
+                        <thead class="thead-light">
+                          <tr>
+                            <th style="width:25%">Property</th>
+                            <th style="width:10%">Optimized value</th>
+                            <th style="width:10%">Unit</th>
+                            <th style="width:55%">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for digested in digested_items %}
+                            {% with updated_props=optimizer_updated_properties_by_tech|dict_get:tech.id %}
+                            <tr class="{% if updated_props and digested.name in updated_props %}optimizer-updated-row{% endif %}">
+                              <td class="align-top">
+                                {{ digested.name }}
+                                {% if updated_props and digested.name in updated_props %}
+                                  <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
+                                {% endif %}
+                              </td>
+                              <td class="align-top">
+                                <strong>{{ digested.value|format_decimals }}</strong>
+                              </td>
+                              <td class="align-top">
+                                {% if digested.unit %}{{ digested.unit|superscript_exponents|safe }}{% else %}&nbsp;{% endif %}
+                              </td>
+                              <td class="align-top text-muted small mt-1">
+                                {% if digested.description %}{{ digested.description }}{% endif %}
+                              </td>
+                            </tr>
+                            {% endwith %}
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              {# Per-technology water quality parameter table using grouped forms #}
+              {% with wq_forms=waterquality_forms_by_tech|dict_get:tech %}
+                {% if wq_forms and wq_forms|length > 0 %}
+                  <div class="mb-0">
+                    <h5 class="mb-2">Water quality parameters</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-striped table-sm mb-0">
+                        <thead class="thead-light">
+                          <tr>
+                            <th style="width:25%">Parameter</th>
+                            <th style="width:10%">Value (untreated water)</th>
+                            <th style="width:10%">Value (target quality)</th>
+                            <th style="width:10%">Unit</th>
+                            <th style="width:45%">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for form in wq_forms %}
+                            {% with wq_name=form.instance.wq_tech_parameter.waterqualityparameter.name %}
+                            {% with updated_wq=optimizer_updated_wq_by_tech|dict_get:tech.id %}
+                            <tr class="{% if updated_wq and wq_name in updated_wq %}optimizer-updated-row{% endif %}">
+                              <td>
+                                {% if form.id %}
+                                  {{ form.id }}
+                                {% endif %}
+                                {{ form.wq_tech_parameter }}
+                                {{ form.instance.wq_tech_parameter.waterqualityparameter.name }}
+                                {% if updated_wq and wq_name in updated_wq %}
+                                  <span class="optimizer-updated-badge">{% if optimizer_status.action == 'optimize' %}updated by optimizer{% else %}updated by calculation{% endif %}</span>
+                                {% endif %}
+                                {% if form.wq_tech_parameter.errors %}
+                                  <div class="text-danger small">{{ form.wq_tech_parameter.errors }}</div>
+                                {% endif %}
+                                {% if form.non_field_errors %}
+                                  <div class="text-danger small">{{ form.non_field_errors }}</div>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="form-text text-muted small mt-1">
+                                {% if form.instance.wq_tech_parameter.is_inputparameter %}
+                                  {{ form.value }}
+                                  {% if form.value.errors %}
+                                    <div class="text-danger small">{{ form.value.errors }}</div>
+                                  {% endif %}
+                                {% else %}
+                                  &mdash;
+                                {% endif %}
+                                </div>
+                              </td>
+                              <td>
+                                <div class="form-text text-muted small mt-1">
+                                  {% if form.instance.wq_tech_parameter.is_targetparameter %}
+                                    {{ form.value }}
+                                    {% if form.value.errors %}
+                                      <div class="text-danger small">{{ form.value.errors }}</div>
+                                    {% endif %}
+                                  {% else %}
+                                    &mdash;
+                                  {% endif %}
+                                </div>
+                              </td>
+                              <td class="align-top">
+                                <div class="form-text text-muted small mt-1">
+                                  {{ form.instance.wq_tech_parameter.waterqualityparameter.unit|superscript_exponents|safe }}
+                                </div>
+                              </td>
+                              <td class="align-top">
+                                <div class="form-text text-muted small mt-1">
+                                  {{ form.instance.wq_tech_parameter.waterqualityparameter.description }}
+                                </div>
+                              </td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endwith %}
             </div>
-          {% endif %}
-        {% endwith %}
-      </div>
-      {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
 
       <div class="d-flex justify-content-between">
         <a href="{% url 'design_detail' treatment_plant.slug %}" class="btn btn-secondary">Back</a>
-        <button type="submit" class="btn btn-primary">Calculate results</button>
+        <div class="d-flex gap-2">
+          <button type="submit" name="action" value="calculate" class="btn btn-primary">
+            {% if any_technology_optimized %}Recalculate (keeps optimized values){% else %}Calculate results{% endif %}
+          </button>
+          {% if show_optimize_button %}
+            <button type="submit" name="action" value="optimize" class="btn btn-outline-primary">Optimize conditions</button>
+          {% endif %}
+          {% if any_technology_optimized %}
+            <button type="submit" name="action" value="reset_optimization" class="btn btn-outline-danger"
+                    onclick="return confirm('This discards optimizer results for all technologies and recalculates default/user-specified values. Continue?');">
+              Recalculate with non-optimized values
+            </button>
+          {% endif %}
+        </div>
       </div>
     </form>
   </div>
 </div>
+
+<div class="modal fade" id="optimizerStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Optimization In Progress</h5>
+      </div>
+      <div class="modal-body">
+        <p id="optimizer-modal-message">Optimization is running in the background. Showing updated results may take a while.</p>
+        <ul id="optimizer-modal-progress-list" class="mb-0 small"></ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <br>
 </body>
+
+<script>
+  (function() {
+    function getCollapseElements() {
+      return document.querySelectorAll('.technology-properties-collapse');
+    }
+
+    function setCollapseState(isCollapsed) {
+      var collapses = getCollapseElements();
+      var toggleButtons = document.querySelectorAll('.technology-properties-toggle');
+      collapses.forEach(function(collapseEl) {
+        collapseEl.classList.toggle('show', !isCollapsed);
+      });
+      toggleButtons.forEach(function(button) {
+        button.setAttribute('aria-expanded', String(!isCollapsed));
+        button.classList.toggle('collapsed', isCollapsed);
+      });
+    }
+
+    function toggleSingleCollapse(button) {
+      var targetSelector = button.getAttribute('data-technology-properties-target');
+      if (!targetSelector) {
+        return;
+      }
+
+      var target = document.querySelector(targetSelector);
+      if (!target) {
+        return;
+      }
+
+      var isExpanded = target.classList.contains('show');
+      target.classList.toggle('show', !isExpanded);
+      button.setAttribute('aria-expanded', String(!isExpanded));
+      button.classList.toggle('collapsed', isExpanded);
+    }
+
+    var expandAllButton = document.getElementById('technology-properties-expand-all');
+    if (expandAllButton) {
+      expandAllButton.addEventListener('click', function() {
+        setCollapseState(false);
+      });
+    }
+
+    var collapseAllButton = document.getElementById('technology-properties-collapse-all');
+    if (collapseAllButton) {
+      collapseAllButton.addEventListener('click', function() {
+        setCollapseState(true);
+      });
+    }
+
+    document.querySelectorAll('.technology-properties-toggle').forEach(function(button) {
+      button.addEventListener('click', function() {
+        toggleSingleCollapse(button);
+      });
+    });
+  })();
+</script>
+
+{% if optimizer_status.state == 'running' %}
+<script>
+  (function() {
+    var statusUrl = "{% url 'optimizer_status' treatment_plant.id %}";
+    if (window.jQuery && $('#optimizerStatusModal').modal) {
+      $('#optimizerStatusModal').modal('show');
+    } else {
+      alert('Optimization is in progress. Updated results may take a while.');
+    }
+
+    function renderProgressList(listEl, data) {
+      listEl.innerHTML = '';
+      (data.completed_processes || []).forEach(function(name) {
+        var li = document.createElement('li');
+        li.textContent = '\u2713 ' + name + ' optimized';
+        listEl.appendChild(li);
+      });
+      var progress = data.progress || {};
+      if (progress.phase === 'started' && progress.process) {
+        var current = document.createElement('li');
+        current.className = 'text-muted';
+        current.textContent = '\u2026 optimizing ' + progress.process + '\u2026';
+        listEl.appendChild(current);
+      }
+    }
+
+    function updateProgressUI(data) {
+      var modalMessage = document.getElementById('optimizer-modal-message');
+      if (modalMessage && data.message) {
+        modalMessage.textContent = data.message;
+      }
+      var modalList = document.getElementById('optimizer-modal-progress-list');
+      if (modalList) {
+        renderProgressList(modalList, data);
+      }
+      var alertMessage = document.getElementById('optimizer-progress-message');
+      if (alertMessage && data.message) {
+        alertMessage.textContent = data.message;
+      }
+      var alertList = document.getElementById('optimizer-progress-list');
+      if (alertList) {
+        renderProgressList(alertList, data);
+      }
+    }
+
+    function poll() {
+      fetch(statusUrl, { credentials: 'same-origin' })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          updateProgressUI(data);
+          if (data.state === 'running') {
+            window.setTimeout(poll, 3000);
+            return;
+          }
+          window.location.reload();
+        })
+        .catch(function() {
+          window.setTimeout(poll, 5000);
+        });
+    }
+
+    window.setTimeout(poll, 3000);
+  })();
+</script>
+{% endif %}
 
 {% endblock %}

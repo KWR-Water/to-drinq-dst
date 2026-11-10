@@ -44,6 +44,7 @@ class DigestingDesignParametersAPITest(TestCase):
         self.nominal_flow, _ = TreatmentPlantProperty.objects.get_or_create(
             name="Nominal flow (m3/hr)")
         self.client = APIClient()
+        self.client.force_authenticate(self.user)
 
     def test_design_parameter_input_serializer(self):
         data = {

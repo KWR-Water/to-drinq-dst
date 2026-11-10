@@ -1,0 +1,26 @@
+name: todrinq_dst_optim
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pip
+  - setuptools<81
+  - numpy>=2.5,<3
+  - pandas>=3.0.3
+  - scipy>=1.18.1
+  - matplotlib
+  - rdkit>=2024.03
+  - django=5.1.*
+  - django-formtools
+  - django-debug-toolbar
+  - requests
+  - pip:
+      - django-autoslug==1.9.9
+      - django-betterforms==2.0.0
+      - django-crispy-forms==2.1
+      - django-extensions==3.2.3
+      - django-pandas==0.6.7
+      - djangorestframework==3.14.0
+      - pubchempy==1.0.4
+      - ./whl/pystimela-0.0.2-py3-none-any.whl
+      - ./whl/pystimela_optim-0.1.2-py3-none-any.whl

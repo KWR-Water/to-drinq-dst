@@ -14,7 +14,7 @@
                 <a href="#further-actions" class="btn btn-sm btn-link p-0">Jump to further actions</a>
         </p>
         <div class="card shadow-sm p-3 bg-white">
-                <h2>Treatment plant KPIs for plant </h2>
+            <h2 class="h4 mb-3">Treatment plant KPIs for plant {{ object.name }}</h2>
         {% if properties_by_category %}
             {% for category_name, category_props in properties_by_category %}
             <div class="mb-4">
@@ -46,42 +46,92 @@
 
         {% if technology_kpis_ordered %}
         <div class="mt-5">
-            <h2>KPIs per Technology</h2>
+            <h2 class="mb-2">KPIs per Technology</h2>
+            <p class="text-muted mb-3">
+                Technologies are collapsed by default so long treatment chains stay compact.
+                Open the steps you want to inspect in detail.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    id="technology-kpi-expand-all"
+                >
+                    Expand all
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    id="technology-kpi-collapse-all"
+                >
+                    Collapse all
+                </button>
+            </div>
             <div class="mb-4">
                 {% for row in technology_kpis_ordered %}
-                    <h3>{{ row.technology.name }}</h3>
-                    <p class="mb-2 text-muted">
-                        Adaptability score:
-                        {% if row.adaptability_score is not None %}
-                            {{ row.adaptability_score|floatformat:2 }}
-                            ({{ row.criteria_count }}/{{ adaptability_criteria_total }} criteria)
-                        {% else %}
-                            <em>Not available</em>
-                        {% endif %}
-                    </p>
-                    <table class="table table-bordered technology-kpi-table">
-                        <thead>
-                            <tr>
-                                <th>KPI</th>
-                                <th>Value</th>
-                                <th>Unit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for kpi_value in row.kpis %}
-                            {% scaled_kpi_display kpi_value.value kpi_value.kpi.name as display %}
-                            <tr>
-                                <td>{{ kpi_value.kpi.name }}</td>
-                                <td>{{ display.value }}</td>
-                                <td class="align-top">
-                                    <div class="form-text text-muted small mt-1">
-                                        {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ kpi_value.kpi.unit|superscript_exponents|safe }}
+                    <div class="card shadow-sm bg-white mb-3">
+                        <div class="card-header bg-white">
+                            <button
+                                type="button"
+                                class="btn btn-link text-decoration-none w-100 p-0 border-0 shadow-none text-start"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#technology-kpi-collapse-{{ forloop.counter }}"
+                                aria-expanded="false"
+                                aria-controls="technology-kpi-collapse-{{ forloop.counter }}"
+                            >
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="h5 mb-1">Step {{ row.step }}: {{ row.technology.name }}</div>
+                                        <div class="small text-muted">
+                                            Adaptability score:
+                                            {% if row.adaptability_score is not None %}
+                                                {{ row.adaptability_score|floatformat:2 }}
+                                                ({{ row.criteria_count }}/{{ adaptability_criteria_total }} criteria)
+                                            {% else %}
+                                                <em>Not available</em>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                                    <div class="text-end small text-muted flex-shrink-0">
+                                        <div>{{ row.kpi_count }} KPI{{ row.kpi_count|pluralize }}</div>
+                                        <div>Step {{ row.step }}</div>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                        <div
+                            id="technology-kpi-collapse-{{ forloop.counter }}"
+                            class="collapse technology-kpi-collapse"
+                        >
+                            <div class="card-body pt-3">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm technology-kpi-table mb-0 align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>KPI</th>
+                                                <th>Value</th>
+                                                <th>Unit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for kpi_value in row.kpis %}
+                                            {% scaled_kpi_display kpi_value.value kpi_value.kpi.name as display %}
+                                            <tr>
+                                                <td>{{ kpi_value.kpi.name }}</td>
+                                                <td>{{ display.value }}</td>
+                                                <td class="align-top">
+                                                    <div class="form-text text-muted small mt-1">
+                                                        {% if display.unit_prefix %}{{ display.unit_prefix }}{% endif %}{{ kpi_value.kpi.unit|superscript_exponents|safe }}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
 
@@ -145,7 +195,6 @@
     </div>
 </div>
 <br>
-</body>
 
 {% endblock %}
 
@@ -414,6 +463,43 @@
         }
 
         renderTechnologyKpiStackedChart();
+
+        function getTechnologyKpiCollapses() {
+            return document.querySelectorAll('.technology-kpi-collapse');
+        }
+
+        function setAllTechnologyKpisCollapsed(collapsed) {
+            const collapses = getTechnologyKpiCollapses();
+            if (!collapses.length) {
+                return;
+            }
+
+            collapses.forEach((collapseEl) => {
+                collapseEl.classList.toggle('show', !collapsed);
+                collapseEl.setAttribute('aria-expanded', String(!collapsed));
+            });
+
+            const headerButtons = document.querySelectorAll(
+                '[data-bs-target^="#technology-kpi-collapse-"]'
+            );
+            headerButtons.forEach((button) => {
+                button.setAttribute('aria-expanded', String(!collapsed));
+            });
+        }
+
+        const expandAllButton = document.getElementById('technology-kpi-expand-all');
+        if (expandAllButton) {
+            expandAllButton.addEventListener('click', function() {
+                setAllTechnologyKpisCollapsed(false);
+            });
+        }
+
+        const collapseAllButton = document.getElementById('technology-kpi-collapse-all');
+        if (collapseAllButton) {
+            collapseAllButton.addEventListener('click', function() {
+                setAllTechnologyKpisCollapsed(true);
+            });
+        }
 
         function alignFirstColumn(tableSelector) {
             const tables = document.querySelectorAll(tableSelector);

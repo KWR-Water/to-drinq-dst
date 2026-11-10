@@ -1,0 +1,4 @@
+include LICENSE README.md
+recursive-include templates *
+recursive-include templatetags *.py
+recursive-include documentation/source *
