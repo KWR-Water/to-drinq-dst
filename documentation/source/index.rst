@@ -21,6 +21,7 @@ treatment processes can be optimised with ``pystimela`` models using the
     overview.rst
     tutorial.rst
     decision_process.rst
+    future-development.rst
     kpi_evaluation.rst
     administration.rst
     architecture.rst

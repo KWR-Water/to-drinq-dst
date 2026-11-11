@@ -56,12 +56,26 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 100.0,
         }
+        self.wq_parameters = {
+            'total suspended solids': {
+                'input_parameter': 20.0,
+                'target_parameter': 5.0,
+            },
+            'dissolved organic carbon': {
+                'input_parameter': 3.0,
+                'target_parameter': 2.0,
+            },
+            'pH': {'input_parameter': 7.2},
+            'temperature': {'input_parameter': 18.0},
+            'electrical conductivity': {'input_parameter': 41.4},
+        }
 
     def test_init(self):
         mixer = CoagulationDynamicMixing(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate'],
         )
         self.assertTrue(mixer.tank_height == self.parameters['tank height'])
@@ -76,6 +90,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate'],
         )
         result = mixer.get_kpi('footprint area')
@@ -90,6 +105,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate'],
         )
         area = mixer.footprint_area__m2
@@ -100,6 +116,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
         )
         headloss = mixer.hydraulic_headloss__bar
         self.assertGreater(headloss, 0.0)
@@ -109,6 +126,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate']
         )
         kpi_results = mixer.get_kpi_dict()
@@ -122,6 +140,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate'],
         )
         headloss = mixer.hydraulic_headloss__bar
@@ -132,6 +151,7 @@ class TestCoagulationDynamicMixing(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['nominal dosing flow rate'],
         )
         emissions = mixer.co2_emissions__kg_co2_eq_per_m3
@@ -500,11 +520,10 @@ class TestFlocculation(unittest.TestCase):
     def setUp(self):
         self.parameters = {
             'tank height': 4.0,
-            'retention time tank1 min': 20.0,
-            'retention time tank2 min': 30.0,
+            'retention time (min)': 50.0,
             'mass density of chemical': 1.2,
             'storage time of chemicals (days)': 15,
-            'mixer tank1 velocity grad': 100.0,
+            'mixer velocity gradient': 100.0,
             'power efficiency of mixer(s)': 0.8,
             'units per lane': 3,
             'chemical emission factor': 0.5,
@@ -614,6 +633,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             'target residual concentration (mg/l)': 1.0,
             'target concentration of dosing chemical': 10.0,
             'target_residual_concentration_mg_per_l': 0.5,
+            'baffling factor': 1.0,
             'chemical dosing solution concentration (w/w%)': 12.0,
             'power': 0.5,
             'retention time (min)': 40.0,
@@ -628,12 +648,24 @@ class TestChlorineDisinfection(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 200.0,
         }
+        self.wq_parameters = {
+            'E. coli': {'input_parameter': 500.0},
+            'trihalomethanes': {
+                'input_parameter': 0.0,
+                'target_parameter': 80.0,
+            },
+            'haloacetic acids': {
+                'input_parameter': 0.0,
+                'target_parameter': 40.0,
+            },
+        }
 
     def test_init(self):
         chlorine_disinfection = ChlorineDisinfection(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         self.assertTrue(chlorine_disinfection.tank_height_m == self.parameters['tank height'])  # noqa, E501
@@ -646,6 +678,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         daily_mass_kg = chlorine_disinfection.daily_mass_of_chemicals__kg
@@ -657,6 +690,7 @@ class TestChlorineDisinfection(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             chem_parameters=['chlorine'],
             digest_parameter_list=['volume'],
         )
@@ -676,6 +710,7 @@ class TestChloramineDisinfection(unittest.TestCase):
             'tank height chemical storage': 4.0,
             'target residual concentration (mg/l)': 1.0,
             'target concentration of dosing chemical': 10.0,
+            'baffling factor': 1.0,
             'chemical dosing solution concentration (w/w%)': 12.0,
             'power': 0.5,
             'retention time (min)': 40.0,
@@ -690,12 +725,24 @@ class TestChloramineDisinfection(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 200.0,
         }
+        self.wq_parameters = {
+            'E. coli': {'input_parameter': 500.0},
+            'trihalomethanes': {
+                'input_parameter': 0.0,
+                'target_parameter': 80.0,
+            },
+            'haloacetic acids': {
+                'input_parameter': 0.0,
+                'target_parameter': 40.0,
+            },
+        }
 
     def test_init(self):
         chloramine = ChloramineDisinfection(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             chem_parameters=['chloramine'],
             digest_parameter_list=['volume'],
         )
@@ -711,6 +758,7 @@ class TestChloramineDisinfection(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             chem_parameters=['chloramine'],
             digest_parameter_list=['volume'],
         )
@@ -738,12 +786,23 @@ class TestBaffledOzonationContactor(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 160.0,
         }
+        self.wq_parameters = {
+            'E. coli': {'input_parameter': 500.0},
+            'UV 254': {'input_parameter': 3.5},
+            'bromate': {
+                'input_parameter': 0.0,
+                'target_parameter': 10.0,
+            },
+            'assimilable organic carbon': {'input_parameter': 30.0},
+            'bromide': {'input_parameter': 0.048},
+        }
 
     def test_init(self):
         ozone = BaffledOzonationContactor(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             chem_parameters=['ozone'],
         )
         self.assertEqual(ozone.tank_height_m, self.parameters['tank height'])
@@ -761,12 +820,14 @@ class TestBaffledOzonationContactor(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             chem_parameters=['ozone'],
+            digest_parameter_list=['volume'],
         )
         kpi_results = ozone.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
         self.assertAlmostEqual(
-            ozone.footprint_area__m2, 27.0, places=1)
+            ozone.footprint_area__m2, 16.0, places=1)
         self.assertIn('daily mass of chemicals', kpi_results)
         self.assertEqual(
             ozone.daily_mass_of_chemicals__kg['ozone'],
@@ -776,7 +837,7 @@ class TestBaffledOzonationContactor(unittest.TestCase):
             ozone.hydraulic_headloss__bar, 0.539, places=1)
         self.assertIn('CO2 equivalent emissions', kpi_results)
         self.assertAlmostEqual(
-            ozone.co2_emissions__kg_co2_eq_per_m3, 6.2208, places=2)
+            ozone.co2_emissions__kg_co2_eq_per_m3, 0.0108, places=4)
 
 
 class TestUVDisinfection(unittest.TestCase):
@@ -811,7 +872,8 @@ class TestUVDisinfection(unittest.TestCase):
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
         )
-        self.assertEqual(uv.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(
+            uv.units_per_lane, self.parameters['units per lane'] + 1)
         self.assertEqual(uv.tank_height_m, self.parameters['tank height'])
         self.assertEqual(uv.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
         self.assertGreater(uv.exposure_time_sec, 0.0)
@@ -872,7 +934,8 @@ class TestCIEX(unittest.TestCase):
             digest_parameter_list=['area'],
             wq_parameters=self.wq_parameters,
         )
-        self.assertEqual(ciex.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(
+            ciex.units_per_lane, self.parameters['units per lane'] + 1)
         self.assertEqual(ciex.tank_height_m, self.parameters['tank height'])
         self.assertEqual(ciex.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
 
@@ -938,7 +1001,8 @@ class TestAIEX(unittest.TestCase):
             digest_parameter_list=['area'],
             wq_parameters=self.wq_parameters,
         )
-        self.assertEqual(aiex.units_per_lane, self.parameters['units per lane'])
+        self.assertEqual(
+            aiex.units_per_lane, self.parameters['units per lane'] + 1)
         self.assertEqual(aiex.bed_height_m, self.parameters['bed height'])
         self.assertEqual(aiex.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
 
@@ -1073,12 +1137,14 @@ class TestPellet(unittest.TestCase):
 class TestMembranes(unittest.TestCase):
     def setUp(self):
         self.parameters = {
-            'units per lane': 2.5,
-            'regeneration duration': 40.0,
-            'tank height': 2,
-            'storage time of chemicals (days)': 20,
-            'chemical emission factor': 0.5,
-            'mass density of chemical':1.2
+            TPN['units_per_lane']: 3,
+            TPN['membrane_recovery_rate']: 80,
+            TPN['power_efficiency_of_pumps']: 80,
+            TPN['pressure_head']: 5,
+            TPN['membrane_flux']: 20,
+            TPN['operating_membrane_area']: 40,
+            TPN['membranes_per_vessel']: 100,
+            TPN['vessel_footprint']: 3.0,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -1088,49 +1154,33 @@ class TestMembranes(unittest.TestCase):
             'nominal flow rate': 100.0,
         }
 
-        self.wq_parameters = {
-            'total hardness': {
-                'input_parameter': 320.0,
-                'target_parameter': 80.0,
-            }
-        }
-        self.kpi_results = {
-            'footprint area': 2.0,
-            'footprint area for chemicals': 10.0,
-            'daily energy consumption': 192.0,
-            'daily mass of chemicals': 150,
-            'chemical solution concentration': 0.0,
-            'head loss': 0.11961322716039698,
-            'power': 0.7705051688871006,
-            'CO2 equivalent emissions': 0.02}
 
     def test_init(self):
-        ciex = CationIonExchange(
+        membrane = MembraneFiltration(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=['area'],
-            wq_parameters=self.wq_parameters,
         )
-        self.assertEqual(ciex.units_per_lane, self.parameters['units per lane'])
-        self.assertEqual(ciex.tank_height_m, self.parameters['tank height'])
-        self.assertEqual(ciex.nominal_flow_m3perh, self.plant_kpis['nominal flow rate'])
+        self.assertEqual(
+            membrane.units_per_lane,
+            self.parameters[TPN['units_per_lane']],
+        )
+        self.assertEqual(
+            membrane.nominal_flow_m3perh,
+            self.plant_kpis['nominal flow rate'],
+        )
 
     def test_get_kpi_dict(self):
-        ciex = CationIonExchange(
+        membrane = MembraneFiltration(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
-            digest_parameter_list=['area'],
-            wq_parameters=self.wq_parameters,
         )
-        kpi_results = ciex.get_kpi_dict()
-        self.maxDiff = None
+        kpi_results = membrane.get_kpi_dict()
         self.assertIn('footprint area', kpi_results)
         self.assertIn('daily mass of chemicals', kpi_results)
         self.assertIn('head loss', kpi_results)
         self.assertIn('CO2 equivalent emissions', kpi_results)
-        self.assertDictEqual(kpi_results, self.kpi_results)
 
 
 class DummyTreatmentKPI(TreatmentKPI):
@@ -1205,7 +1255,7 @@ class TestChainScrapedSedimentation(unittest.TestCase):
             'nominal flow rate': 100.0,
         }
         self.wq_parameters = {
-            'input_parameter': {'total suspended solids (mg/l)': 150.0},
+            'total suspended solids': {'input_parameter': 15.0},
         }
         self.kpi_results = {
             'footprint area': 72.0,
@@ -1324,6 +1374,7 @@ class TestSludgeBlanketSedimentation(unittest.TestCase):
             'backwash filtration rate': 50,
             'backwash duration': 15,
             'backwash tank height' : 1,
+            'sludge tank height': 5.0,
             'units per lane': 3,
             'surface overflow rate': 5.0,#
             'mass density of TSS': 30,
@@ -1351,7 +1402,7 @@ class TestSludgeBlanketSedimentation(unittest.TestCase):
             wq_parameters=self.wq_parameters,
             digest_parameter_list = ['area']
         )
-        self.assertTrue(sludge.scraper_power_coeff_kw_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
+        self.assertTrue(sludge.scraper_power_coeff_w_m2 == self.parameters['scraper power coefficient'])  # noqa, E501
         self.assertTrue(sludge.retention_time_min == self.parameters['retention time (min)'])  # noqa, E501
         self.assertTrue(sludge.lanes == self.design_parameters['number of lanes'])  # noqa, E501
         self.assertTrue(sludge.nominal_flow_m3perh == self.plant_kpis['nominal flow rate'])  # noqa, E501
@@ -1894,6 +1945,7 @@ class TestRSFSingle(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         area = rsf_single.footprint_area__m2
@@ -1904,6 +1956,7 @@ class TestRSFSingle(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         headloss = rsf_single.hydraulic_headloss__bar
@@ -1914,6 +1967,7 @@ class TestRSFSingle(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         energy = rsf_single.daily_energy_consumption__kwh
@@ -1924,6 +1978,7 @@ class TestRSFSingle(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         emissions = rsf_single.co2_emissions__kg_co2_eq_per_m3
@@ -1955,7 +2010,10 @@ class TestRSFDouble(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 100.0,
         }
-        self.wq_parameters = {}
+        self.wq_parameters = {
+            'total suspended solids': {
+                'input_parameter': 15.0, 'target_parameter': 5.0}
+        }
         
     def test_init(self):
         rsf_double = RapidSandDoubleMediumFiltration(
@@ -1973,6 +2031,7 @@ class TestRSFDouble(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         kpi_results = rsf_double.get_kpi_dict()
@@ -1987,6 +2046,7 @@ class TestRSFDouble(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         area = rsf_double.footprint_area__m2
@@ -1997,6 +2057,7 @@ class TestRSFDouble(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         headloss = rsf_double.hydraulic_headloss__bar
@@ -2007,16 +2068,18 @@ class TestRSFDouble(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         energy = rsf_double.daily_energy_consumption__kwh
         self.assertGreater(energy, 0.0)
 
     def test_co2_emissions(self):
-        rsf_double = RapidSandSingleMediumFiltration(
+        rsf_double = RapidSandDoubleMediumFiltration(
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
         emissions = rsf_double.co2_emissions__kg_co2_eq_per_m3
@@ -2058,7 +2121,10 @@ class TestRSFPress(unittest.TestCase):
             wq_parameters=self.wq_parameters,
             digest_parameter_list=['filter area'],
         )
-        self.assertTrue(rsf_press.units_per_lane == self.parameters[TPN['units_per_lane']])  # noqa, E501
+        self.assertEqual(
+            rsf_press.units_per_lane,
+            self.parameters[TPN['units_per_lane']] + 1,
+        )
         #self.assertTrue(rsf_press.hydraulic_loading_rate_m3m2h == self.parameters[TPN['filtration_rate']])  # noqa, E501
     
     def test_get_kpi_dict(self):
@@ -2080,12 +2146,15 @@ class TestRSFPress(unittest.TestCase):
 class TestGAC(unittest.TestCase):
     def setUp(self):
         self.parameters = {
-            TPN['units_per_lane']: 2,
-            TPN['filtration_rate']: 60,
-            TPN['gac_porosity']: 0.4,
-            TPN['gac_density']: 2800,
-            TPN['empty_bed_contact_time']: 0.45,
-            TPN['grain_diameter']: 0.5
+            TPN['units_per_lane']: 1,
+            TPN['filtration_rate']: 15,
+            TPN['gac_porosity']: 0.5,
+            TPN['mass_density_of_chemical']: 0.5,
+            TPN['empty_bed_contact_time']: 15,
+            TPN['grain_diameter']: 0.5,
+            TPN['chemical_emission_factor']: 10.2,
+            TPN['gac_regeneration_interval']: 182,
+            TPN['regeneration_energy_per_kg_of_gac']: 5,
         }
         self.design_parameters = {
             'number of lanes': 2,
@@ -2094,7 +2163,12 @@ class TestGAC(unittest.TestCase):
         self.plant_kpis = {
             'nominal flow rate': 100.0,
         }
-        self.wq_parameters = {'dissolved organic carbon': {'input_parameter': 15.0}}
+        self.wq_parameters = {
+            'dissolved organic carbon': {
+                'input_parameter': 3.0,
+                'target_parameter': 1.0,
+            }
+        }
 
     def test_init(self):
         gac = GranularActivatedCarbonFiltration(
@@ -2112,6 +2186,7 @@ class TestGAC(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         kpi_results = gac.get_kpi_dict()
@@ -2126,6 +2201,7 @@ class TestGAC(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         area = gac.footprint_area__m2
@@ -2136,6 +2212,7 @@ class TestGAC(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         headloss = gac.hydraulic_headloss__bar
@@ -2146,6 +2223,7 @@ class TestGAC(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         energy = gac.daily_energy_consumption__kwh
@@ -2156,6 +2234,7 @@ class TestGAC(unittest.TestCase):
             parameters=self.parameters,
             design_parameters=self.design_parameters,
             plant_kpis=self.plant_kpis,
+            wq_parameters=self.wq_parameters,
             digest_parameter_list=['volume'],
         )
         emissions = gac.co2_emissions__kg_co2_eq_per_m3

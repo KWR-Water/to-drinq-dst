@@ -22,7 +22,7 @@
 # pylint: disable=R0904
 # pylint: disable=
 # pylint: disable=
-import mock
+from unittest import mock
 from django import VERSION, setup
 from django.test import TestCase
 from django.db import models
@@ -40,8 +40,6 @@ import uuid
 
 class TC(ClosureModel):
     """A test model."""
-    # class Meta:  # added by DV
-        # app_label = 'closuretree'  # added by DV
 
     parent2 = models.ForeignKey(
         "self",
@@ -68,8 +66,6 @@ class TC(ClosureModel):
 
 class Blah(models.Model):
     """A test model for foreign keys"""
-    # class Meta:  # added by DV
-        # app_label = 'closuretree'  # added by DV
     thing = models.CharField(max_length=32)
 
 class TCSUB(TC):

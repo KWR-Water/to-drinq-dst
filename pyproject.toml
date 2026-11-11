@@ -22,8 +22,9 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 # pystimela (v0.0.2) and pystimela_optim (v0.1.2) are ToDrinQ foreground IP
-# developed by NTUA, with EUPL v. 1.2 distribution planned. Not on PyPI; wheels are
-# provided in the whl/ directory. See INTELLECTUAL_PROPERTY.rst for details.
+# developed by NTUA and publicly available under EUPL v. 1.2 from their
+# Bitbucket repositories. Not on PyPI; wheels are provided in whl/. See
+# INTELLECTUAL_PROPERTY.rst for details.
 dependencies = [
     "Django>=5.1,<5.2",
     "django-formtools",

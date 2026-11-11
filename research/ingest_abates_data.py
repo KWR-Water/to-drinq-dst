@@ -127,15 +127,17 @@ def abates_alldata_in_dataframe(
 
 def drop_not_analysed_substances(
     dataframe: pd.DataFrame,
-    columns: Optional[Union[list, np.array]] = None,
+    columns: Optional[Union[list[str], np.ndarray, str]] = None,
 ) -> pd.DataFrame:
     if columns is None:
-        columns = dataframe.columns
-    if len(columns) == 1:
-        if isinstance(columns, list):
-            columns = columns[0]
-    dataframe[columns].replace(
-        r"not\sanal[a-zA-Z]+", None, regex=True, inplace=True)
+        columns = list(dataframe.columns)
+    elif isinstance(columns, str):
+        columns = [columns]
+    else:
+        columns = list(columns)
+
+    dataframe.loc[:, columns] = dataframe.loc[:, columns].replace(
+        r"not\sanal[a-zA-Z]+", pd.NA, regex=True)
 
     dataframe.dropna(subset=columns, axis=0, inplace=True)
 

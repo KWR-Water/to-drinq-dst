@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 import pandas as pd
 
 import os
@@ -21,26 +22,41 @@ class Testget_synonyms_and_cid(unittest.TestCase):
         compound_name = 'aspirin'
         expected_cid = 2244
 
-        result = get_synonyms_and_cid(compound_name)
+        with (
+            patch(
+                'research.collect_substance_identifiers.pcp.get_synonyms',
+                return_value=[{'Synonym': [compound_name]}],
+            ),
+            patch(
+                'research.collect_substance_identifiers.pcp.get_cids',
+                return_value=[expected_cid],
+            ),
+        ):
+            result = get_synonyms_and_cid(compound_name)
 
-        self.assertEqual(result['cid'][0], expected_cid)
-        self.assertTrue(set([compound_name]).issubset(
-            result['compound_synonyms'][0]))
+        self.assertEqual(result.loc[compound_name, 'cid'], expected_cid)
+        self.assertIn(
+            compound_name, result.loc[compound_name, 'compound_synonyms'])
 
     def test_returned_dataframe_pcp_properties(self):
         cid = '12345'
         expected_columns = [
             'IsomericSMILES', 'InChI', 'InChIKey', 'MolecularFormula']
         expected_index = pd.Index([cid], name='cid')
+        expected_row = {
+            'IsomericSMILES': 'CC(=O)OCOC(=O)C',
+            'InChI': 'InChI=1S/C5H8O4/c1-4(6)8-3-9-5(2)7/h3H2,1-2H3',
+            'InChIKey': 'BPGDAMSIGCZZLK-UHFFFAOYSA-N',
+            'MolecularFormula': 'C5H8O4',
+        }
         expected_result = pd.DataFrame(
-            {'IsomericSMILES': {'12345': 'CC(=O)OCOC(=O)C'},
-             'InChI': {'12345': 'InChI=1S/C5H8O4/c1-4(6)8-3-9-5(2)7/h3H2,1-2H3'},
-             'InChIKey': {'12345': 'BPGDAMSIGCZZLK-UHFFFAOYSA-N'},
-             'MolecularFormula':
-             {'12345': 'C5H8O4'}}
-        )
+            [expected_row], columns=expected_columns, index=expected_index)
 
-        result = get_pcp_properties_from_cid(cid)
+        with patch(
+            'research.collect_substance_identifiers.pcp.get_properties',
+            return_value=[expected_row],
+        ):
+            result = get_pcp_properties_from_cid(cid)
 
         self.assertIsInstance(result, pd.DataFrame)
         self.assertCountEqual(result.columns, expected_columns)
@@ -68,8 +84,12 @@ class Testget_synonyms_and_cid(unittest.TestCase):
                  ]}
              ).set_index('common_name', drop=True)
 
-        result = resolve_by_cirpy(
-            compound_list, target_identifier=target_identifier)
+        with patch(
+            'research.collect_substance_identifiers.cirpy.resolve',
+            side_effect=expected_result['cas'].tolist(),
+        ):
+            result = resolve_by_cirpy(
+                compound_list, target_identifier=target_identifier)
         pd.testing.assert_frame_equal(result, expected_result)
 
 

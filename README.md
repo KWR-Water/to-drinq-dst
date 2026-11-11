@@ -62,11 +62,12 @@ Bootstrap, jQuery, Popper, Chart.js, and Select2.
 ### Required optimizer wheels in this repository
 The optimizer runtime requires both wheels:
 - `pystimela_optim-<version>-py3-none-any.whl`
-- `pystimela-0.0.2-py3-none-any.whl`
+- `pystimela-<version>-py3-none-any.whl`
 
 These wheels are installed automatically by `environment_optim.yml`
 in a Python 3.13 environment. To use them in a base environment instead, run
-`pip install ./whl/pystimela-0.0.2-py3-none-any.whl ./whl/pystimela_optim-0.1.2-py3-none-any.whl`.
+`pip install ./whl/pystimela-<version>-py3-none-any.whl ./whl/pystimela_optim-<version>-py3-none-any.whl`.
+Check the latest version of these packages on the Bitbucket repositories.
 
 Verify installation with:
 `python -c "import pystimela; from pystimela_optim.scripts import run_all_optimizations; print('ok')"`
@@ -82,6 +83,22 @@ The local optimization workspace is stored in `research/pystimela_optim`:
 
 Run only the optimizer unit tests with:
 `python -m unittest tests.test_pystimela_optim_scripts`
+
+## TODO / Fix
+The following is on the To-do list.
+- **Closure-tree tests:** Test closure behavior through the registered
+  `DecidingFactor` model, without defining test-only Django models. The
+  focused test is `tests.test_closuredecidingfactor.TestDecisionTreeClosureIntegration`.
+  We might drop the legacy `closuretree/tests.py` suite, whose ad-hoc
+  models fail Django test discovery.
+- **Decision-tree fixture:** Model the path as source choice -> question ->
+  answer choices -> optional follow-up question. A question should not be reused 
+  across multiple `DecidingFactor` rows and should not rely on removed model fields.
+- **Domain review:** We have to validate missing TSS/E. coli and 
+  membrane-property defaults against approved catalogue sources. Also review the 
+  AIEX, CIEX, pressurised sand, strainer, and UV KPI test values against 
+  their formulas, units, and assumptions before changing or removing 
+  those assertions.
 
 ## For users
 ### Create a conda environment before first use
@@ -103,6 +120,12 @@ python manage.py import_removal_data` after applying migrations. Add
 `--dry-run` to validate and roll back all writes. Signed-in users can open
 **Menu > Substance removal rates** to browse by CAS/synonym or technology,
 including standard deviations and literature references.
+
+# Future development
+The ideas from the current maintainers for future development are included in
+the [technical notes](documentation/source/future-development.rst). Progress
+may take time because
+available maintenance and development time is limited.
 
 # Building the package
 The package metadata is defined in `pyproject.toml`; `setup.py` is a thin

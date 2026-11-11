@@ -13,6 +13,7 @@ from drinq.models import (
     TreatmentPlant,
     Technology,
     TechnologyKPI,
+    TechnologyPystimelaoptJunction,
     TechnologyProperty,
     TechnologyPropertyJunction,
     TreatmentPlantLayout,
@@ -357,7 +358,7 @@ class TreatmentPlantComparisonViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            'Compare Config [3]: Plant name that is intentionally very long...'
+            'Compare Config [3]: Plant name that is intentio...'
         )
         self.assertContains(
             response,
@@ -644,6 +645,10 @@ class TechnologyPropertiesOptimizeTests(TestCase):
             name='Chlorination contactor',
             description='Optimization test technology',
         )
+        TechnologyPystimelaoptJunction.objects.create(
+            technology=self.technology,
+            pystim_name='chlorination',
+        )
         TreatmentPlantLayout.objects.create(
             treatmentplant=self.treatment_plant,
             technology=self.technology,
@@ -769,7 +774,11 @@ class TechnologyPropertiesOptimizeTests(TestCase):
                         / 'optimizer_runs'
                         / 'mock'
                     ),
-                ) as export_mock:
+                ) as export_mock, patch.object(
+                    TechnologyPropertiesView,
+                    '_run_calculation_pipeline',
+                    return_value=[],
+                ):
                     response = self.client.post(self.url, data=post_data)
 
                 self.assertEqual(response.status_code, 302)
@@ -1015,6 +1024,22 @@ class TechnologyPropertiesOptimizeTests(TestCase):
                 )
 
     def test_write_optimizer_inputs_maps_additional_django_outputs(self):
+        technology_processes = {
+            'Rapid Sand Filtration Double Medium': 'filtration_dual',
+            'Coagulation dynamic mixing': 'coagulation_flocculation',
+            'Flocculation dynamic mixing': 'coagulation_flocculation',
+            'Baffled ozonation contactor': 'ozonation',
+        }
+        for technology_name, process_name in technology_processes.items():
+            technology, _ = Technology.objects.get_or_create(
+                name=technology_name,
+                defaults={'description': 'Optimizer output test technology'},
+            )
+            TechnologyPystimelaoptJunction.objects.create(
+                technology=technology,
+                pystim_name=process_name,
+            )
+
         payload = {
             'treatment_plant': {
                 'id': self.treatment_plant.id,

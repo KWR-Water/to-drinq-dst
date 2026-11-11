@@ -2,6 +2,7 @@ from django.test import TestCase
 from django import setup
 from django.db import models, transaction
 from django.test import TestCase, SimpleTestCase, TransactionTestCase
+from unittest import skip
 
 from django.db import IntegrityError
 from django.core.exceptions import ImproperlyConfigured, AppRegistryNotReady
@@ -25,6 +26,7 @@ except AppRegistryNotReady:
 # TODO: Fix the unit test of working with deciding factors and technologies
 
 
+@skip('Replaced by TestDecisionTreeClosureIntegration using current models.')
 class TestClosureDesignTree(SimpleTestCase):
     allow_database_queries = True
     databases = '__all__'
@@ -205,6 +207,98 @@ class TestClosureDesignTree(SimpleTestCase):
 
 
 
+
+
+class TestDecisionTreeClosureIntegration(TestCase):
+    def setUp(self):
+        self.category = CategoricalVariable.objects.create(
+            name='closure-tree-test-dichotomous',
+            n_levels=2,
+        )
+        self.design_tree = DesignTree.objects.create(
+            name='Closure tree integration test',
+        )
+        source_question = DecidingFactorQuestion.objects.create(
+            name='closure-tree-test-source',
+            text='Select the source',
+            categorical_variable=self.category,
+        )
+        source_choice = DecidingFactorChoice.objects.create(
+            name='closure-tree-test-surface-water',
+            text='Surface water',
+            question=source_question,
+            design_tree=self.design_tree,
+        )
+        self.source_node = DecidingFactor.objects.create(
+            choice=source_choice,
+            design_tree=self.design_tree,
+        )
+
+        first_question = DecidingFactorQuestion.objects.create(
+            name='closure-tree-test-first-question',
+            text='Is pretreatment required?',
+            categorical_variable=self.category,
+        )
+        self.question_node = DecidingFactor.objects.create(
+            parent=self.source_node,
+            question=first_question,
+            design_tree=self.design_tree,
+        )
+        self.answer_nodes = []
+        for name, text in (
+            ('closure-tree-test-yes', 'Yes'),
+            ('closure-tree-test-no', 'No'),
+        ):
+            choice = DecidingFactorChoice.objects.create(
+                name=name,
+                text=text,
+                question=first_question,
+                design_tree=self.design_tree,
+            )
+            self.answer_nodes.append(
+                DecidingFactor.objects.create(
+                    parent=self.question_node,
+                    choice=choice,
+                    design_tree=self.design_tree,
+                )
+            )
+
+        follow_up_question = DecidingFactorQuestion.objects.create(
+            name='closure-tree-test-follow-up',
+            text='Which pretreatment?',
+            categorical_variable=self.category,
+        )
+        self.follow_up_node = DecidingFactor.objects.create(
+            parent=self.answer_nodes[0],
+            question=follow_up_question,
+            design_tree=self.design_tree,
+        )
+
+    def test_source_choice_leads_to_first_question(self):
+        self.assertEqual(
+            set(self.source_node.get_children()),
+            {self.question_node},
+        )
+
+    def test_question_leads_to_its_answer_choices(self):
+        self.assertEqual(
+            set(self.question_node.get_children()),
+            set(self.answer_nodes),
+        )
+
+    def test_answer_choice_can_lead_to_a_follow_up_question(self):
+        self.assertEqual(
+            set(self.answer_nodes[0].get_children()),
+            {self.follow_up_node},
+        )
+        self.assertFalse(self.answer_nodes[1].get_children().exists())
+
+    def test_descendants_follow_question_and_answer_depth(self):
+        descendants = self.source_node.get_descendants(depth=2)
+        self.assertEqual(
+            set(descendants),
+            {self.question_node, *self.answer_nodes},
+        )
 
 
 # class TCClosure(TestCase):

@@ -248,29 +248,27 @@ Security tab if it is enabled. If it is unavailable, obtain a private
 contact for a maintainer through their published institutional contact
 details before sharing sensitive information.
 
-Repository-owner setup before public release
---------------------------------------------
-The following are maintainer setup tasks. Repository owners should:
+Ongoing repository-owner responsibilities
+-----------------------------------------
+Repository owners should maintain the following practices while the
+repository is public:
 
 * Designate the main developers responsible for reviews and merges, and
   identify domain reviewers for scientific changes.
-* Protect ``main`` with a GitHub ruleset requiring PRs and an independent
-  maintainer approval. Restrict updates to the maintainers responsible
-  for merging; block direct pushes, force pushes, and branch deletion.
+* Maintain the GitHub ruleset protecting ``main`` and requiring PRs and
+  QA checks.
 * Require resolved review conversations and dismiss stale approvals
   after new changes. Avoid routine use of administrative bypasses.
-* Enable squash merging and automatic deletion of merged branches.
-* Establish a reliable test baseline and GitHub Actions checks before
-  making those checks required. Until then, review the validation
-  evidence recorded in each PR.
-* Enable private vulnerability reporting or publish an agreed private
-  reporting contact before making the repository public.
-* Review the files and Git history for secrets and private data, and
+* Keep squash merging enabled and configure automatic deletion of merged
+  branches.
+* Maintain a reliable test baseline and GitHub Actions checks. Review the
+  validation evidence recorded in each PR.
+* Keep private vulnerability reporting enabled or maintain an agreed
+  private reporting contact.
+* Review repository files and history for secrets and private data, and
   confirm redistribution rights for bundled optimizer wheels and
-  datasets before publication.
+  datasets.
 
-Documenting this workflow does not configure branch protection, install
-CI workflows, assign reviewers, or certify the repository for publication.
 
 .. _issues: https://github.com/KWR-Water/to-drinq-dst/issues
 .. _pull requests: https://github.com/KWR-Water/to-drinq-dst/pulls

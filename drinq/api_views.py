@@ -337,12 +337,15 @@ class DigestDesignParametersAPI(APIView):
             prp for prp in PLANT_PROPERTIES_TO_CALCULATE 
             if 'construction costs' in prp][0]
 
-        computed_plantwide[nominalflow_prop_name] = calculator.nominal_flow_m3perhr  # noqa E501
+        computed_plantwide[nominalflow_prop_name] = (
+            calculator.update_nominal_flow_m3perhr())
         constrcost_pars = get_constrcost_parameters(
             technology_list=technologies.values_list('technology', flat=True))
-        computed_plantwide[constrcost_prop_name] = calculator.set_constructioncosts(
+        calculator.set_constructioncosts(
             cost_parameters=constrcost_pars,
         )
+        computed_plantwide[constrcost_prop_name] = (
+            calculator.constructioncosts_eur.value)
 
         # persist computed properties and serialize
         serialized_properties = []

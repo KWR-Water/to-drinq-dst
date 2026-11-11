@@ -93,4 +93,4 @@ class DigestingDesignParametersAPITest(TestCase):
             value="420"
         )
         serializer = TreatmentPlantPropertyValueSerializer(prop_value)
-        self.assertEqual(serializer.data["value"], "420")
+        self.assertEqual(serializer.data["value"], 420.0)

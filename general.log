@@ -774,3 +774,342 @@ Traceback (most recent call last):
         "Population persons, peak daily demand factor, average consumption "
         " and leakage factor must be provided.")
 ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No technology found for optimizer process chlorination in plant 1
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size a; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulation volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulant dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation length; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size a; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulation volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulant dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation length; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size a; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulation volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulant dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation length; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size a; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulation volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulant dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation length; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Chlorination contactor process=chlorination technology_properties=residence_time_hours; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Optimizer execution failed: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+Traceback (most recent call last):
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 4089, in form_valid
+    calculation_rows = self._run_calculation_pipeline(
+        treatment_plant)
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\views.py", line 3357, in _run_calculation_pipeline
+    dwtp.update_nominal_flow_m3perhr()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\vriesdi\Code\to-drinq-dst\drinq\api_calculation.py", line 1533, in update_nominal_flow_m3perhr
+    raise ValueError(
+        "Population persons, peak daily demand factor, average consumption "
+        " and leakage factor must be provided.")
+ValueError: Population persons, peak daily demand factor, average consumption  and leakage factor must be provided.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=filtration depth b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size a; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Rapid Sand Filtration Double Medium process=filtration_dual technology_properties=grain size b; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulation volume; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Coagulation dynamic mixing process=coagulation-flocculation technology_properties=coagulant dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation surface; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Flocculation dynamic mixing process=coagulation-flocculation technology_properties=flocculation length; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.

@@ -1,37 +1,25 @@
 name: todrinq_dst
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.12
-  - setuptools <70
-  - django=5.1.3
-  - django-debug-toolbar
-  - django-formtools
-  - pillow
-  - black
-  - pyzmq
-  - psutil
-  - jupyter_core
-  - ipykernel
-  - ipython
-  - tqdm
+  - python=3.13
   - pip
+  - setuptools<81
+  - numpy>=2.5,<3
+  - pandas>=3.0.3
+  - scipy>=1.18.1
+  - matplotlib
+  - rdkit>=2024.03
+  - django=5.1.*
+  - django-formtools
+  - django-debug-toolbar
+  - requests
   - pip:
-      - astroid==3.0.2
-      - autopep8==2.0.4
       - cirpy==1.0.2
-      - dill==0.3.7
       - django-autoslug==1.9.9
       - django-betterforms==2.0.0
       - django-crispy-forms==2.1
       - django-extensions==3.2.3
       - django-pandas==0.6.7
       - djangorestframework==3.14.0
-      - numpy==1.26.3
-      - pandas==2.1.4
       - pubchempy==1.0.4
-      - pytest==7.4.4
-      - rdkit==2023.9.5
-      - pytz
-      - tzdata

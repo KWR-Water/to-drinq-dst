@@ -140,7 +140,7 @@ JSON files and database rows. They must be kept in sync, see
 
 Technology stack
 ----------------
-* Python 3.12 or 3.13, Django 5, Django REST framework with token and
+* Python 3.13 or newer, Django 5, Django REST framework with token and
   session authentication.
 * SQLite database.
 * Server-rendered templates with Bootstrap, jQuery and Popper.

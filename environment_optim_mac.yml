@@ -15,6 +15,7 @@ dependencies:
   - django-debug-toolbar
   - requests
   - pip:
+      - cirpy==1.0.2
       - django-autoslug==1.9.9
       - django-betterforms==2.0.0
       - django-crispy-forms==2.1

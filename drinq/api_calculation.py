@@ -1404,7 +1404,7 @@ class TreatmentPlantPerformanceCalculator:
         self.design_parameters = design_parameters
         self.technologies = technologies
         self.stages = stages
-        self.db_kpi_mapping = db_kpi_mapping
+        self.db_kpi_mapping = db_kpi_mapping or {}
         if waterquality_parameters is None:
             waterquality_parameters = {}  # Initialize as empty dictionary
         self.waterquality_parameters = waterquality_parameters

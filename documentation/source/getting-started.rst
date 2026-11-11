@@ -7,7 +7,7 @@ Install
 The project has two conda environments. Run all commands from the project
 root.
 
-* ``environment.yml`` (Python 3.12) is the base environment. Use
+* ``environment.yml`` (Python 3.13) is the base environment. Use
   ``environment_mac.yml`` on macOS.
 * ``environment_optim.yml`` (Python 3.13) adds the ``pystimela`` and
   ``pystimela_optim`` wheels from the ``whl/`` folder. Use
@@ -58,9 +58,9 @@ Run the tests
     python manage.py test tests.test_access_control tests.test_admin
 
 .. note::
-    The full suite currently reports failures and errors that also occur on a
-    clean checkout, mainly in the technology KPI tests. Run a single module to
-    check a change.
+    The full suite has known failures, mainly in the technology KPI tests.
+    Compare results with the unchanged base revision before treating a failure
+    as pre-existing. Run a single module to check a change.
 
 Build this documentation
 ------------------------

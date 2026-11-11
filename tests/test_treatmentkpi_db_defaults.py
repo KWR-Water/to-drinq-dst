@@ -63,12 +63,6 @@ class TestTechnologyKwargsFromDatabaseDefaults(DjangoTestCase):
 
     @classmethod
     def _load_default_snapshots(cls):
-        if (
-            TechnologyPropertyJunction.objects.exists()
-            and WaterqualityParameterTechnologyJunction.objects.exists()
-        ):
-            return
-
         base_dir = (
             Path(__file__).resolve().parents[1]
             / 'research'
