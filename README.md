@@ -201,7 +201,7 @@ Copyright (c) KWR Water Research Institute
 Licensed under the EUPL
 
 This project is licensed under the European Union Public Licence (EUPL)
-v. 1.2. See the `LICENSE` file for the full text.
+v. 1.2 (or later). See the `LICENSE` file for the full text.
 
 The `closuretree` app is third-party code under the Apache License 2.0; see
 the headers in its files.
