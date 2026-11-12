@@ -198,6 +198,9 @@ running make.bat; the result is in `documentation/build/html`
 # License
 Copyright (c) KWR Water Research Institute
 
+This notice does not transfer copyright in individual contributions; see the
+[contribution guide](CONTRIBUTING.rst#copyright-and-licensing-of-contributions).
+
 Licensed under the EUPL
 
 This project is licensed under the European Union Public Licence (EUPL)

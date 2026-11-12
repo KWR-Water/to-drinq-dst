@@ -1113,3 +1113,4 @@ No pystim junction row for technology=Flocculation dynamic mixing process=coagul
 No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
 No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
 No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+Construction cost parameters not found for technology: Lamella clarifier, horizontal floors

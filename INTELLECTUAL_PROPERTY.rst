@@ -133,6 +133,9 @@ The provenance of the scientific models and datasets currently in this
 repository has been checked. Repeat the provenance and rights review for future
 additions or material changes. The repository carries a KWR Water Research
 Institute copyright notice and is licensed under EUPL v. 1.2 (see ``LICENSE``).
+The notice does not by itself establish ownership of every individual
+contribution; rights holders are determined by applicable agreements, notices,
+and contribution provenance.
 
 IPR Summary
 ===========
@@ -198,13 +201,17 @@ Guidelines for Contributors
 When contributing to this project, please note:
 
 * **Foreground IP:** Identify new project-created contributions and their
-  contributors. Contributions are accepted under EUPL v. 1.2; this does not
-  transfer copyright or reclassify pre-existing material as foreground IP.
+  contributors. Copyright in a contribution remains with its contributor or,
+  where applicable, the contributor's employer or another rights holder.
+  Submission and acceptance do not transfer copyright to the project, KWR, or
+  another project partner. Accepted DST contributions are made available under
+  EUPL v. 1.2; contributors must be authorized to grant that licence. This
+  does not reclassify pre-existing material as foreground IP.
 
-* **Background IP:** If you incorporate any third-party code or models:
+* **Background IP:** If you incorporate any third-party code, models, or data:
   
   - Verify that the source license is compatible with EUPL v. 1.2
-  - Include proper attribution and licensing information
+  - Include proper attribution, copyright, and licensing information
   - Document the provenance in your pull request
   - Do not include proprietary, confidential, or restricted-license materials
 

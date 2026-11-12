@@ -138,11 +138,30 @@ classification. Both packages are distributed under EUPL v. 1.2 and are not
 available on PyPI. Attribution does not assign ownership; applicable project
 agreements determine rights holders and access rights.
 
+Copyright and licensing of contributions
+-----------------------------------------
+Copyright in a contribution remains with the contributor or, where
+applicable, the contributor's employer or another rights holder. Submission
+and acceptance do not transfer copyright ownership to the ToDrinQ project,
+KWR, or another project partner.
+
+By submitting a contribution, you confirm that you have the right and
+authorization to contribute the material and to license it under the
+project's licence. Accepted contributions to the DST's code, models,
+documentation, and tests are made available under EUPL v. 1.2, the project's
+current licence. If you contribute on behalf of an employer or another
+organization, ensure that it permits the contribution under these terms.
+
+Third-party material is not an original contribution and remains subject to
+its own copyright and licence terms. Include it only when its licence is
+compatible with EUPL v. 1.2, and document its provenance, copyright, and
+licensing information.
+
 When contributing, ensure compliance with licensing and attribution requirements:
 
-* **Foreground IP:** All contributions to code, models, documentation, and tests
-  are released under the EUPL v. 1.2 license (compatible with this project's
-  license). By contributing, you grant the rights necessary for this use.
+* **Foreground IP:** Identify new project-created contributions and their
+  contributors. Accepted contributions are made available under EUPL v. 1.2;
+  this does not transfer copyright ownership.
 
 * **Background IP:** If incorporating third-party code, models, or datasets:
 

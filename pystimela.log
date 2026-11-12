@@ -3352,3 +3352,4 @@ ValueError: Population persons, peak daily demand factor, average consumption  a
 2026-11-11 19:56:27,877 - drinq.api_calculation - INFO - No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation area; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
 2026-11-11 19:56:27,882 - drinq.api_calculation - INFO - No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation height; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
 2026-11-11 19:56:27,887 - drinq.api_calculation - INFO - No pystim junction row for technology=Baffled ozonation contactor process=ozonation technology_properties=ozonation chemical dose; falling back to static OPTIMIZER_CSV_PROCESS_MAPPING.
+2026-11-12 08:08:31,559 - drinq.api_calculation - WARNING - Construction cost parameters not found for technology: Lamella clarifier, horizontal floors
