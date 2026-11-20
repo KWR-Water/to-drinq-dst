@@ -3553,6 +3553,8 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                 tccp = TechnologyConstructionCostParameter.objects.filter(
                     technology_id=tech_id).first()
                 if tccp:
+                    techprop_value = None
+                    plantprop_value = None
                     if tccp.technologyproperty:
                         try:
                             techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
@@ -3571,32 +3573,29 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                             techprop_value = None
                         if techprop_value is None:
                             continue
-                        constrcosts[Technology.objects.get(id=tech_id).name] = {
-                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                            'technologyproperty': tccp.technologyproperty.name,
-                            'technologyproperty_value': techprop_value,
-                            'plantproperty': None,
-                            'plantproperty_value': None,
-                        }
-                    else:
-                        if tccp.plantproperty:
-                            try:
-                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                    tccp.plantproperty.name, None)
-                            except TreatmentPlantProperty.DoesNotExist:
-                                plantprop_value = None
-                            if plantprop_value is None:
-                                logger.warning(
-                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                    f" for construction cost calculation ")
-                                continue
-                            constrcosts[Technology.objects.get(id=tech_id).name] = {  # noqa, E501
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': None,
-                                'technologyproperty_value': None,
-                                'plantproperty': tccp.plantproperty.name,
-                                'plantproperty_value': plantprop_value
-                            }
+                    if tccp.plantproperty:
+                        try:
+                            plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                tccp.plantproperty.name, None)
+                        except TreatmentPlantProperty.DoesNotExist:
+                            plantprop_value = None
+                        if plantprop_value is None:
+                            logger.warning(
+                                f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                f" for construction cost calculation ")
+                            continue
+                    constrcosts[Technology.objects.get(id=tech_id).name] = {
+                        'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                        'd': tccp.d, 'e': tccp.e,
+                        'technologyproperty': (
+                            tccp.technologyproperty.name
+                            if tccp.technologyproperty else None),
+                        'technologyproperty_value': techprop_value,
+                        'plantproperty': (
+                            tccp.plantproperty.name
+                            if tccp.plantproperty else None),
+                        'plantproperty_value': plantprop_value,
+                    }
             except TechnologyConstructionCostParameter.DoesNotExist:
                 logger.warning(
                     f"No construction cost parameters found for "
@@ -3609,6 +3608,8 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                     tccp = TechnologyConstructionCostParameter.objects.filter(
                         technology_id=related_tech_id).first()
                     if tccp:
+                        techprop_value = None
+                        plantprop_value = None
                         if tccp.technologyproperty:
                             try:
                                 techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
@@ -3632,32 +3633,29 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                                 techprop_value = None
                             if techprop_value is None:
                                 continue
-                            constrcosts[Technology.objects.get(id=related_tech_id).name] = {
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': tccp.technologyproperty.name,
-                                'technologyproperty_value': techprop_value,
-                                'plantproperty': None,
-                                'plantproperty_value': None,
-                            }
-                        else:
-                            if tccp.plantproperty:
-                                try:
-                                    plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                        tccp.plantproperty.name, None)
-                                except TreatmentPlantProperty.DoesNotExist:
-                                    plantprop_value = None
-                                if plantprop_value is None:
-                                    logger.warning(
-                                        f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                        f" for construction cost calculation ")
-                                    continue
-                                constrcosts[Technology.objects.get(id=related_tech_id).name] = {  # noqa, E501
-                                    'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                    'technologyproperty': None,
-                                    'technologyproperty_value': None,
-                                    'plantproperty': tccp.plantproperty.name,
-                                    'plantproperty_value': plantprop_value
-                                }
+                        if tccp.plantproperty:
+                            try:
+                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                    tccp.plantproperty.name, None)
+                            except TreatmentPlantProperty.DoesNotExist:
+                                plantprop_value = None
+                            if plantprop_value is None:
+                                logger.warning(
+                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                    f" for construction cost calculation ")
+                                continue
+                        constrcosts[Technology.objects.get(id=related_tech_id).name] = {
+                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                            'd': tccp.d, 'e': tccp.e,
+                            'technologyproperty': (
+                                tccp.technologyproperty.name
+                                if tccp.technologyproperty else None),
+                            'technologyproperty_value': techprop_value,
+                            'plantproperty': (
+                                tccp.plantproperty.name
+                                if tccp.plantproperty else None),
+                            'plantproperty_value': plantprop_value,
+                        }
                 except TechnologyConstructionCostParameter.DoesNotExist:
                     logger.warning(
                         f"No construction cost parameters found for "

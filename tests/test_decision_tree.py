@@ -5,9 +5,85 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
 
+from drinq.models import Technology
+from drinq.decision_tree import get_unique_combinations
+
 # from drinq.decision_tree import (
 #     get_decidingfactor_table,
 #     get_table_decidingfactors)
+
+
+class GetUniqueCombinationsMembraneFlocculationTests(TestCase):
+    """Membrane-based NOM removal (MF/UF) does not require a separate
+    flocculation step, but the decision tree injects Coagulation and
+    Flocculation unconditionally before it even knows whether MF/UF
+    will be chosen. get_unique_combinations() is responsible for
+    dropping Flocculation from any option that also selects a
+    membrane technology.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.screening = Technology.objects.create(name='Strainer')
+        cls.coagulant = Technology.objects.create(
+            name='Coagulant dosing with ferric chloride by dynamic mixing')
+        cls.flocculation = Technology.objects.create(
+            name='Flocculation with dynamic mixing')
+        cls.membrane = Technology.objects.create(
+            name='Polymeric microfiltration')
+        cls.rapid_sand = Technology.objects.create(
+            name='Rapid sand filtration, submerged, dual media, sand')
+
+    def test_flocculation_dropped_when_membrane_present(self):
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.membrane.id, self.rapid_sand.id),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertIn(
+            (self.screening.id, self.coagulant.id, self.membrane.id),
+            combinations)
+        self.assertNotIn(
+            (
+                self.screening.id, self.coagulant.id,
+                self.flocculation.id, self.membrane.id,
+            ),
+            combinations)
+
+    def test_flocculation_kept_when_no_membrane_present(self):
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.rapid_sand.id,),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertIn(
+            (
+                self.screening.id, self.coagulant.id,
+                self.flocculation.id, self.rapid_sand.id,
+            ),
+            combinations)
+
+    def test_no_duplicate_combinations_after_dropping_flocculation(self):
+        technology_tuples = [
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.membrane.id,),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertEqual(len(combinations), len(set(combinations)))
+        self.assertEqual(
+            combinations, [(self.coagulant.id, self.membrane.id)])
 
 
 

@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 import pandas as pd
 from itertools import chain, product
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django_pandas.io import read_frame
 from string import ascii_uppercase
 
@@ -82,12 +82,73 @@ def get_treatment_trains(
     return treatment_options, treatment_maps
 
 
+def _get_membrane_technology_ids(
+    query_set: QuerySet | None = None,
+) -> set[int]:
+    """IDs of membrane-based NOM removal technologies (MF/UF)."""
+    if query_set is None:
+        query_set = Technology.objects.all()
+    return set(
+        query_set.filter(
+            Q(name__icontains='microfiltration') |
+            Q(name__icontains='ultrafiltration')
+        ).values_list('id', flat=True)
+    )
+
+
+def _get_flocculation_technology_ids(
+    query_set: QuerySet | None = None,
+) -> set[int]:
+    """IDs of flocculation technologies."""
+    if query_set is None:
+        query_set = Technology.objects.all()
+    return set(
+        query_set.filter(
+            name__icontains='flocculation'
+        ).values_list('id', flat=True)
+    )
+
+
+def _drop_flocculation_for_membrane_combination(
+    combination: tuple[int, ...],
+    membrane_ids: set[int],
+    flocculation_ids: set[int],
+) -> tuple[int, ...]:
+    """Drop flocculation technologies from a combination that also
+    selects a membrane technology.
+
+    Coagulation/flocculation pretreatment is injected unconditionally
+    earlier in the decision tree (before the MF/UF question is even
+    asked), so it ends up paired with membrane-based NOM removal even
+    though membrane filtration does not require it.
+    """
+    if not flocculation_ids or membrane_ids.isdisjoint(combination):
+        return combination
+    return tuple(
+        technology_id for technology_id in combination
+        if technology_id not in flocculation_ids
+    )
+
+
 def get_unique_combinations(combination_tuple):
-    # Generate all possible ordered combinations
-    """    Count unique combinations of technologies based on their indices.
+    """Count unique combinations of technologies based on their indices.
+
+    Generates all possible ordered combinations (one technology per
+    stage bucket), then drops Flocculation from any combination that
+    also includes a membrane (MF/UF) technology.
     """
     combinations = product(*combination_tuple)
-    unique_combinations = [tu for tu in combinations]
+    membrane_ids = _get_membrane_technology_ids()
+    flocculation_ids = _get_flocculation_technology_ids()
+
+    unique_combinations: list[tuple[int, ...]] = []
+    seen: set[tuple[int, ...]] = set()
+    for combination in combinations:
+        combination = _drop_flocculation_for_membrane_combination(
+            combination, membrane_ids, flocculation_ids)
+        if combination not in seen:
+            seen.add(combination)
+            unique_combinations.append(combination)
 
     return unique_combinations
 
