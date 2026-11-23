@@ -3,8 +3,6 @@
 
 {% block content %}
 
-{% load list_index %}
-
 <h1 class="mb-4">Treatment design options</h1>
 {% if data.configuration.name %}
     <h2 class="mb-3" style="font-size: 1.5rem; color: #2c3e50;">Configuration: {{ data.configuration.name }}</h2>
@@ -30,16 +28,15 @@
             <div style="display: flex; flex-wrap: wrap; gap: 1em; align-items: center; width: 100%;">
                 {% for stage in data.stages %}
                     <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <label for="stage_{{forloop.counter0}}"><strong>{{ stage.name }}</strong></label>
-                        <select name="stage_{{forloop.counter}}" id="stage_{{forloop.counter0}}">
+                        <label for="stage-filter-{{ stage.id }}"><strong>{{ stage.name }}</strong></label>
+                        <select name="stage_{{ stage.id }}" id="stage-filter-{{ stage.id }}">
                             <option value="">All</option>
                             {% for tech in stage.technologies %}
-                                <option value="{{ tech.id }}" {% if data.selected_techs|index:forloop.counter0|stringformat:'s' == tech.id|stringformat:'s' %}selected{% endif %}>{{ tech.name }}</option>
+                                <option value="{{ tech.id }}" {% if stage.selected_technology|stringformat:'s' == tech.id|stringformat:'s' %}selected{% endif %}>{{ tech.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 {% endfor %}
-                <input type="hidden" name="num_stages" value="{{ data.num_stages }}">
                 <div style="flex: 1 1 auto;"></div>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; width: 200px;">
                     <button type="submit" class="btn btn-primary ml-2" style="width: 100px;">Filter</button>
@@ -97,7 +94,7 @@
             <tbody>
             {% for step_number, technology in option_attr.steps.items %}
                 <tr>
-                    <td>{{ step_number }}</td>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ technology.name }}</td>
                     <td>{{ technology.description }}</td>
                 </tr>

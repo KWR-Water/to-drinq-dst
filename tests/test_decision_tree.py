@@ -6,7 +6,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
 
 from drinq.models import Technology
-from drinq.decision_tree import get_unique_combinations
+from drinq.decision_tree import (
+    get_treatment_trains,
+    get_unique_combinations,
+)
 
 # from drinq.decision_tree import (
 #     get_decidingfactor_table,
@@ -84,6 +87,33 @@ class GetUniqueCombinationsMembraneFlocculationTests(TestCase):
         self.assertEqual(len(combinations), len(set(combinations)))
         self.assertEqual(
             combinations, [(self.coagulant.id, self.membrane.id)])
+
+    def test_membrane_option_preserves_original_stage_indices(self):
+        stage_five = Technology.objects.create(name='Stage five technology')
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.rapid_sand.id,),
+            (stage_five.id,),
+            (self.membrane.id,),
+        ]
+
+        treatment_options, treatment_maps = get_treatment_trains(
+            technology_tuples)
+
+        membrane_option = next(
+            option_number
+            for option_number, stage_map in treatment_maps.items()
+            if stage_map[6]['technology'] == self.membrane.id
+        )
+        self.assertNotIn(3, treatment_maps[membrane_option])
+        self.assertEqual(
+            set(treatment_maps[membrane_option]), {1, 2, 4, 5, 6})
+        self.assertEqual(
+            set(treatment_options[membrane_option]['steps']),
+            {1, 2, 4, 5, 6},
+        )
 
 
 

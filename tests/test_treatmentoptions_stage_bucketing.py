@@ -5,7 +5,13 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
 
 from drinq.models import Technology, TechnologyRelatedtechnology
-from drinq.views import _append_stage_buckets, _build_choice_buckets
+from drinq.views import (
+    _append_stage_buckets,
+    _build_choice_buckets,
+    _get_available_stage_ids,
+    _matches_stage_selections,
+    _parse_stage_selections,
+)
 
 
 class BuildChoiceBucketsTests(TestCase):
@@ -114,3 +120,49 @@ class BuildChoiceBucketsTests(TestCase):
                 [self.floc.id],
                 [self.algae_screening.id],
             ])
+
+    def test_available_stage_ids_skip_missing_keys(self):
+        treatment_maps = {
+            1: {
+                1: {'technology': self.screening.id},
+                2: {'technology': self.coag_a.id},
+                4: {'technology': self.algae_screening.id},
+            },
+            2: {
+                1: {'technology': self.screening.id},
+                2: {'technology': self.coag_b.id},
+                4: {'technology': self.algae_screening.id},
+            },
+        }
+
+        self.assertEqual(_get_available_stage_ids(treatment_maps), [1, 2, 4])
+
+    def test_stage_selection_matches_by_identity_not_display_order(self):
+        option_stage_map = {
+            1: {'technology': self.screening.id},
+            2: {'technology': self.coag_a.id},
+            4: {'technology': self.algae_screening.id},
+        }
+
+        self.assertTrue(
+            _matches_stage_selections(
+                option_stage_map,
+                {4: self.algae_screening.id},
+            )
+        )
+        self.assertFalse(
+            _matches_stage_selections(
+                option_stage_map,
+                {3: self.algae_screening.id},
+            )
+        )
+
+    def test_stage_filter_params_use_identity_without_stage_count(self):
+        selected_techs = _parse_stage_selections({
+            'stage_4': str(self.algae_screening.id),
+            'stage_3': '',
+            'num_stages': '5',
+            'stage_invalid': str(self.screening.id),
+        })
+
+        self.assertEqual(selected_techs, {4: self.algae_screening.id})
