@@ -25,14 +25,14 @@ class GetUniqueCombinationsMembraneFlocculationTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.screening = Technology.objects.create(name='Strainer')
-        cls.coagulant = Technology.objects.create(
+        cls.screening, _ = Technology.objects.get_or_create(name='Strainer')
+        cls.coagulant, _ = Technology.objects.get_or_create(
             name='Coagulant dosing with ferric chloride by dynamic mixing')
-        cls.flocculation = Technology.objects.create(
+        cls.flocculation, _ = Technology.objects.get_or_create(
             name='Flocculation with dynamic mixing')
-        cls.membrane = Technology.objects.create(
+        cls.membrane, _ = Technology.objects.get_or_create(
             name='Polymeric microfiltration')
-        cls.rapid_sand = Technology.objects.create(
+        cls.rapid_sand, _ = Technology.objects.get_or_create(
             name='Rapid sand filtration, submerged, dual media, sand')
 
     def test_flocculation_dropped_when_membrane_present(self):
