@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 import pandas as pd
 from itertools import chain, product
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django_pandas.io import read_frame
 from string import ascii_uppercase
 
@@ -46,13 +46,13 @@ def get_technology_of_choice(
 def get_treatment_trains(
     technology_tuples: List[tuple[int, ...]]
 ) -> tuple[dict, dict]:
-    treatment_id_sets = get_unique_combinations(technology_tuples)
-    number_of_options = len(treatment_id_sets)
+    stage_combinations = _get_unique_stage_combinations(technology_tuples)
+    number_of_options = len(stage_combinations)
     treatment_options, treatment_maps = {}, {}
     if number_of_options == 0:
         return treatment_options, treatment_maps
     elif number_of_options >= 1:
-        for opt_nr, option in enumerate(treatment_id_sets):
+        for opt_nr, option in enumerate(stage_combinations):
             treatment_options[opt_nr+1] = {
                 'steps': {},
                 'id': None,
@@ -60,7 +60,7 @@ def get_treatment_trains(
                 'slug': None,
                 }
             treatment_maps[opt_nr+1] = {}
-            for tech_nr, technology_id in enumerate(option):
+            for stage_nr, technology_id in option:
                 technology = Technology.objects.get(id=technology_id)
                 if technology is not None:
                     if technology.name is not None:
@@ -68,26 +68,109 @@ def get_treatment_trains(
                             technology.name.lower() == 'no technology'
                             or technology.name.lower() == 'dummy technology'):
                             continue
-                    if tech_nr not in treatment_options[opt_nr+1]['steps']:
-                        # Initialize the technology entry if it doesn't exist
-                        treatment_options[opt_nr+1]['steps'] = {tech_nr+1: {}}
-                    if tech_nr+1 not in treatment_maps[opt_nr+1]:
-                        treatment_maps[opt_nr+1][tech_nr+1] = {}
-                    treatment_maps[opt_nr+1][tech_nr+1] = {
+                    treatment_maps[opt_nr+1][stage_nr] = {
                         'technology': technology_id}
-                    treatment_options[opt_nr+1]['steps'][tech_nr+1] = {
+                    treatment_options[opt_nr+1]['steps'][stage_nr] = {
                         'name': technology.name,
                         'description': technology.description,
                     }
     return treatment_options, treatment_maps
 
 
-def get_unique_combinations(combination_tuple):
-    # Generate all possible ordered combinations
-    """    Count unique combinations of technologies based on their indices.
+def _get_membrane_technology_ids(
+    query_set: QuerySet | None = None,
+) -> set[int]:
+    """IDs of membrane-based NOM removal technologies (MF/UF)."""
+    if query_set is None:
+        query_set = Technology.objects.all()
+    return set(
+        query_set.filter(
+            Q(name__icontains='microfiltration') |
+            Q(name__icontains='ultrafiltration')
+        ).values_list('id', flat=True)
+    )
+
+
+def _get_flocculation_technology_ids(
+    query_set: QuerySet | None = None,
+) -> set[int]:
+    """IDs of flocculation technologies."""
+    if query_set is None:
+        query_set = Technology.objects.all()
+    return set(
+        query_set.filter(
+            name__icontains='flocculation'
+        ).values_list('id', flat=True)
+    )
+
+
+def _drop_flocculation_for_membrane_combination(
+    combination: tuple[int, ...],
+    membrane_ids: set[int],
+    flocculation_ids: set[int],
+) -> tuple[int, ...]:
+    """Drop flocculation technologies from a combination that also
+    selects a membrane technology.
+
+    Coagulation/flocculation pretreatment is injected unconditionally
+    earlier in the decision tree (before the MF/UF question is even
+    asked), so it ends up paired with membrane-based NOM removal even
+    though membrane filtration does not require it.
     """
-    combinations = product(*combination_tuple)
-    unique_combinations = [tu for tu in combinations]
+    if not flocculation_ids or membrane_ids.isdisjoint(combination):
+        return combination
+    return tuple(
+        technology_id for technology_id in combination
+        if technology_id not in flocculation_ids
+    )
+
+
+def get_unique_combinations(combination_tuple):
+    """Count unique combinations of technologies based on their indices.
+
+    Generates all possible ordered combinations (one technology per
+    stage bucket), then drops Flocculation from any combination that
+    also includes a membrane (MF/UF) technology.
+    """
+    return [
+        tuple(technology_id for _, technology_id in combination)
+        for combination in _get_unique_stage_combinations(combination_tuple)
+    ]
+
+
+def _get_unique_stage_combinations(
+    combination_tuple: List[tuple[int, ...]],
+) -> list[tuple[tuple[int, int], ...]]:
+    """Return unique combinations with each technology's original stage."""
+    stage_buckets = [
+        tuple((stage_nr, technology_id) for technology_id in bucket)
+        for stage_nr, bucket in enumerate(combination_tuple, start=1)
+    ]
+    combinations = product(*stage_buckets)
+    membrane_ids = _get_membrane_technology_ids()
+    flocculation_ids = _get_flocculation_technology_ids()
+
+    unique_combinations: list[tuple[tuple[int, int], ...]] = []
+    seen: set[tuple[int, ...]] = set()
+    for combination in combinations:
+        technology_ids = tuple(
+            technology_id for _, technology_id in combination)
+        filtered_ids = _drop_flocculation_for_membrane_combination(
+            technology_ids, membrane_ids, flocculation_ids)
+        if filtered_ids in seen:
+            continue
+
+        seen.add(filtered_ids)
+        if filtered_ids == technology_ids:
+            unique_combinations.append(combination)
+        else:
+            unique_combinations.append(
+                tuple(
+                    (stage_nr, technology_id)
+                    for stage_nr, technology_id in combination
+                    if technology_id not in flocculation_ids
+                )
+            )
 
     return unique_combinations
 

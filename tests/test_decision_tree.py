@@ -5,9 +5,115 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "drinq.settings")
 django.setup()
 
+from drinq.models import Technology
+from drinq.decision_tree import (
+    get_treatment_trains,
+    get_unique_combinations,
+)
+
 # from drinq.decision_tree import (
 #     get_decidingfactor_table,
 #     get_table_decidingfactors)
+
+
+class GetUniqueCombinationsMembraneFlocculationTests(TestCase):
+    """Membrane-based NOM removal (MF/UF) does not require a separate
+    flocculation step, but the decision tree injects Coagulation and
+    Flocculation unconditionally before it even knows whether MF/UF
+    will be chosen. get_unique_combinations() is responsible for
+    dropping Flocculation from any option that also selects a
+    membrane technology.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.screening, _ = Technology.objects.get_or_create(name='Strainer')
+        cls.coagulant, _ = Technology.objects.get_or_create(
+            name='Coagulant dosing with ferric chloride by dynamic mixing')
+        cls.flocculation, _ = Technology.objects.get_or_create(
+            name='Flocculation with dynamic mixing')
+        cls.membrane, _ = Technology.objects.get_or_create(
+            name='Polymeric microfiltration')
+        cls.rapid_sand, _ = Technology.objects.get_or_create(
+            name='Rapid sand filtration, submerged, dual media, sand')
+
+    def test_flocculation_dropped_when_membrane_present(self):
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.membrane.id, self.rapid_sand.id),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertIn(
+            (self.screening.id, self.coagulant.id, self.membrane.id),
+            combinations)
+        self.assertNotIn(
+            (
+                self.screening.id, self.coagulant.id,
+                self.flocculation.id, self.membrane.id,
+            ),
+            combinations)
+
+    def test_flocculation_kept_when_no_membrane_present(self):
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.rapid_sand.id,),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertIn(
+            (
+                self.screening.id, self.coagulant.id,
+                self.flocculation.id, self.rapid_sand.id,
+            ),
+            combinations)
+
+    def test_no_duplicate_combinations_after_dropping_flocculation(self):
+        technology_tuples = [
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.membrane.id,),
+        ]
+
+        combinations = get_unique_combinations(technology_tuples)
+
+        self.assertEqual(len(combinations), len(set(combinations)))
+        self.assertEqual(
+            combinations, [(self.coagulant.id, self.membrane.id)])
+
+    def test_membrane_option_preserves_original_stage_indices(self):
+        stage_five = Technology.objects.create(name='Stage five technology')
+        technology_tuples = [
+            (self.screening.id,),
+            (self.coagulant.id,),
+            (self.flocculation.id,),
+            (self.rapid_sand.id,),
+            (stage_five.id,),
+            (self.membrane.id,),
+        ]
+
+        treatment_options, treatment_maps = get_treatment_trains(
+            technology_tuples)
+
+        membrane_option = next(
+            option_number
+            for option_number, stage_map in treatment_maps.items()
+            if stage_map[6]['technology'] == self.membrane.id
+        )
+        self.assertNotIn(3, treatment_maps[membrane_option])
+        self.assertEqual(
+            set(treatment_maps[membrane_option]), {1, 2, 4, 5, 6})
+        self.assertEqual(
+            set(treatment_options[membrane_option]['steps']),
+            {1, 2, 4, 5, 6},
+        )
 
 
 

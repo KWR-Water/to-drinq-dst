@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from collections import OrderedDict, defaultdict
+from collections.abc import Mapping
 import json
 import csv
 import hashlib
@@ -665,6 +666,41 @@ def _append_stage_buckets(
     return stage_buckets
 
 
+def _get_available_stage_ids(
+    treatment_maps: dict[int, dict[int, dict[str, int]]],
+) -> list[int]:
+    return sorted({
+        stage_id
+        for option in treatment_maps.values()
+        for stage_id in option
+    })
+
+
+def _parse_stage_selections(
+    query_params: Mapping[str, str],
+) -> dict[int, int]:
+    selected_techs = {}
+    for key, technology_id in query_params.items():
+        if not key.startswith('stage_') or not technology_id:
+            continue
+        try:
+            stage_id = int(key.removeprefix('stage_'))
+            selected_techs[stage_id] = int(technology_id)
+        except ValueError:
+            continue
+    return selected_techs
+
+
+def _matches_stage_selections(
+    option_stage_map: dict[int, dict[str, int]],
+    selected_techs: dict[int, int],
+) -> bool:
+    return all(
+        option_stage_map.get(stage_id, {}).get('technology') == technology_id
+        for stage_id, technology_id in selected_techs.items()
+    )
+
+
 class MultiStepQuestionView(LoginRequiredMixin, generic.edit.FormView):
     template_name = "drinq/multi_form.html"
     success_url = 'form_multistep'
@@ -822,31 +858,10 @@ class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
         if not results.exists():
             return HttpResponseRedirect(redirect('drinq_redirect'))
 
-        # Parse filter selections from GET
-        selected_techs = []
-        num_stages = 0
-        if 'num_stages' in request.GET:
-            try:
-                num_stages = int(request.GET['num_stages'])
-            except Exception:
-                num_stages = 0
-
-        # Always fill selected_techs to num_stages, using None for missing
-        selected_techs = []
-        for i in range(num_stages):
-            tech_id = request.GET.get(f'stage_{i+1}')
-            if tech_id is not None and tech_id != '':
-                try:
-                    selected_techs.append(int(tech_id))
-                except Exception:
-                    selected_techs.append(None)
-            else:
-                selected_techs.append(None)
+        selected_techs = _parse_stage_selections(request.GET)
 
         context = self.get_context_data(
             results=results, selected_techs=selected_techs)
-        # Add num_stages to context for template
-        context['num_stages'] = context.get('num_stages', len(selected_techs))
         return render(
             request,
             template_name=self.template_name,
@@ -854,7 +869,7 @@ class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         results = kwargs.get('results', None)
-        selected_techs = kwargs.get('selected_techs', [])
+        selected_techs = kwargs.get('selected_techs', {})
         choices, technologies, treatment_options = {}, [], []
         config_id = self.request.session['configuration_id']
         configuration = self._get_configuration_or_404(
@@ -894,18 +909,17 @@ class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
             treatment_options, treatment_maps = dst.get_treatment_trains(
                 technology_tuples=context['technologies'])
 
-            # Build available technologies and stage names per step
-            num_stages = len(technologies)
+            # Keep stage keys stable while rendering only populated stages.
             stages = []
             stage_names = []
-            for i in range(num_stages):
+            stage_ids = _get_available_stage_ids(treatment_maps)
+            for display_order, stage_id in enumerate(stage_ids, start=1):
                 tech_ids = set()
                 for option in treatment_maps.values():
-                    if (i+1) in option:
-                        tech_ids.add(option[i+1]['technology'])
+                    if stage_id in option:
+                        tech_ids.add(option[stage_id]['technology'])
                 techs = list(Technology.objects.filter(id__in=tech_ids))
-                # Try to get the stage name from the first technology in this step
-                stage_name = f"Stage {i+1}"
+                stage_name = f"Stage {display_order}"
                 omp_removal_passes = False
                 if techs:
                     # FIX the filtering where the Ozone removal technology is 
@@ -937,18 +951,18 @@ class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
                         stage_name = stage_obj.name
                     else:
                         stage_obj = None
-                stages.append({'name': stage_name, 'technologies': techs})
+                stages.append({
+                    'id': stage_id,
+                    'name': stage_name,
+                    'technologies': techs,
+                    'selected_technology': selected_techs.get(stage_id),
+                })
                 stage_names += [stage_name]
 
             # Filter treatment options based on selected_techs
             filtered_options = {}
             for opt_nr, option in treatment_maps.items():
-                match = True
-                for stage_idx, sel in enumerate(selected_techs):
-                    if sel and option.get(stage_idx+1, {}).get('technology') != sel:
-                        match = False
-                        break
-                if match:
+                if _matches_stage_selections(option, selected_techs):
                     filtered_options[opt_nr] = treatment_options[opt_nr]
 
             # Mark already named and slugged
@@ -963,7 +977,6 @@ class QuestionsCompleteView(LoginRequiredMixin, generic.TemplateView):
             context['treatment_options'] = filtered_options
             context['stages'] = stages
             context['selected_techs'] = selected_techs
-            context['num_stages'] = num_stages
             self.request.session['treatment_maps'] = treatment_maps
 
         return context
@@ -3553,6 +3566,8 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                 tccp = TechnologyConstructionCostParameter.objects.filter(
                     technology_id=tech_id).first()
                 if tccp:
+                    techprop_value = None
+                    plantprop_value = None
                     if tccp.technologyproperty:
                         try:
                             techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
@@ -3571,32 +3586,29 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                             techprop_value = None
                         if techprop_value is None:
                             continue
-                        constrcosts[Technology.objects.get(id=tech_id).name] = {
-                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                            'technologyproperty': tccp.technologyproperty.name,
-                            'technologyproperty_value': techprop_value,
-                            'plantproperty': None,
-                            'plantproperty_value': None,
-                        }
-                    else:
-                        if tccp.plantproperty:
-                            try:
-                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                    tccp.plantproperty.name, None)
-                            except TreatmentPlantProperty.DoesNotExist:
-                                plantprop_value = None
-                            if plantprop_value is None:
-                                logger.warning(
-                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                    f" for construction cost calculation ")
-                                continue
-                            constrcosts[Technology.objects.get(id=tech_id).name] = {  # noqa, E501
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': None,
-                                'technologyproperty_value': None,
-                                'plantproperty': tccp.plantproperty.name,
-                                'plantproperty_value': plantprop_value
-                            }
+                    if tccp.plantproperty:
+                        try:
+                            plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                tccp.plantproperty.name, None)
+                        except TreatmentPlantProperty.DoesNotExist:
+                            plantprop_value = None
+                        if plantprop_value is None:
+                            logger.warning(
+                                f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                f" for construction cost calculation ")
+                            continue
+                    constrcosts[Technology.objects.get(id=tech_id).name] = {
+                        'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                        'd': tccp.d, 'e': tccp.e,
+                        'technologyproperty': (
+                            tccp.technologyproperty.name
+                            if tccp.technologyproperty else None),
+                        'technologyproperty_value': techprop_value,
+                        'plantproperty': (
+                            tccp.plantproperty.name
+                            if tccp.plantproperty else None),
+                        'plantproperty_value': plantprop_value,
+                    }
             except TechnologyConstructionCostParameter.DoesNotExist:
                 logger.warning(
                     f"No construction cost parameters found for "
@@ -3609,6 +3621,8 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                     tccp = TechnologyConstructionCostParameter.objects.filter(
                         technology_id=related_tech_id).first()
                     if tccp:
+                        techprop_value = None
+                        plantprop_value = None
                         if tccp.technologyproperty:
                             try:
                                 techprop_value = TreatmentPlantTechnologyPropertyValue.objects.get(  # noqa, E501
@@ -3632,32 +3646,29 @@ class TechnologyPropertiesView(TreatmentPlantAccessMixin, generic.FormView):
                                 techprop_value = None
                             if techprop_value is None:
                                 continue
-                            constrcosts[Technology.objects.get(id=related_tech_id).name] = {
-                                'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                'technologyproperty': tccp.technologyproperty.name,
-                                'technologyproperty_value': techprop_value,
-                                'plantproperty': None,
-                                'plantproperty_value': None,
-                            }
-                        else:
-                            if tccp.plantproperty:
-                                try:
-                                    plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
-                                        tccp.plantproperty.name, None)
-                                except TreatmentPlantProperty.DoesNotExist:
-                                    plantprop_value = None
-                                if plantprop_value is None:
-                                    logger.warning(
-                                        f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
-                                        f" for construction cost calculation ")
-                                    continue
-                                constrcosts[Technology.objects.get(id=related_tech_id).name] = {  # noqa, E501
-                                    'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
-                                    'technologyproperty': None,
-                                    'technologyproperty_value': None,
-                                    'plantproperty': tccp.plantproperty.name,
-                                    'plantproperty_value': plantprop_value
-                                }
+                        if tccp.plantproperty:
+                            try:
+                                plantprop_value = dwtp.plant_kpis.get(  # noqa, E501
+                                    tccp.plantproperty.name, None)
+                            except TreatmentPlantProperty.DoesNotExist:
+                                plantprop_value = None
+                            if plantprop_value is None:
+                                logger.warning(
+                                    f"Missing value of plant KPI {tccp.plantproperty.name}"  # noqa, E501
+                                    f" for construction cost calculation ")
+                                continue
+                        constrcosts[Technology.objects.get(id=related_tech_id).name] = {
+                            'a': tccp.a, 'b': tccp.b, 'c': tccp.c,
+                            'd': tccp.d, 'e': tccp.e,
+                            'technologyproperty': (
+                                tccp.technologyproperty.name
+                                if tccp.technologyproperty else None),
+                            'technologyproperty_value': techprop_value,
+                            'plantproperty': (
+                                tccp.plantproperty.name
+                                if tccp.plantproperty else None),
+                            'plantproperty_value': plantprop_value,
+                        }
                 except TechnologyConstructionCostParameter.DoesNotExist:
                     logger.warning(
                         f"No construction cost parameters found for "
